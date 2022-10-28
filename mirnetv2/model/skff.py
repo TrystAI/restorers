@@ -40,8 +40,3 @@ class SelectiveKernelFeatureFusion(tf.keras.layers.Layer):
             inputs[0] * attention_vector_1 + inputs[1] * attention_vector_2
         )
         return selected_features
-
-
-x = tf.ones((1, 256, 256, 120))
-y = SelectiveKernelFeatureFusion(channels=120)([x, x])
-print(y.shape)

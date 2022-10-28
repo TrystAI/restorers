@@ -3,4 +3,5 @@ pytest==7.1.2
 ml-collections==0.1.1
 pillow
 tqdm
+tensorflow-addons>=0.17.1
 wandb>=0.13.4

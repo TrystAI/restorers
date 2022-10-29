@@ -101,4 +101,4 @@ class DatasetFactory(ABC):
             apply_crop=False,
             apply_augmentations=False,
         )
-        return (train_dataset,)
+        return train_dataset, val_dataset

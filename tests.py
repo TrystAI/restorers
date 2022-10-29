@@ -2,6 +2,7 @@ import unittest
 
 import tensorflow as tf
 
+from mirnetv2.dataloader import LOLDataLoader
 from mirnetv2.model.downsample import DownBlock, DownSampleBlock
 from mirnetv2.model.rcb import ContextBlock, ResidualContextBlock
 from mirnetv2.model.skff import SelectiveKernelFeatureFusion
@@ -77,3 +78,17 @@ class ModelTester(unittest.TestCase):
             add_residual_connection=True,
         )(x)
         self.assertEqual(y.shape, (1, 256, 256, 3))
+
+
+class LOLDataLoaderTester(unittest.TestCase):
+    def test_datasets(self):
+        data_loader = LOLDataLoader(
+            image_size=128, val_split=0.2, visualize_on_wandb=False
+        )
+        train_dataset, val_dataset = data_loader.get_datasets(batch_size=1)
+        x, y = next(iter(train_dataset))
+        self.assertEqual(x.shape, (1, 128, 128, 3))
+        self.assertEqual(y.shape, (1, 128, 128, 3))
+        x, y = next(iter(val_dataset))
+        self.assertEqual(x.shape, (1, 128, 128, 3))
+        self.assertEqual(y.shape, (1, 128, 128, 3))

@@ -19,11 +19,12 @@ class UpSampleBlock(tf.keras.layers.Layer):
         self, channels: int, scale_factor: int, channel_factor: float, *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
-        layers = []
+        self.layers = []
         for _ in range(int(np.log2(scale_factor))):
-            layers.append(UpBlock(channels, channel_factor))
+            self.layers.append(UpBlock(channels, channel_factor))
             channels = int(channels // channel_factor)
-        self.layers = tf.keras.Sequential(layers)
 
-    def call(self, inputs, *args, **kwargs):
-        return self.layers(inputs)
+    def call(self, x, *args, **kwargs):
+        for layer in self.layers:
+            x = layer(x)
+        return x

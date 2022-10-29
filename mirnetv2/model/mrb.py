@@ -29,19 +29,15 @@ class MultiScaleResidualBlock(tf.keras.layers.Layer):
             scale_factor=2,
             channel_factor=channel_factor,
         )
-        self.down_4 = tf.keras.Sequential(
-            [
-                DownSampleBlock(
-                    channels=int((channel_factor**0) * channels),
-                    scale_factor=2,
-                    channel_factor=channel_factor,
-                ),
-                DownSampleBlock(
-                    channels=int((channel_factor**1) * channels),
-                    scale_factor=2,
-                    channel_factor=channel_factor,
-                ),
-            ]
+        self.down_4_1 = DownSampleBlock(
+            channels=int((channel_factor**0) * channels),
+            scale_factor=2,
+            channel_factor=channel_factor,
+        )
+        self.down_4_2 = DownSampleBlock(
+            channels=int((channel_factor**1) * channels),
+            scale_factor=2,
+            channel_factor=channel_factor,
         )
 
         # UpSample Blocks
@@ -80,7 +76,7 @@ class MultiScaleResidualBlock(tf.keras.layers.Layer):
     def call(self, inputs, *args, **kwargs):
         x_top = inputs
         x_middle = self.down_2(x_top)
-        x_bottom = self.down_4(x_top)
+        x_bottom = self.down_4_2(self.down_4_1(x_top))
 
         x_top = self.rcb_top(x_top)
         x_middle = self.rcb_middle(x_middle)

@@ -7,6 +7,7 @@ from mirnetv2.model.rcb import ContextBlock, ResidualContextBlock
 from mirnetv2.model.skff import SelectiveKernelFeatureFusion
 from mirnetv2.model.upsample import UpBlock, UpSampleBlock
 from mirnetv2.model.mrb import MultiScaleResidualBlock
+from mirnetv2.model.mirnet import RecursiveResidualGroup
 
 
 class ModelTester(unittest.TestCase):
@@ -16,26 +17,26 @@ class ModelTester(unittest.TestCase):
         self.assertEqual(y.shape, (1, 256, 256, 120))
 
     def test_context_block(self):
-        x = tf.ones((1, 512, 512, 80))
+        x = tf.ones((1, 256, 256, 80))
         y = ContextBlock(channels=80)(x)
-        self.assertEqual(y.shape, (1, 512, 512, 80))
+        self.assertEqual(y.shape, (1, 256, 256, 80))
 
     def test_residual_context_block(self):
-        x = tf.ones((1, 512, 512, 80))
+        x = tf.ones((1, 256, 256, 80))
         y = ResidualContextBlock(channels=80, groups=1)(x)
-        self.assertEqual(y.shape, (1, 512, 512, 80))
+        self.assertEqual(y.shape, (1, 256, 256, 80))
         y = ResidualContextBlock(channels=80, groups=2)(x)
-        self.assertEqual(y.shape, (1, 512, 512, 80))
+        self.assertEqual(y.shape, (1, 256, 256, 80))
 
     def test_down_block(self):
-        x = tf.ones((1, 512, 512, 80))
+        x = tf.ones((1, 256, 256, 80))
         y = DownBlock(channels=80, channel_factor=1.5)(x)
-        self.assertEqual(y.shape, (1, 256, 256, 120))
+        self.assertEqual(y.shape, (1, 128, 128, 120))
 
     def test_downsample_block(self):
-        x = tf.ones((1, 512, 512, 80))
+        x = tf.ones((1, 256, 256, 80))
         y = DownSampleBlock(channels=80, scale_factor=2, channel_factor=1.5)(x)
-        self.assertEqual(y.shape, (1, 256, 256, 120))
+        self.assertEqual(y.shape, (1, 128, 128, 120))
 
     def test_up_block(self):
         x = tf.ones((1, 128, 128, 180))
@@ -48,6 +49,21 @@ class ModelTester(unittest.TestCase):
         self.assertEqual(y.shape, (1, 256, 256, 120))
 
     def test_mrb(self):
-        x = tf.ones((1, 512, 512, 80))
+        x = tf.ones((1, 256, 256, 80))
         y = MultiScaleResidualBlock(channels=80, channel_factor=1.5, groups=1)(x)
-        self.assertEqual(y.shape, (1, 512, 512, 80))
+        self.assertEqual(y.shape, (1, 256, 256, 80))
+
+    def test_rrg(self):
+        x = tf.ones((1, 256, 256, 80))
+        y = RecursiveResidualGroup(
+            channels=80, num_mrb_blocks=2, channel_factor=1.5, groups=1
+        )(x)
+        self.assertEqual(y.shape, (1, 256, 256, 80))
+        y = RecursiveResidualGroup(
+            channels=80, num_mrb_blocks=2, channel_factor=1.5, groups=2
+        )(x)
+        self.assertEqual(y.shape, (1, 256, 256, 80))
+        y = RecursiveResidualGroup(
+            channels=80, num_mrb_blocks=2, channel_factor=1.5, groups=4
+        )(x)
+        self.assertEqual(y.shape, (1, 256, 256, 80))

@@ -7,7 +7,7 @@ from mirnetv2.model.rcb import ContextBlock, ResidualContextBlock
 from mirnetv2.model.skff import SelectiveKernelFeatureFusion
 from mirnetv2.model.upsample import UpBlock, UpSampleBlock
 from mirnetv2.model.mrb import MultiScaleResidualBlock
-from mirnetv2.model.mirnet import RecursiveResidualGroup
+from mirnetv2.model.mirnet import RecursiveResidualGroup, MirNetv2
 
 
 class ModelTester(unittest.TestCase):
@@ -67,3 +67,13 @@ class ModelTester(unittest.TestCase):
             channels=80, num_mrb_blocks=2, channel_factor=1.5, groups=4
         )(x)
         self.assertEqual(y.shape, (1, 256, 256, 80))
+
+    def test_mirnet_v2(self):
+        x = tf.ones((1, 256, 256, 3))
+        y = MirNetv2(
+            channels=80,
+            channel_factor=1.5,
+            num_mrb_blocks=2,
+            add_residual_connection=True,
+        )(x)
+        self.assertEqual(y.shape, (1, 256, 256, 3))

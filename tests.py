@@ -1,9 +1,10 @@
 import unittest
+
 import tensorflow as tf
 
-from mirnetv2.model.skff import SelectiveKernelFeatureFusion
-from mirnetv2.model.rcb import ContextBlock, ResidualContextBlock
 from mirnetv2.model.downsample import DownBlock, DownSampleBlock
+from mirnetv2.model.rcb import ContextBlock, ResidualContextBlock
+from mirnetv2.model.skff import SelectiveKernelFeatureFusion
 from mirnetv2.model.upsample import UpBlock, UpSampleBlock
 
 

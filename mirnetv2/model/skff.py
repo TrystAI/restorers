@@ -1,5 +1,4 @@
 import tensorflow as tf
-from tensorflow import keras
 import tensorflow_addons as tfa
 
 

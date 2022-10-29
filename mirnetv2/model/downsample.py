@@ -20,7 +20,7 @@ class DownSampleBlock(tf.keras.layers.Layer):
     ):
         super(DownSampleBlock, self).__init__(*args, **kwargs)
         layers = []
-        for _ in range(np.log2(scale_factor)):
+        for _ in range(int(np.log2(scale_factor))):
             layers.append(DownBlock(channels, channel_factor))
             channels = int(channels * channel_factor)
         self.layers = tf.keras.Sequential(layers)

@@ -9,7 +9,12 @@ from wandb.keras import WandbEvalCallback
 
 
 class LowLightEvaluationCallback(WandbEvalCallback):
-    def __init__(self, validation_data: tf.data.Dataset, data_table_columns: List[str], pred_table_columns: List[str]):
+    def __init__(
+        self,
+        validation_data: tf.data.Dataset,
+        data_table_columns: List[str],
+        pred_table_columns: List[str],
+    ):
         super().__init__(data_table_columns, pred_table_columns)
         self.validation_data = validation_data
         self.dataset_cardinality = tf.data.experimental.cardinality(

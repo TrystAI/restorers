@@ -8,7 +8,7 @@ train.py:
   --wandb_project_name: Name of Weights & Biases Project
 Example of overriding default configs using the CLI:
 train.py:
-  --experiment_configs configs/teacher
+  --experiment_configs configs/low_light.py
   --experiment_configs.data_loader_configs.batch_size 16
   --experiment_configs.model_configs.num_residual_recursive_groups 4
   --experiment_configs.training_configs.learning_rate 2e-4

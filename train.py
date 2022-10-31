@@ -1,4 +1,3 @@
-from gc import callbacks
 import tensorflow as tf
 from absl import app, flags, logging
 from ml_collections.config_flags import config_flags

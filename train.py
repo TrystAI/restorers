@@ -85,12 +85,19 @@ def main(_):
             decay_steps=decay_steps,
             alpha=FLAGS.experiment_configs.training_configs.minimum_learning_rate,
         )
-        optimizer = tf.keras.optimizers.Adam(
+        optimizer_class = (
+            tf.keras.optimizers.Adam
+            if FLAGS.experiment_configs.training_configs.optimizer_alias == "adam"
+            else tf.keras.optimizers.experimental.AdamW
+        )
+        optimizer = optimizer_class(
             learning_rate=lr_schedule_fn,
             beta_1=FLAGS.experiment_configs.training_configs.adam_exponential_decay_rate_1,
             beta_2=FLAGS.experiment_configs.training_configs.adam_exponential_decay_rate_2,
         )
-        logging.info("Using Adam Optimizer.")
+        logging.info(
+            f"Using {FLAGS.experiment_configs.training_configs.optimizer_alias} optimizer."
+        )
 
         psnr_metric = PSNRMetric(
             max_val=FLAGS.experiment_configs.training_configs.psnr_max_val

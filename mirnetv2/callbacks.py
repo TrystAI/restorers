@@ -50,7 +50,6 @@ class LowLightEvaluationCallback(WandbEvalCallback):
             ).numpy()
             prediction_batch = self.postprocess(prediction_batch)
             data_table_ref = self.data_table_ref
-            table_idxs = data_table_ref.get_index()
             for idx, prediction in enumerate(prediction_batch):
                 self.pred_table.add_data(
                     epoch,

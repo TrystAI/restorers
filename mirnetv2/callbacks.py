@@ -46,7 +46,7 @@ class LowLightEvaluationCallback(WandbEvalCallback):
                 ground_truth_batch, prediction_batch, max_val=1.0
             ).numpy()
             ssim = tf.image.ssim(
-                ground_truth_batch, prediction_batch, max_val=1.0
+                ground_truth_batch, prediction_batch, max_val=1.0, filter_size=8
             ).numpy()
             prediction_batch = self.postprocess(prediction_batch)
             data_table_ref = self.data_table_ref

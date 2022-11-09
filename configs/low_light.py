@@ -26,12 +26,12 @@ def get_model_configs() -> ml_collections.ConfigDict:
 def get_training_configs() -> ml_collections.ConfigDict:
     config = ml_collections.ConfigDict()
 
-    config.optimizer_alias = "adam"
     config.global_batch_size = 8
     config.initial_learning_rate = 2e-4
     config.minimum_learning_rate = 1e-6
-    config.adam_exponential_decay_rate_1 = 0.9
-    config.adam_exponential_decay_rate_2 = 0.999
+    config.decay_rate_1 = 0.9
+    config.decay_rate_2 = 0.999
+    config.weight_decay = 1e-4
     config.charbonnier_epsilon = 1e-3
     config.psnr_max_val = 1.0
     config.ssim_max_val = 1.0

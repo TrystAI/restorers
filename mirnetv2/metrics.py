@@ -25,7 +25,7 @@ class SSIMMetric(tf.keras.metrics.Metric):
         self.ssim = tf.keras.metrics.Mean(name="ssim")
 
     def update_state(self, y_true, y_pred, *args, **kwargs):
-        ssim = tf.image.ssim(y_true, y_pred, max_val=self.max_val, filter_size=8)
+        ssim = tf.image.ssim(y_true, y_pred, max_val=self.max_val)
         self.ssim.update_state(ssim, *args, **kwargs)
 
     def result(self):

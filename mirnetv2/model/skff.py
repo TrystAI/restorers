@@ -20,8 +20,7 @@ class SelectiveKernelFeatureFusion(tf.keras.layers.Layer):
             channels, kernel_size=1, strides=1, padding="same"
         )
 
-        self.leaky_relu = tf.keras.layers.LeakyReLU(alpha=0.2)
-        self.sorftmax = tf.keras.layers.Softmax(axis=-1)
+        self.sorftmax = tf.keras.layers.Softmax(axis=-1, dtype="float32")
 
     def call(self, inputs, *args, **kwargs):
         combined_input_features = inputs[0] + inputs[1]
@@ -35,6 +34,7 @@ class SelectiveKernelFeatureFusion(tf.keras.layers.Layer):
         attention_vector_2 = self.sorftmax(
             self.conv_attention_2(downscaled_channel_wise_statistics)
         )
+
         selected_features = (
             inputs[0] * attention_vector_1 + inputs[1] * attention_vector_2
         )

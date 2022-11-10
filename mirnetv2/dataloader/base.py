@@ -1,9 +1,9 @@
-import tensorflow as tf
-from functools import partial
 from abc import ABC, abstractmethod
+from functools import partial
 
-from .commons import read_image, random_horiontal_flip, random_vertical_flip
+import tensorflow as tf
 
+from .commons import random_horiontal_flip, random_vertical_flip, read_image
 
 _AUTOTUNE = tf.data.AUTOTUNE
 

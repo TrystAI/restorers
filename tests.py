@@ -4,11 +4,11 @@ import tensorflow as tf
 
 from mirnetv2.dataloader import LOLDataLoader
 from mirnetv2.model.downsample import DownBlock, DownSampleBlock
+from mirnetv2.model.mirnet import MirNetv2, RecursiveResidualGroup
+from mirnetv2.model.mrb import MultiScaleResidualBlock
 from mirnetv2.model.rcb import ContextBlock, ResidualContextBlock
 from mirnetv2.model.skff import SelectiveKernelFeatureFusion
 from mirnetv2.model.upsample import UpBlock, UpSampleBlock
-from mirnetv2.model.mrb import MultiScaleResidualBlock
-from mirnetv2.model.mirnet import RecursiveResidualGroup, MirNetv2
 
 
 class ModelTester(unittest.TestCase):

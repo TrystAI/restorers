@@ -1,8 +1,9 @@
 import os
-import wandb
 from glob import glob
-from PIL import Image
+
 import tensorflow as tf
+import wandb
+from PIL import Image
 from tqdm.autonotebook import tqdm
 
 from .base import DatasetFactory

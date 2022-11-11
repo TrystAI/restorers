@@ -5,6 +5,7 @@ def get_dataloader_configs() -> ml_collections.ConfigDict:
     config = ml_collections.ConfigDict()
 
     config.image_size = 128
+    config.bit_depth = 8
     config.val_split = 0.2
     config.local_batch_size = 8
     config.visualize_on_wandb = False

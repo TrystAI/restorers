@@ -10,7 +10,7 @@ from .base import DatasetFactory
 
 
 class LOLDataLoader(DatasetFactory):
-    def __init__(self, image_size: int, val_split: float, visualize_on_wandb: bool):
+    def __init__(self, image_size: int, bit_depth: int, val_split: float, visualize_on_wandb: bool):
         if visualize_on_wandb:
             self.table = wandb.Table(
                 columns=["Image-ID", "Split", "Low-Light-Image", "Ground-Truth-Image"]
@@ -21,7 +21,7 @@ class LOLDataLoader(DatasetFactory):
         self.dataset_artifact_address = (
             "geekyrakshit/compressed-mirnet/lol-dataset:latest"
         )
-        super().__init__(image_size, val_split, visualize_on_wandb)
+        super().__init__(image_size, bit_depth, val_split, visualize_on_wandb)
 
     def __len__(self):
         return self.num_data_points

@@ -3,19 +3,26 @@ from functools import partial
 
 import tensorflow as tf
 
-from .commons import random_horiontal_flip, random_vertical_flip, read_image
+from .commons import random_horiontal_flip, random_vertical_flip
 
 _AUTOTUNE = tf.data.AUTOTUNE
 
 
 class DatasetFactory(ABC):
-    def __init__(self, image_size: int, val_split: float, visualize_on_wandb: bool):
+    def __init__(self, image_size: int, bit_depth: int, val_split: float, visualize_on_wandb: bool):
         self.image_size = image_size
+        self.normalization_factor = (2 ** bit_depth) - 1
         self.fetch_dataset(val_split, visualize_on_wandb)
 
     @abstractmethod
     def fetch_dataset(self, val_split: float, visualize_on_wandb: bool):
         pass
+    
+    def read_image(self, image_path):
+        image = tf.io.read_file(image_path)
+        image = tf.image.decode_png(image, channels=3)
+        image = tf.cast(image, dtype=tf.float32) / self.normalization_factor
+        return image
 
     def random_crop(self, input_image, gt_image):
         input_image_shape = tf.shape(input_image)[:2]
@@ -49,8 +56,8 @@ class DatasetFactory(ABC):
         return input_image, enhanced_image
 
     def load_image(self, low_light_image_path, enhanced_image_path, apply_crop):
-        low_light_image = read_image(low_light_image_path)
-        enhanced_image = read_image(enhanced_image_path)
+        low_light_image = self.read_image(low_light_image_path)
+        enhanced_image = self.read_image(enhanced_image_path)
         low_light_image, enhanced_image = (
             self.random_crop(low_light_image, enhanced_image)
             if apply_crop

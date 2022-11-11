@@ -75,6 +75,7 @@ def main(_):
 
     data_loader = LOLDataLoader(
         image_size=FLAGS.experiment_configs.data_loader_configs.image_size,
+        bit_depth=FLAGS.experiment_configs.data_loader_configs.bit_depth,
         val_split=FLAGS.experiment_configs.data_loader_configs.val_split,
         visualize_on_wandb=FLAGS.experiment_configs.data_loader_configs.visualize_on_wandb,
     )

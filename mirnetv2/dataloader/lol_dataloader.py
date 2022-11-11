@@ -44,6 +44,18 @@ class LOLDataLoader(DatasetFactory):
                 wandb.Image(Image.open(enhanced_images[idx])),
             )
 
+    def sanity_tests(self):
+        self._create_data_table(
+            self.train_low_light_images, self.train_enhanced_images, split="Train"
+        )
+        self._create_data_table(
+            self.val_low_light_images, self.val_enhanced_images, split="Validation"
+        )
+        self._create_data_table(
+            self.test_low_light_images, self.test_enhanced_images, split="Test"
+        )
+        wandb.log({f"Lol-Dataset": self.table})
+
     def fetch_dataset(self, val_split, visualize_on_wandb: bool):
         dataset_path = (
             tf.keras.utils.get_file(
@@ -72,13 +84,4 @@ class LOLDataLoader(DatasetFactory):
         self.val_low_light_images = low_light_images[num_train_images:]
         self.val_enhanced_images = enhanced_images[num_train_images:]
         if visualize_on_wandb and wandb.run is not None:
-            self._create_data_table(
-                self.train_low_light_images, self.train_enhanced_images, split="Train"
-            )
-            self._create_data_table(
-                self.val_low_light_images, self.val_enhanced_images, split="Validation"
-            )
-            self._create_data_table(
-                self.test_low_light_images, self.test_enhanced_images, split="Test"
-            )
-            wandb.log({f"Lol-Dataset": self.table})
+            self.sanity_tests()

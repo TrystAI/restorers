@@ -22,7 +22,11 @@ class DatasetFactory(ABC):
 
     @abstractmethod
     def fetch_dataset(self, val_split: float, visualize_on_wandb: bool):
-        pass
+        raise NotImplementedError(f"{self.__class__.__name__ }.fetch_dataset")
+
+    @abstractmethod
+    def sanity_tests(self):
+        raise NotImplementedError(f"{self.__class__.__name__ }.sanity_tests")
 
     def read_image(self, image_path):
         image = tf.io.read_file(image_path)

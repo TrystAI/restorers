@@ -10,7 +10,13 @@ from .base import DatasetFactory
 
 
 class LOLDataLoader(DatasetFactory):
-    def __init__(self, image_size: int, bit_depth: int, val_split: float, visualize_on_wandb: bool):
+    def __init__(
+        self,
+        image_size: int,
+        bit_depth: int,
+        val_split: float,
+        visualize_on_wandb: bool,
+    ):
         if visualize_on_wandb:
             self.table = wandb.Table(
                 columns=["Image-ID", "Split", "Low-Light-Image", "Ground-Truth-Image"]

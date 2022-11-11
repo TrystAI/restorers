@@ -9,15 +9,21 @@ _AUTOTUNE = tf.data.AUTOTUNE
 
 
 class DatasetFactory(ABC):
-    def __init__(self, image_size: int, bit_depth: int, val_split: float, visualize_on_wandb: bool):
+    def __init__(
+        self,
+        image_size: int,
+        bit_depth: int,
+        val_split: float,
+        visualize_on_wandb: bool,
+    ):
         self.image_size = image_size
-        self.normalization_factor = (2 ** bit_depth) - 1
+        self.normalization_factor = (2**bit_depth) - 1
         self.fetch_dataset(val_split, visualize_on_wandb)
 
     @abstractmethod
     def fetch_dataset(self, val_split: float, visualize_on_wandb: bool):
         pass
-    
+
     def read_image(self, image_path):
         image = tf.io.read_file(image_path)
         image = tf.image.decode_png(image, channels=3)

@@ -106,6 +106,7 @@ class LowLightDataLoaderTester(unittest.TestCase):
             visualize_on_wandb=False,
             dataset_artifact_address="ml-colabs/mirnet-v2/mit-adobe-5k:v1",
         )
+        print("halum")
         self.assertEqual(len(data_loader), 5000)
         train_dataset, val_dataset = data_loader.get_datasets(batch_size=1)
         x, y = next(iter(train_dataset))

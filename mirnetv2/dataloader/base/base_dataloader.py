@@ -28,7 +28,7 @@ class DatasetFactory(ABC):
     def sanity_tests(self):
         raise NotImplementedError(f"{self.__class__.__name__ }.sanity_tests")
 
-    def read_image(self, image_path):
+    def read_image(self, image_path: str):
         image = tf.io.read_file(image_path)
         image = tf.image.decode_png(image, channels=3)
         image = tf.cast(image, dtype=tf.float32) / self.normalization_factor

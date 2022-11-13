@@ -1,4 +1,5 @@
 import unittest
+import shutil
 
 import tensorflow as tf
 
@@ -97,6 +98,7 @@ class LowLightDataLoaderTester(unittest.TestCase):
         x, y = next(iter(val_dataset))
         self.assertEqual(x.shape, (1, 128, 128, 3))
         self.assertEqual(y.shape, (1, 128, 128, 3))
+        shutil.rmtree("./artifacts")
 
     def test_mit_adobe_5k_dataloader(self):
         data_loader = MITAdobe5KDataLoader(
@@ -114,3 +116,4 @@ class LowLightDataLoaderTester(unittest.TestCase):
         x, y = next(iter(val_dataset))
         self.assertEqual(x.shape, (1, 128, 128, 3))
         self.assertEqual(y.shape, (1, 128, 128, 3))
+        shutil.rmtree("./artifacts")

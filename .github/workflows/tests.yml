@@ -6,6 +6,8 @@ on:
       - mirnetv2/**
       - tests.py
       - requirements.txt
+env:
+  WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
 jobs:
   lint:
     runs-on: ubuntu-latest

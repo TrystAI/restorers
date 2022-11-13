@@ -17,16 +17,15 @@ train.py:
 import tensorflow as tf
 from absl import app, flags, logging
 from ml_collections.config_flags import config_flags
-
-import wandb
 from wandb.keras import WandbMetricsLogger
 
+import wandb
 from mirnetv2.callbacks import LowLightEvaluationCallback
 from mirnetv2.dataloader import LOLDataLoader
 from mirnetv2.losses import CharbonnierLoss
 from mirnetv2.metrics import PSNRMetric, SSIMMetric
 from mirnetv2.model import MirNetv2
-from mirnetv2.utils import initialize_device, get_model_checkpoint_callback
+from mirnetv2.utils import get_model_checkpoint_callback, initialize_device
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string(

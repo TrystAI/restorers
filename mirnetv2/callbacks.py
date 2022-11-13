@@ -3,9 +3,9 @@ from typing import List
 import numpy as np
 import tensorflow as tf
 from tqdm.autonotebook import tqdm
+from wandb.keras import WandbEvalCallback
 
 import wandb
-from wandb.keras import WandbEvalCallback
 
 
 class LowLightEvaluationCallback(WandbEvalCallback):

@@ -5,7 +5,7 @@ from typing import Union
 from .base import LowLightDatasetFactory
 
 
-class LOLDataLoader(LowLightDatasetFactory):
+class MITAdobe5KDataLoader(LowLightDatasetFactory):
     def __init__(
         self,
         image_size: int,
@@ -25,14 +25,8 @@ class LOLDataLoader(LowLightDatasetFactory):
         )
 
     def define_dataset_structure(self, dataset_path, val_split):
-        low_light_images = sorted(glob(os.path.join(dataset_path, "our485/low/*")))
-        enhanced_images = sorted(glob(os.path.join(dataset_path, "our485/high/*")))
-        self.test_low_light_images = sorted(
-            glob(os.path.join(dataset_path, "eval15/low/*"))
-        )
-        self.test_enhanced_images = sorted(
-            glob(os.path.join(dataset_path, "eval15/high/*"))
-        )
+        low_light_images = sorted(glob(os.path.join(dataset_path, "original/*")))
+        enhanced_images = sorted(glob(os.path.join(dataset_path, "expert_c/*")))
         self.num_data_points = len(low_light_images)
         num_train_images = int(self.num_data_points * (1 - val_split))
         self.train_low_light_images = low_light_images[:num_train_images]

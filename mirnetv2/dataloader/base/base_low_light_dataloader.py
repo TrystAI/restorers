@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 import wandb
 from PIL import Image
 import tensorflow as tf
+from absl import logging
 from tqdm.autonotebook import tqdm
 
 from .base_dataloader import DatasetFactory
@@ -51,15 +52,27 @@ class LowLightDatasetFactory(DatasetFactory):
             )
 
     def sanity_tests(self):
-        self._create_data_table(
-            self.train_low_light_images, self.train_enhanced_images, split="Train"
-        )
-        self._create_data_table(
-            self.val_low_light_images, self.val_enhanced_images, split="Validation"
-        )
-        self._create_data_table(
-            self.test_low_light_images, self.test_enhanced_images, split="Test"
-        )
+        try:
+            self._create_data_table(
+                self.train_low_light_images, self.train_enhanced_images, split="Train"
+            )
+        except:
+            logging.warning("Train Set not found.")
+
+        try:
+            self._create_data_table(
+                self.val_low_light_images, self.val_enhanced_images, split="Validation"
+            )
+        except:
+            logging.warning("Validation Set not found.")
+
+        try:
+            self._create_data_table(
+                self.test_low_light_images, self.test_enhanced_images, split="Test"
+            )
+        except:
+            logging.warning("Test Set not found.")
+
         wandb.log({f"Lol-Dataset": self.table})
 
     def fetch_dataset(self, val_split, visualize_on_wandb: bool):

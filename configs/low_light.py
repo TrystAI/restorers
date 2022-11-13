@@ -10,7 +10,7 @@ def get_dataloader_configs() -> ml_collections.ConfigDict:
     config.local_batch_size = 8
     config.visualize_on_wandb = False
     config.dataset_artifact_address = (
-        "geekyrakshit/compressed-mirnet/lol-dataset:latest"
+        "ml-colabs/mirnet-v2/lol-dataset:v0"
     )
 
     return config

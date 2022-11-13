@@ -83,7 +83,11 @@ class ModelTester(unittest.TestCase):
 class LOLDataLoaderTester(unittest.TestCase):
     def test_datasets(self):
         data_loader = LOLDataLoader(
-            image_size=128, bit_depth=8, val_split=0.2, visualize_on_wandb=False
+            image_size=128,
+            bit_depth=8,
+            val_split=0.2,
+            visualize_on_wandb=False,
+            dataset_artifact_address="geekyrakshit/compressed-mirnet/lol-dataset:latest",
         )
         train_dataset, val_dataset = data_loader.get_datasets(batch_size=1)
         x, y = next(iter(train_dataset))

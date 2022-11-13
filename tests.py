@@ -97,7 +97,7 @@ class LowLightDataLoaderTester(unittest.TestCase):
         x, y = next(iter(val_dataset))
         self.assertEqual(x.shape, (1, 128, 128, 3))
         self.assertEqual(y.shape, (1, 128, 128, 3))
-    
+
     def test_mit_adobe_5k_dataloader(self):
         data_loader = MITAdobe5KDataLoader(
             image_size=128,

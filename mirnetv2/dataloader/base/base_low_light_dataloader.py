@@ -27,7 +27,6 @@ class LowLightDatasetFactory(DatasetFactory):
             )
         self.dataset_url = dataset_url
         self.dataset_artifact_address = dataset_artifact_address
-        print("halum")
         super().__init__(image_size, bit_depth, val_split, visualize_on_wandb)
 
     @abstractmethod

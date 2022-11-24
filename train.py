@@ -77,6 +77,7 @@ def main(_):
         bit_depth=FLAGS.experiment_configs.data_loader_configs.bit_depth,
         val_split=FLAGS.experiment_configs.data_loader_configs.val_split,
         visualize_on_wandb=FLAGS.experiment_configs.data_loader_configs.visualize_on_wandb,
+        dataset_artifact_address=FLAGS.experiment_configs.data_loader_configs.dataset_artifact_address,
     )
     train_dataset, val_dataset = data_loader.get_datasets(batch_size=batch_size)
     logging.info("Created Tensorflow Datasets.")
@@ -107,9 +108,7 @@ def main(_):
             beta_1=FLAGS.experiment_configs.training_configs.decay_rate_1,
             beta_2=FLAGS.experiment_configs.training_configs.decay_rate_2,
         )
-        logging.info(
-            f"Using {FLAGS.experiment_configs.training_configs.optimizer_alias} optimizer."
-        )
+        logging.info(f"Using AdamW optimizer.")
 
         psnr_metric = PSNRMetric(
             max_val=FLAGS.experiment_configs.training_configs.psnr_max_val

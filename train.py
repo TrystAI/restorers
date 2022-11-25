@@ -66,6 +66,13 @@ def main(_):
     tf.keras.utils.set_random_seed(FLAGS.experiment_configs.seed)
 
     strategy = initialize_device()
+    
+    if FLAGS.experiment_configs.training_configs.use_mixed_precision:
+        tf.keras.mixed_precision.set_global_policy("mixed_float16")
+        policy = tf.keras.mixed_precision.global_policy()
+        assert policy.compute_dtype == "float16"
+        assert policy.variable_dtype == "float32"
+        logging.info("Using mixed-precision.")
 
     batch_size = (
         FLAGS.experiment_configs.data_loader_configs.local_batch_size

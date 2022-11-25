@@ -1,6 +1,8 @@
 import tensorflow as tf
 import tensorflow_addons as tfa
 
+from .utils import match_dtype
+
 
 class SelectiveKernelFeatureFusion(tf.keras.layers.Layer):
     def __init__(self, channels: int, *args, **kwargs) -> None:
@@ -35,7 +37,15 @@ class SelectiveKernelFeatureFusion(tf.keras.layers.Layer):
             self.conv_attention_2(downscaled_channel_wise_statistics)
         )
 
+        input_features_1, attention_vector_1 = match_dtype(
+            input_features_1, attention_vector_1
+        )
+        input_features_2, attention_vector_2 = match_dtype(
+            input_features_2, attention_vector_2
+        )
+
         selected_features = (
-            inputs[0] * attention_vector_1 + inputs[1] * attention_vector_2
+            input_features_1 * attention_vector_1
+            + input_features_2 * attention_vector_2
         )
         return selected_features

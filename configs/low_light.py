@@ -28,6 +28,7 @@ def get_model_configs() -> ml_collections.ConfigDict:
 def get_training_configs() -> ml_collections.ConfigDict:
     config = ml_collections.ConfigDict()
 
+    config.use_mixed_precision = False
     config.global_batch_size = 8
     config.initial_learning_rate = 2e-4
     config.minimum_learning_rate = 1e-6

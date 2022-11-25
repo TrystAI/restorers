@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from .utils import shape_list
+from .utils import shape_list, match_dtype
 
 
 class ContextBlock(tf.keras.layers.Layer):
@@ -39,6 +39,7 @@ class ContextBlock(tf.keras.layers.Layer):
         channel_add_term = self.channel_add_conv_1(context)
         channel_add_term = tf.nn.leaky_relu(channel_add_term, alpha=0.2)
         channel_add_term = self.channel_add_conv_2(channel_add_term)
+        inputs, channel_add_term = match_dtype(inputs, channel_add_term)
         return inputs + channel_add_term
 
 

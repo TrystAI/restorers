@@ -26,3 +26,11 @@ def shape_list(tensor: Union[tf.Tensor, np.ndarray]) -> List[int]:
     static = tensor.shape.as_list()
 
     return [dynamic[i] if s is None else s for i, s in enumerate(static)]
+
+
+def match_dtype(x: tf.Tensor, y: tf.Tensor):
+    """Utility to match data-types of two variables. Useful during mixed-
+    precision training."""
+    if x.dtype != y.dtype:
+        y = tf.cast(y, x.dtype)
+    return x, y

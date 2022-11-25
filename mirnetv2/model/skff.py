@@ -38,10 +38,10 @@ class SelectiveKernelFeatureFusion(tf.keras.layers.Layer):
         )
 
         input_features_1, attention_vector_1 = match_dtype(
-            input_features_1, attention_vector_1
+            inputs[0], attention_vector_1
         )
         input_features_2, attention_vector_2 = match_dtype(
-            input_features_2, attention_vector_2
+            inputs[1], attention_vector_2
         )
 
         selected_features = (

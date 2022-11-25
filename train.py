@@ -66,7 +66,7 @@ def main(_):
     tf.keras.utils.set_random_seed(FLAGS.experiment_configs.seed)
 
     strategy = initialize_device()
-    
+
     if FLAGS.experiment_configs.training_configs.use_mixed_precision:
         tf.keras.mixed_precision.set_global_policy("mixed_float16")
         policy = tf.keras.mixed_precision.global_policy()

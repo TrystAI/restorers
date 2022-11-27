@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Union, List
+from typing import Optional, Union, List, Dict, Callable
 
 import wandb
 import numpy as np
@@ -15,10 +15,9 @@ class LowLightInferer(BaseInferer):
         self,
         model: Optional[tf.keras.Model] = None,
         model_artifact_address: Optional[str] = None,
-        psnr_max_val: float = 1,
-        ssim_max_val: float = 1,
+        metrics: Dict[str, Callable] = {},
     ) -> None:
-        super().__init__(model, model_artifact_address, psnr_max_val, ssim_max_val)
+        super().__init__(model, model_artifact_address, metrics)
 
     def preprocess_image(self, image: Image):
         """Preprocesses the image for inference.
@@ -72,12 +71,8 @@ class LowLightInferer(BaseInferer):
             columns = ["Low-Light-Image-File", "Low-Light-Image", "Predicted-Image"]
             columns = (
                 columns
-                + [
-                    "Ground-Truth-Image-File",
-                    "Ground-Truth-Image",
-                    "Peak-Signal-to-Noise-Ratio",
-                    "Structural-Similarity",
-                ]
+                + ["Ground-Truth-Image-File", "Ground-Truth-Image"]
+                + list(self.metrics.keys())
                 if ground_truth_image_files is not None
                 else columns
             )
@@ -158,11 +153,8 @@ class LowLightInferer(BaseInferer):
             columns = ["Low-Light-Image", "Predicted-Image"]
             columns = (
                 columns
-                + [
-                    "Ground-Truth-Image",
-                    "Peak-Signal-to-Noise-Ratio",
-                    "Structural-Similarity",
-                ]
+                + ["Ground-Truth-Image-File", "Ground-Truth-Image"]
+                + list(self.metrics.keys())
                 if ground_truth_image_batch is not None
                 else columns
             )

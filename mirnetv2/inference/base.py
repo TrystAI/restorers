@@ -1,6 +1,6 @@
 import os
 from abc import ABC, abstractmethod
-from typing import Optional, List, Union
+from typing import Optional, List, Union, Callable, Dict
 
 import wandb
 import numpy as np
@@ -55,13 +55,11 @@ class BaseInferer(ABC):
         self,
         model: Optional[tf.keras.Model] = None,
         model_artifact_address: Optional[str] = None,
-        psnr_max_val: float = 1.0,
-        ssim_max_val: float = 1.0,
+        metrics: Dict[str, Callable] = {},
     ) -> None:
         self.model = model
         self.model_artifact_address = model_artifact_address
-        self.psnr_max_val = psnr_max_val
-        self.ssim_max_val = ssim_max_val
+        self.metrics = metrics
         if self.model is None:
             self.initialize_model()
 

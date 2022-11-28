@@ -125,7 +125,10 @@ def main(_):
 
     callbacks = [
         get_model_checkpoint_callback(
-            filepath="model", save_best_only=False, using_wandb=using_wandb
+            filepath="model",
+            save_best_only=False,
+            save_weights_only=FLAGS.experiment_configs.training_configs.save_weights_only,
+            using_wandb=using_wandb,
         )
     ]
     if using_wandb:

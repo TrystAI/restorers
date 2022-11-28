@@ -38,7 +38,8 @@ def get_training_configs() -> ml_collections.ConfigDict:
     config.psnr_max_val = 1.0
     config.ssim_max_val = 1.0
     config.save_best_checkpoint_only = False
-    config.num_evaluation_batches = 2
+    config.save_weights_only = True
+    config.num_evaluation_batches = 1
     config.epochs = 100
 
     return config

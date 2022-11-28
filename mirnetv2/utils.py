@@ -14,13 +14,15 @@ def initialize_device():
         return tf.distribute.OneDeviceStrategy(device="GPU:0")
 
 
-def get_model_checkpoint_callback(filepath, save_best_only: bool, using_wandb: bool):
+def get_model_checkpoint_callback(
+    filepath, save_best_only: bool, save_weights_only: bool, using_wandb: bool
+):
     return (
         WandbModelCheckpoint(
             filepath=filepath,
             monitor="val_loss",
             save_best_only=save_best_only,
-            save_weights_only=False,
+            save_weights_only=save_weights_only,
             initial_value_threshold=None,
         )
         if using_wandb
@@ -28,7 +30,7 @@ def get_model_checkpoint_callback(filepath, save_best_only: bool, using_wandb: b
             filepath=filepath,
             monitor="val_loss",
             save_best_only=save_best_only,
-            save_weights_only=False,
+            save_weights_only=save_weights_only,
             initial_value_threshold=None,
         )
     )

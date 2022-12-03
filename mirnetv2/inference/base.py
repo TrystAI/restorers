@@ -64,17 +64,14 @@ class BaseInferer(ABC):
             self.initialize_model()
 
     def initialize_model(self) -> None:
-        try:
-            model_path = (
-                wandb.Api().artifact(self.model_artifact_address, type="model")
-                if wandb.run is None
-                else wandb.use_artifact(self.model_artifact_address, type="model")
-            ).download()
-        except:
-            model_path = tf.keras.utils.get_file(
-                fname=self.model_artifact_address.split("/")[-1],
-                origin=self.model_artifact_address,
-            )
+        artifact = (
+            wandb.Api().artifact(self.model_artifact_address, type="model")
+            if wandb.run is None
+            else wandb.use_artifact(self.model_artifact_address, type="model")
+        )
+        model_path = artifact.download()
+        producer_run = artifact.logged_by()
+        self.model_configs = producer_run.config["model_configs"]
         self.model = tf.keras.models.load_model(model_path, compile=False)
 
     @abstractmethod

@@ -97,3 +97,160 @@ class BaseInferer(ABC):
         )
         post_processed_images = self.postprocess_image(model_output_batch)
         return input_images, model_output_batch, post_processed_images
+
+    def infer_from_files(
+        self,
+        input_image_files: List[str],
+        ground_truth_image_files: Optional[List[str]] = None,
+        log_on_wandb: bool = False,
+        save_dir: Optional[str] = None,
+    ):
+        """Perform inference on a list of low light image files.
+        Args:
+            input_image_files (List[str]):
+                List of paths to low light images.
+            ground_truth_image_files (Optional[List[str]], optional):
+                List of paths to ground truth images. Defaults to None.
+            log_on_wandb (bool, optional):
+                Log inference results on Weights & Biases. Defaults to False.
+            save_dir (Optional[str], optional):
+                Path to directory to save the inference results. Defaults to None.
+        Usage:
+            ```python
+            inferer.infer_from_files(input_image_files=glob("path-to-images/*.png"))
+            ```
+        """
+        if ground_truth_image_files is not None:
+            assert len(input_image_files) == len(ground_truth_image_files)
+        if log_on_wandb:
+            columns = ["Low-Light-Image-File", "Low-Light-Image", "Predicted-Image"]
+            columns = (
+                columns
+                + ["Ground-Truth-Image-File", "Ground-Truth-Image"]
+                + list(self.metrics.keys())
+                if ground_truth_image_files is not None
+                else columns
+            )
+            table = wandb.Table(columns=columns)
+        if save_dir is not None and not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+        for idx in tqdm(range(len(input_image_files))):
+            (
+                input_image,
+                model_output,
+                predicted_image,
+            ) = self.single_image_file_inference(input_image_files[idx])
+            if save_dir is not None:
+                predicted_image.save(
+                    os.path.join(save_dir, input_image_files[idx].split("/")[-1])
+                )
+            if log_on_wandb:
+                data = [
+                    input_image_files[idx].split("/")[-1],
+                    wandb.Image(input_image),
+                    wandb.Image(predicted_image),
+                ]
+                if ground_truth_image_files is not None:
+                    preprocessed_ground_truth_image = self.preprocess_image(
+                        Image.open(ground_truth_image_files[idx])
+                    )
+                    metric_values = [
+                        self.metrics[key](
+                            preprocessed_ground_truth_image, model_output
+                        ).numpy()[0]
+                        for key in self.metrics.keys()
+                    ]
+                    data = data + [
+                        ground_truth_image_files[idx].split("/")[-1],
+                        wandb.Image(Image.open(ground_truth_image_files[idx])),
+                        *metric_values,
+                    ]
+                table.add_data(*data)
+        if log_on_wandb:
+            wandb.log(
+                {
+                    "Inference-With-Ground-Truth"
+                    if ground_truth_image_files is not None
+                    else "Inference": table
+                }
+            )
+
+    def infer_from_batch(
+        self,
+        input_image_batch: np.array,
+        ground_truth_image_batch: Optional[np.array] = None,
+        log_on_wandb: bool = False,
+        save_dir: Optional[str] = None,
+    ):
+        """Perform inference on a batch of low light images.
+        Args:
+            input_image_batch (np.array):
+                A batch of low light images as numpy arrays. The batch should not be pre-processed.
+            ground_truth_image_batch (Optional[np.array], optional):
+                A batch of ground truth images. Defaults to None.
+            log_on_wandb (bool, optional):
+                Log inference results on Weights & Biases. Defaults to False.
+            save_dir (Optional[str], optional):
+                Path to directory to save the inference results. Defaults to None.
+        Usage:
+            ```python
+            input_image_files = glob("path-to-images/*.png")
+            input_image_batch = np.array(
+                [np.array(Image.open(file_path)) for file_path in input_image_files]
+            )
+            inferer.infer_from_batch(input_image_batch=input_image_batch)
+            ```
+        """
+        if ground_truth_image_batch is not None:
+            assert input_image_batch.shape[0] == ground_truth_image_batch.shape[0]
+        if log_on_wandb:
+            columns = ["Low-Light-Image", "Predicted-Image"]
+            columns = (
+                columns
+                + ["Ground-Truth-Image-File", "Ground-Truth-Image"]
+                + list(self.metrics.keys())
+                if ground_truth_image_batch is not None
+                else columns
+            )
+            table = wandb.Table(columns=columns)
+        if save_dir is not None and not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+        (
+            input_images,
+            model_output_batch,
+            post_processed_images,
+        ) = self.single_image_batch_inference(input_image_batch)
+        for idx in tqdm(range(len(input_images))):
+            predicted_image = post_processed_images[idx]
+            if save_dir is not None:
+                predicted_image.save(os.path.join(save_dir, f"{idx}.jpg"))
+            if log_on_wandb:
+                data = [
+                    wandb.Image(input_images[idx]),
+                    wandb.Image(predicted_image),
+                ]
+                if ground_truth_image_batch is not None:
+                    preprocessed_ground_truth_image = self.preprocess_image(
+                        Image.fromarray(np.uint8(ground_truth_image_batch[idx]))
+                    )
+                    metric_values = [
+                        self.metrics[key](
+                            preprocessed_ground_truth_image, model_output_batch[idx]
+                        ).numpy()[0]
+                        for key in self.metrics.keys()
+                    ]
+                    data = data + [
+                        wandb.Image(
+                            Image.fromarray(np.uint8(ground_truth_image_batch[idx]))
+                        ),
+                        *metric_values,
+                    ]
+                table.add_data(*data)
+        if log_on_wandb:
+            wandb.log(
+                {
+                    "Inference-With-Ground-Truth"
+                    if ground_truth_image_batch is not None
+                    else "Inference": table
+                }
+            )

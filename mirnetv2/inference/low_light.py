@@ -27,7 +27,7 @@ class LowLightInferer(BaseInferer):
         temp_dir = tempfile.mkdtemp()
         weights_dir = os.path.join(temp_dir, "model_weights")
         self.model.save_weights(weights_dir)
-        self.model = model = MirNetv2(
+        self.model = MirNetv2(
             channels=self.model_configs["channels"],
             channel_factor=self.model_configs["channel_factor"],
             num_mrb_blocks=self.model_configs["num_mrb_blocks"],

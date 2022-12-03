@@ -5,8 +5,10 @@ import tensorflow_addons as tfa
 class SelectiveKernelFeatureFusion(tf.keras.layers.Layer):
     def __init__(self, channels: int, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        self.channels = channels
 
-        self.hidden_channels = max(int(channels / 8), 4)
+    def build(self, input_shape):
+        self.hidden_channels = max(int(self.channels / 8), 4)
 
         self.average_pooling = tfa.layers.AdaptiveAveragePooling2D(output_size=1)
 
@@ -14,10 +16,10 @@ class SelectiveKernelFeatureFusion(tf.keras.layers.Layer):
             self.hidden_channels, kernel_size=1, padding="same"
         )
         self.conv_attention_1 = tf.keras.layers.Conv2D(
-            channels, kernel_size=1, strides=1, padding="same"
+            self.channels, kernel_size=1, strides=1, padding="same"
         )
         self.conv_attention_2 = tf.keras.layers.Conv2D(
-            channels, kernel_size=1, strides=1, padding="same"
+            self.channels, kernel_size=1, strides=1, padding="same"
         )
 
         self.sorftmax = tf.keras.layers.Softmax(axis=-1, dtype="float32")
@@ -39,3 +41,10 @@ class SelectiveKernelFeatureFusion(tf.keras.layers.Layer):
             inputs[0] * attention_vector_1 + inputs[1] * attention_vector_2
         )
         return selected_features
+
+    def get_config(self):
+        return {"channels": self.channels}
+    
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)

@@ -105,10 +105,10 @@ class BaseInferer(ABC):
         log_on_wandb: bool = False,
         save_dir: Optional[str] = None,
     ):
-        """Perform inference on a list of low light image files.
+        """Perform inference on a list of input image files.
         Args:
             input_image_files (List[str]):
-                List of paths to low light images.
+                List of paths to input images.
             ground_truth_image_files (Optional[List[str]], optional):
                 List of paths to ground truth images. Defaults to None.
             log_on_wandb (bool, optional):
@@ -123,7 +123,7 @@ class BaseInferer(ABC):
         if ground_truth_image_files is not None:
             assert len(input_image_files) == len(ground_truth_image_files)
         if log_on_wandb:
-            columns = ["Low-Light-Image-File", "Low-Light-Image", "Predicted-Image"]
+            columns = ["Input-Image-File", "Input-Image", "Predicted-Image"]
             columns = (
                 columns
                 + ["Ground-Truth-Image-File", "Ground-Truth-Image"]
@@ -182,10 +182,10 @@ class BaseInferer(ABC):
         log_on_wandb: bool = False,
         save_dir: Optional[str] = None,
     ):
-        """Perform inference on a batch of low light images.
+        """Perform inference on a batch of input images.
         Args:
             input_image_batch (np.array):
-                A batch of low light images as numpy arrays. The batch should not be pre-processed.
+                A batch of input images as numpy arrays. The batch should not be pre-processed.
             ground_truth_image_batch (Optional[np.array], optional):
                 A batch of ground truth images. Defaults to None.
             log_on_wandb (bool, optional):
@@ -204,7 +204,7 @@ class BaseInferer(ABC):
         if ground_truth_image_batch is not None:
             assert input_image_batch.shape[0] == ground_truth_image_batch.shape[0]
         if log_on_wandb:
-            columns = ["Low-Light-Image", "Predicted-Image"]
+            columns = ["Input-Image", "Predicted-Image"]
             columns = (
                 columns
                 + ["Ground-Truth-Image-File", "Ground-Truth-Image"]

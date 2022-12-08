@@ -3,13 +3,13 @@ import shutil
 
 import tensorflow as tf
 
-from mirnetv2.dataloader import LOLDataLoader, MITAdobe5KDataLoader
-from mirnetv2.model.downsample import DownBlock, DownSampleBlock
-from mirnetv2.model.mirnet import MirNetv2, RecursiveResidualGroup
-from mirnetv2.model.mrb import MultiScaleResidualBlock
-from mirnetv2.model.rcb import ContextBlock, ResidualContextBlock
-from mirnetv2.model.skff import SelectiveKernelFeatureFusion
-from mirnetv2.model.upsample import UpBlock, UpSampleBlock
+from restorers.dataloader import LOLDataLoader, MITAdobe5KDataLoader
+from restorers.model.downsample import DownBlock, DownSampleBlock
+from restorers.model.mirnet import MirNetv2, RecursiveResidualGroup
+from restorers.model.mrb import MultiScaleResidualBlock
+from restorers.model.rcb import ContextBlock, ResidualContextBlock
+from restorers.model.skff import SelectiveKernelFeatureFusion
+from restorers.model.upsample import UpBlock, UpSampleBlock
 
 
 class ModelTester(unittest.TestCase):

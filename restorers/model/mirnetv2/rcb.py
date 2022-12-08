@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from .utils import shape_list
+from transformers.tf_utils import shape_list
 
 
 class ContextBlock(tf.keras.layers.Layer):

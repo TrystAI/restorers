@@ -1,1 +1,1 @@
-from .mirnet import MirNetv2
+from .mirnetv2 import MirNetv2

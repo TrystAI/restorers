@@ -14,12 +14,20 @@ class RecursiveResidualGroup(tf.keras.layers.Layer):
         **kwargs
     ):
         super().__init__(*args, **kwargs)
+
+        self.channels = channels
+        self.num_mrb_blocks = num_mrb_blocks
+        self.channel_factor = channel_factor
+        self.groups = groups
+
         self.layers = [
-            MultiScaleResidualBlock(channels, channel_factor, groups)
-            for _ in range(num_mrb_blocks)
+            MultiScaleResidualBlock(self.channels, self.channel_factor, self.groups)
+            for _ in range(self.num_mrb_blocks)
         ]
         self.layers.append(
-            tf.keras.layers.Conv2D(channels, kernel_size=3, strides=1, padding="same")
+            tf.keras.layers.Conv2D(
+                self.channels, kernel_size=3, strides=1, padding="same"
+            )
         )
 
     def call(self, inputs, *args, **kwargs):
@@ -28,6 +36,14 @@ class RecursiveResidualGroup(tf.keras.layers.Layer):
             residual = layer(residual)
         residual = residual + inputs
         return residual
+
+    def get_config(self):
+        return {
+            "channels": self.channels,
+            "num_mrb_blocks": self.num_mrb_blocks,
+            "channel_factor": self.channel_factor,
+            "groups": self.groups,
+        }
 
 
 class MirNetv2(tf.keras.Model):
@@ -42,21 +58,26 @@ class MirNetv2(tf.keras.Model):
     ):
         super().__init__(*args, **kwargs)
 
+        self.channels = channels
+        self.channel_factor = channel_factor
+        self.num_mrb_blocks = num_mrb_blocks
         self.add_residual_connection = add_residual_connection
 
-        self.conv_in = tf.keras.layers.Conv2D(channels, kernel_size=3, padding="same")
+        self.conv_in = tf.keras.layers.Conv2D(
+            self.channels, kernel_size=3, padding="same"
+        )
 
         self.rrg_block_1 = RecursiveResidualGroup(
-            channels, num_mrb_blocks, channel_factor, groups=1
+            self.channels, self.num_mrb_blocks, self.channel_factor, groups=1
         )
         self.rrg_block_2 = RecursiveResidualGroup(
-            channels, num_mrb_blocks, channel_factor, groups=2
+            self.channels, self.num_mrb_blocks, self.channel_factor, groups=2
         )
         self.rrg_block_3 = RecursiveResidualGroup(
-            channels, num_mrb_blocks, channel_factor, groups=4
+            self.channels, self.num_mrb_blocks, self.channel_factor, groups=4
         )
         self.rrg_block_4 = RecursiveResidualGroup(
-            channels, num_mrb_blocks, channel_factor, groups=4
+            self.channels, self.num_mrb_blocks, self.channel_factor, groups=4
         )
 
         self.conv_out = tf.keras.layers.Conv2D(3, kernel_size=3, padding="same")
@@ -70,3 +91,11 @@ class MirNetv2(tf.keras.Model):
         output = self.conv_out(deep_features)
         output = output + inputs if self.add_residual_connection else output
         return output
+
+    def get_config(self):
+        return {
+            "channels": self.channels,
+            "num_mrb_blocks": self.num_mrb_blocks,
+            "channel_factor": self.channel_factor,
+            "add_residual_connection": self.add_residual_connection,
+        }

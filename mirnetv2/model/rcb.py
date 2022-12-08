@@ -7,13 +7,15 @@ class ContextBlock(tf.keras.layers.Layer):
     def __init__(self, channels: int, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.channels = channels
+
         self.mask_conv = tf.keras.layers.Conv2D(1, kernel_size=1, padding="same")
 
         self.channel_add_conv_1 = tf.keras.layers.Conv2D(
-            channels, kernel_size=1, padding="same"
+            self.channels, kernel_size=1, padding="same"
         )
         self.channel_add_conv_2 = tf.keras.layers.Conv2D(
-            channels, kernel_size=1, padding="same"
+            self.channels, kernel_size=1, padding="same"
         )
 
         self.softmax = tf.keras.layers.Softmax(axis=1, dtype="float32")
@@ -41,19 +43,25 @@ class ContextBlock(tf.keras.layers.Layer):
         channel_add_term = self.channel_add_conv_2(channel_add_term)
         return inputs + channel_add_term
 
+    def get_config(self):
+        return {"channels": self.channels}
+
 
 class ResidualContextBlock(tf.keras.layers.Layer):
     def __init__(self, channels: int, groups: int, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.channels = channels
+        self.groups = groups
+
         self.conv_1 = tf.keras.layers.Conv2D(
-            channels, kernel_size=3, padding="same", groups=groups
+            self.channels, kernel_size=3, padding="same", groups=self.groups
         )
         self.conv_2 = tf.keras.layers.Conv2D(
-            channels, kernel_size=3, padding="same", groups=groups
+            self.channels, kernel_size=3, padding="same", groups=self.groups
         )
 
-        self.context_block = ContextBlock(channels=channels)
+        self.context_block = ContextBlock(channels=self.channels)
 
     def call(self, inputs):
         x = self.conv_1(inputs)
@@ -63,3 +71,6 @@ class ResidualContextBlock(tf.keras.layers.Layer):
         x = tf.nn.leaky_relu(x, alpha=0.2)
         x = x + inputs
         return x
+
+    def get_config(self):
+        return {"channels": self.channels, "groups": self.groups}

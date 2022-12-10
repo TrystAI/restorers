@@ -13,7 +13,7 @@ setuptools.setup(
     description="Image Restoration toolkit in TensorFlow",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/username/demopackage",
+    url="https://github.com/soumik12345/mirnetv2",
     packages=setuptools.find_packages(),
     install_requires=requirements,
     classifiers=(

@@ -22,9 +22,9 @@ jobs:
     container: tensorflow/tensorflow
     steps:
       - uses: actions/checkout@v2
-      - uses: nelonoel/branch-name@v1.0.1
+      - uses: tj-actions/branch-names@v6
       - run: |
           yes | apt install git
           pip install -U pip
-          pip install git+https://github.com/soumik12345/mirnetv2.git@${BRANCH_NAME}
+          pip install git+https://github.com/soumik12345/mirnetv2.git@${{ steps.branch-name.outputs.current_branch }}
           pytest .

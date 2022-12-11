@@ -20,9 +20,11 @@ jobs:
       WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
     container: tensorflow/tensorflow
     steps:
-      - uses: actions/checkout@v2
+      - uses:
+        - actions/checkout@v2
+        - nelonoel/branch-name@v1
       - run: |
           yes | apt install git
           pip install -U pip
-          pip install git+https://github.com/soumik12345/mirnetv2.git@${GITHUB_REF##*/}
+          pip install git+https://github.com/soumik12345/mirnetv2.git@${BRANCH_NAME}
           pytest .

@@ -22,8 +22,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: |
-          yes | apt install git
           pip install -U pip
-          BRANCH_NAME=$(echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})")
-          pip install git+https://github.com/soumik12345/mirnetv2.git@${BRANCH_NAME} --no-cache-dir
-          pytest .
+          pip install -e .
+          pytest -s

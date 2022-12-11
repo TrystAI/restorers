@@ -18,17 +18,11 @@ jobs:
     runs-on: ubuntu-latest
     env:
       WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
-      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     container: tensorflow/tensorflow
     steps:
-      - name: Get branch names.
-        id: branch-names
-        uses: tj-actions/branch-names@v6
       - uses: actions/checkout@v2
-        with:
-          ref: ${{ steps.branch-names.outputs.head_ref_branch }}
       - run: |
           yes | apt install git
           pip install -U pip
-          pip install git+https://github.com/soumik12345/mirnetv2.git@${{ steps.branch-name.outputs.current_branch }}
+          pip install git+https://github.com/soumik12345/mirnetv2.git@$(git rev-parse --abbrev-ref HEAD)
           pytest .

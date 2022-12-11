@@ -27,4 +27,4 @@ jobs:
           pip3 install -e .
           pwd
           ls -l
-          pytest ./tests
+          pytest -s

@@ -1,3 +1,4 @@
+from typing import Optional
 import tensorflow as tf
 
 from .downsample import DownSampleBlock
@@ -7,6 +8,15 @@ from .upsample import UpSampleBlock
 
 
 class MultiScaleResidualBlock(tf.keras.layers.Layer):
+    """
+    Multi Scale Resolution Block.
+
+    Parameters:
+        channels (`int`): Number of channels of the feature maps.
+        channel_factor (`float`): The ration of channel.
+        groups (`int`): Number of groups for the group conv operation.
+    """
+
     def __init__(
         self, channels: int, channel_factor: float, groups: int, *args, **kwargs
     ):
@@ -79,7 +89,7 @@ class MultiScaleResidualBlock(tf.keras.layers.Layer):
             self.channels, kernel_size=1, padding="same"
         )
 
-    def call(self, inputs, *args, **kwargs):
+    def call(self, inputs: tf.Tensor, training:Optional[bool]=None):
         x_top = inputs
         x_middle = self.down_2(x_top)
         x_bottom = self.down_4_2(self.down_4_1(x_top))

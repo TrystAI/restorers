@@ -27,4 +27,5 @@ jobs:
           echo ${{ github.base_ref }}
           pip install -e .
           pwd
+          ls -l
           pytest ./tests.

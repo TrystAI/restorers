@@ -24,6 +24,6 @@ jobs:
       - run: |
           yes | apt install git
           pip install -U pip
-          echo ${{ github.head_ref }}
+          echo ${{ github.base_ref }}
           pip install git+https://github.com/soumik12345/mirnetv2.git@${BRANCH_NAME} --no-cache-dir
           pytest .

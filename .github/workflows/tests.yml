@@ -22,7 +22,7 @@ jobs:
     container: tensorflow/tensorflow
     steps:
       - uses: actions/checkout@v2
-      - uses: nelonoel/branch-name@v1
+      - uses: nelonoel/branch-name@v1.0.1
       - run: |
           yes | apt install git
           pip install -U pip

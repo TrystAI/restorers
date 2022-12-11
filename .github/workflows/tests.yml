@@ -24,4 +24,4 @@ jobs:
       - run: |
           pip install -U pip
           pip install -e .
-          pytest -s
+          pytest -s .

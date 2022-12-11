@@ -1,46 +1,46 @@
-import tensorflow as tf
+from typing import Optional
 
-from transformers.tf_utils import shape_list
+import tensorflow as tf
 
 
 class ContextBlock(tf.keras.layers.Layer):
+    """
+    Context Block Layer.
+
+    Parameters:
+        channels (`int`): The channels of the feature map.
+    """
+
     def __init__(self, channels: int, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.channels = channels
 
-        self.mask_conv = tf.keras.layers.Conv2D(1, kernel_size=1, padding="same")
-
-        self.channel_add_conv_1 = tf.keras.layers.Conv2D(
-            self.channels, kernel_size=1, padding="same"
+        self.reshape = tf.keras.layers.Reshape(target_shape=(1, -1, self.channels))
+        self.mask_conv = tf.keras.Sequential(
+            [
+                tf.keras.layers.Conv2D(1, kernel_size=1, padding="same"),
+                tf.keras.layers.Reshape(target_shape=(1, 1, -1)),
+                tf.keras.layers.Softmax(axis=1, dtype="float32"),
+            ]
         )
-        self.channel_add_conv_2 = tf.keras.layers.Conv2D(
-            self.channels, kernel_size=1, padding="same"
+        self.transform = tf.keras.Sequential(
+            [
+                tf.keras.layers.Conv2D(self.channels, kernel_size=1, padding="same"),
+                tf.keras.layers.LeakyReLU(alpha=0.2),
+                tf.keras.layers.Conv2D(self.channels, kernel_size=1, padding="same"),
+            ]
         )
 
-        self.softmax = tf.keras.layers.Softmax(axis=1, dtype="float32")
-
-    def modeling(self, inputs):
-        _, height, width, channels = shape_list(inputs)
-        reshaped_inputs = tf.expand_dims(
-            tf.reshape(inputs, (-1, channels, height * width)), axis=1
-        )
-
+    def modeling(self, inputs: tf.Tensor) -> tf.Tensor:
         context_mask = self.mask_conv(inputs)
-        context_mask = tf.reshape(context_mask, (-1, height * width, 1))
-        context_mask = self.softmax(context_mask)
-        context_mask = tf.expand_dims(context_mask, axis=1)
-
-        context = tf.reshape(
-            tf.matmul(reshaped_inputs, context_mask), (-1, 1, 1, channels)
-        )
+        reshaped_features = self.reshape(inputs)
+        context = tf.matmul(context_mask, reshaped_features)
         return context
 
-    def call(self, inputs, *args, **kwargs):
+    def call(self, inputs: tf.Tensor, training: Optional[bool] = None) -> tf.Tensor:
         context = self.modeling(inputs)
-        channel_add_term = self.channel_add_conv_1(context)
-        channel_add_term = tf.nn.leaky_relu(channel_add_term, alpha=0.2)
-        channel_add_term = self.channel_add_conv_2(channel_add_term)
+        channel_add_term = self.transform(context)
         return inputs + channel_add_term
 
     def get_config(self):
@@ -48,27 +48,39 @@ class ContextBlock(tf.keras.layers.Layer):
 
 
 class ResidualContextBlock(tf.keras.layers.Layer):
+    """
+    Residual Context Block. This layer uses the context block and
+    applies residual connection on top of it.
+
+    Parameters:
+        channels (`int`): Number of channels of the feature map.
+        groups (`int`): Number of groups for the group conv layer.
+    """
+
     def __init__(self, channels: int, groups: int, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.channels = channels
         self.groups = groups
 
-        self.conv_1 = tf.keras.layers.Conv2D(
-            self.channels, kernel_size=3, padding="same", groups=self.groups
+        self.initial_conv = tf.keras.Sequential(
+            [
+                tf.keras.layers.Conv2D(
+                    self.channels, kernel_size=3, padding="same", groups=self.groups
+                ),
+                tf.keras.layers.LeakyReLU(alpha=0.2),
+                tf.keras.layers.Conv2D(
+                    self.channels, kernel_size=3, padding="same", groups=self.groups
+                ),
+            ]
         )
-        self.conv_2 = tf.keras.layers.Conv2D(
-            self.channels, kernel_size=3, padding="same", groups=self.groups
-        )
-
+        self.leaky_relu = tf.keras.layers.LeakyReLU(alpha=0.2)
         self.context_block = ContextBlock(channels=self.channels)
 
-    def call(self, inputs):
-        x = self.conv_1(inputs)
-        x = tf.nn.leaky_relu(x, alpha=0.2)
-        x = self.conv_2(x)
+    def call(self, inputs: tf.Tensor, training: Optional[bool] = None):
+        x = self.initial_conv(inputs)
         x = self.context_block(x)
-        x = tf.nn.leaky_relu(x, alpha=0.2)
+        x = self.leaky_relu(x)
         x = x + inputs
         return x
 

@@ -26,5 +26,5 @@ jobs:
       - run: |
           yes | apt install git
           pip install -U pip
-          pip install git+https://github.com/soumik12345/mirnetv2.git@${{ steps.branch-name.outputs.current_branch }}
+          sudo -H pip install git+https://github.com/soumik12345/mirnetv2.git@${{ steps.branch-name.outputs.current_branch }}
           pytest .

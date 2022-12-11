@@ -5,7 +5,15 @@ from .mrb import MultiScaleResidualBlock
 
 
 class RecursiveResidualGroup(tf.keras.layers.Layer):
-    def __init__(self,channels: int,num_mrb_blocks: int,channel_factor: float,groups: int,*args,**kwargs,):
+    def __init__(
+        self,
+        channels: int,
+        num_mrb_blocks: int,
+        channel_factor: float,
+        groups: int,
+        *args,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
 
         self.channels = channels
@@ -25,7 +33,7 @@ class RecursiveResidualGroup(tf.keras.layers.Layer):
             )
         )
 
-    def call(self, inputs, training:Optional[bool]=None):
+    def call(self, inputs, training: Optional[bool] = None):
         residual = inputs
         residual = self.layers(residual)
         residual = residual + inputs
@@ -48,7 +56,7 @@ class MirNetv2(tf.keras.Model):
         num_mrb_blocks: int,
         add_residual_connection: bool,
         *args,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
@@ -76,7 +84,9 @@ class MirNetv2(tf.keras.Model):
 
         self.conv_out = tf.keras.layers.Conv2D(3, kernel_size=3, padding="same")
 
-    def call(self, inputs, training: Optional[bool]=None, mask: Optional[bool]=None):
+    def call(
+        self, inputs, training: Optional[bool] = None, mask: Optional[bool] = None
+    ):
         shallow_features = self.conv_in(inputs)
         deep_features = self.rrg_block_1(shallow_features)
         deep_features = self.rrg_block_2(deep_features)

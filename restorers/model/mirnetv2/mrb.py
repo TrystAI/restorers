@@ -89,7 +89,7 @@ class MultiScaleResidualBlock(tf.keras.layers.Layer):
             self.channels, kernel_size=1, padding="same"
         )
 
-    def call(self, inputs: tf.Tensor, training:Optional[bool]=None):
+    def call(self, inputs: tf.Tensor, training: Optional[bool] = None):
         x_top = inputs
         x_middle = self.down_2(x_top)
         x_bottom = self.down_4_2(self.down_4_1(x_top))

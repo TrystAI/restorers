@@ -23,5 +23,5 @@ jobs:
       - uses: actions/checkout@v2
       - run: |
           pip install -U pip
-          pip install -e .
-          pytest -s .
+          pip install git+https://github.com/soumik12345/mirnetv2.git@${GITHUB_REF##*/}
+          pytest .

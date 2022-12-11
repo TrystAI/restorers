@@ -24,7 +24,6 @@ jobs:
       - run: |
           yes | apt install git
           pip install -U pip
-          BRANCH_NAME=$(echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})")
-          echo "${BRANCH_NAME}"
+          echo ${GITHUB_REF##*/}
           pip install git+https://github.com/soumik12345/mirnetv2.git@${BRANCH_NAME} --no-cache-dir
           pytest .

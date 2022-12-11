@@ -23,9 +23,8 @@ jobs:
       - uses: actions/checkout@v2
       - run: |
           yes | apt install git
-          pip install -U pip
           echo ${{ github.base_ref }}
-          pip install -e .
+          pip3 install -e .
           pwd
           ls -l
           pytest ./tests

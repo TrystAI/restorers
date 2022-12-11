@@ -24,5 +24,5 @@ jobs:
       - run: |
           yes | apt install git
           pip install -U pip
-          pip install git+https://github.com/soumik12345/mirnetv2.git@$(git rev-parse --abbrev-ref HEAD)
+          pip install git+https://github.com/soumik12345/mirnetv2.git@$(git rev-parse --abbrev-ref HEAD) --no-cache-dir
           pytest .

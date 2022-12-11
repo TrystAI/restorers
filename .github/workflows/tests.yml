@@ -18,6 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     container: tensorflow/tensorflow
     steps:
       - uses: actions/checkout@v2

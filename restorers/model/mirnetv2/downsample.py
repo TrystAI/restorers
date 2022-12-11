@@ -58,7 +58,7 @@ class DownSampleBlock(tf.keras.layers.Layer):
 
         self.layers = tf.keras.Sequential()
         for _ in range(int(np.log2(self.scale_factor))):
-            self.layers.append(DownBlock(channels, self.channel_factor))
+            self.layers.add(DownBlock(channels, self.channel_factor))
             channels = int(channels * self.channel_factor)
 
     def call(self, inputs: tf.Tensor, training: Optional[bool] = None):

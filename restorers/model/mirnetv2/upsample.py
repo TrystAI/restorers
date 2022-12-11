@@ -56,7 +56,7 @@ class UpSampleBlock(tf.keras.layers.Layer):
         self.channel_factor = channel_factor
         self.layers = tf.keras.Sequential()
         for _ in range(int(np.log2(scale_factor))):
-            self.layers.append(UpBlock(channels, channel_factor))
+            self.layers.add(UpBlock(channels, channel_factor))
             channels = int(channels // channel_factor)
 
     def call(self, inputs: tf.Tensor, training: Optional[bool] = None):

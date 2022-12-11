@@ -27,7 +27,7 @@ class RecursiveResidualGroup(tf.keras.layers.Layer):
                 for _ in range(self.num_mrb_blocks)
             ]
         )
-        self.layers.append(
+        self.layers.add(
             tf.keras.layers.Conv2D(
                 self.channels, kernel_size=3, strides=1, padding="same"
             )

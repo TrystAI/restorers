@@ -2,11 +2,10 @@ from abc import abstractmethod
 from typing import Union
 
 import tensorflow as tf
+import wandb
 from absl import logging
 from PIL import Image
 from tqdm.autonotebook import tqdm
-
-import wandb
 
 from .base_dataloader import DatasetFactory
 

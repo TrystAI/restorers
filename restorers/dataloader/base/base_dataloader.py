@@ -55,24 +55,24 @@ class DatasetFactory(ABC):
         return image
 
     def random_crop(
-        self, low_light_image: tf.Tensor, enhanced_image: tf.Tensor
+        self, input_image: tf.Tensor, enhanced_image: tf.Tensor
     ) -> Tuple[tf.Tensor]:
         """
         Function to apply random cropping.
 
         Args:
-            low_light_image (`tf.Tensor`): Low light image.
+            input_image (`tf.Tensor`): Low light image.
             enhanced_image (`tf.Tensor`): Enhanced image.
 
         Returns:
             A tuple of random cropped image.
         """
         # Check whether the image size is smaller than the original image
-        image_size = tf.minimum(self.image_size, tf.shape(low_light_image)[0])
+        image_size = tf.minimum(self.image_size, tf.shape(input_image)[0])
 
         # Concatenate the low light and enhanced image
         concatenated_image = tf.concat(
-            [low_light_image[None, ...], enhanced_image[None, ...]],
+            [input_image[None, ...], enhanced_image[None, ...]],
             axis=0,  # Note the batch dims
         )
 
@@ -80,68 +80,68 @@ class DatasetFactory(ABC):
         cropped_concatenated_image = tf.image.random_crop(
             concatenated_image, (2, image_size, image_size, 3)
         )
-        cropped_low_light_image, cropped_enhanced_image = tf.split(
+        cropped_input_image, cropped_enhanced_image = tf.split(
             cropped_concatenated_image, num_or_size_splits=2, axis=0
         )
 
         return (
-            cropped_low_light_image[0],
+            cropped_input_image[0],
             cropped_enhanced_image[0],
         )  # We can also squeeze the batch dims
 
     def resize(
-        self, low_light_image: tf.Tensor, enhanced_image: tf.Tensor
+        self, input_image: tf.Tensor, enhanced_image: tf.Tensor
     ) -> Tuple[tf.Tensor]:
         """
         Function to resize images.
 
         Args:
-            low_light_image (`tf.Tensor`): Low light image.
+            input_image (`tf.Tensor`): Low light image.
             enhanced_image (`tf.Tensor`): Enhanced image.
 
         Returns:
             A tuple of tf.Tensor resized images.
         """
         # Check whether the image size is smaller than the original image
-        image_size = tf.minimum(self.image_size, tf.shape(low_light_image)[0])
+        image_size = tf.minimum(self.image_size, tf.shape(input_image)[0])
 
-        low_light_image = tf.image.resize(
-            low_light_image,
+        input_image = tf.image.resize(
+            input_image,
             size=[image_size, image_size],
         )
         enhanced_image = tf.image.resize(
             enhanced_image,
             size=[image_size, image_size],
         )
-        return low_light_image, enhanced_image
+        return input_image, enhanced_image
 
     def load_image(
-        self, low_light_image_path: str, enhanced_image_path: str, apply_crop: bool
+        self, input_image_path: str, enhanced_image_path: str, apply_crop: bool
     ):
         """
         Mapping function for `tf.data.Dataset`. Loads the image from file path,
         applies `random_crop` based on a boolean flag.
 
         Args:
-            low_light_image_path (`str`): The file path for low light image.
+            input_image_path (`str`): The file path for low light image.
             enhanced_image_path (`str`): The file path for enhanced image.
             apply_crop (`bool`): Boolean flag to condition random cropping.
         """
         # Read the image off the file path.
-        low_light_image = self.read_image(low_light_image_path)
+        input_image = self.read_image(input_image_path)
         enhanced_image = self.read_image(enhanced_image_path)
 
         # Apply random cropping based on the boolean flag.
-        low_light_image, enhanced_image = (
-            self.random_crop(low_light_image, enhanced_image)
+        input_image, enhanced_image = (
+            self.random_crop(input_image, enhanced_image)
             if apply_crop
-            else self.resize(low_light_image, enhanced_image)
+            else self.resize(input_image, enhanced_image)
         )
-        return low_light_image, enhanced_image
+        return input_image, enhanced_image
 
     def build_dataset(
         self,
-        low_light_images: List[str],
+        input_images: List[str],
         enhanced_images: List[str],
         batch_size: int,
         apply_crop: bool,
@@ -151,7 +151,7 @@ class DatasetFactory(ABC):
         Function to build the dataset.
 
         Args:
-            low_light_images (`List[str]`): A list of image filenames.
+            input_images (`List[str]`): A list of image filenames.
             enhanced_images (`List[str]`): A list of image filenames.
             batch_size (`int`): Number of images in a single batch.
             apply_crop (`bool`): Boolean flag to condition cropping.
@@ -159,7 +159,7 @@ class DatasetFactory(ABC):
         """
         # Build a `tf.data.Dataset` from the filenames.
         dataset = tf.data.Dataset.from_tensor_slices(
-            (low_light_images, enhanced_images)
+            (input_images, enhanced_images)
         )
 
         # Build the mapping function and apply it to the dataset.
@@ -193,14 +193,14 @@ class DatasetFactory(ABC):
             A tuple of `tf.data.Dataset` for training and validation.
         """
         train_dataset = self.build_dataset(
-            low_light_images=self.train_low_light_images,
+            input_images=self.train_input_images,
             enhanced_images=self.train_enhanced_images,
             batch_size=batch_size,
             apply_crop=True,
             apply_augmentations=True,
         )
         val_dataset = self.build_dataset(
-            low_light_images=self.val_low_light_images,
+            input_images=self.val_input_images,
             enhanced_images=self.val_enhanced_images,
             batch_size=batch_size,
             apply_crop=False,

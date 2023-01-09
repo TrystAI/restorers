@@ -52,14 +52,14 @@ class LowLightDatasetFactory(DatasetFactory):
     def sanity_tests(self):
         try:
             self._create_data_table(
-                self.train_low_light_images, self.train_enhanced_images, split="Train"
+                self.train_input_images, self.train_enhanced_images, split="Train"
             )
         except:
             logging.warning("Train Set not found.")
 
         try:
             self._create_data_table(
-                self.val_low_light_images, self.val_enhanced_images, split="Validation"
+                self.val_input_images, self.val_enhanced_images, split="Validation"
             )
         except:
             logging.warning("Validation Set not found.")

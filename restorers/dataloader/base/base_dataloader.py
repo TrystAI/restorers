@@ -50,7 +50,7 @@ class DatasetFactory(ABC):
             tf.Tensor image in channel-last format.
         """
         image = tf.io.read_file(image_path)
-        image = tf.io.decode_image(image, channels=3)
+        image = tf.io.decode_image(image, channels=3, expand_animations=False)
         image = tf.cast(image, dtype=tf.float32) / self.normalization_factor
         return image
 

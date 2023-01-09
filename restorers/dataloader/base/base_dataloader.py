@@ -83,11 +83,19 @@ class DatasetFactory(ABC):
         cropped_input_image, cropped_enhanced_image = tf.split(
             cropped_concatenated_image, num_or_size_splits=2, axis=0
         )
+        
+        # We can also squeeze the batch dims
+        cropped_input_image = cropped_input_image[0]
+        cropped_enhanced_image = cropped_enhanced_image[0]
+        
+        # Ensuring the dataset tensor_spec is not None is the spatial dimensions
+        cropped_input_image.set_shape([self.image_size, self.image_size, 3])
+        cropped_enhanced_image.set_shape([self.image_size, self.image_size, 3])
 
         return (
-            cropped_input_image[0],
-            cropped_enhanced_image[0],
-        )  # We can also squeeze the batch dims
+            cropped_input_image,
+            cropped_enhanced_image,
+        )
 
     def resize(
         self, input_image: tf.Tensor, enhanced_image: tf.Tensor

@@ -71,31 +71,21 @@ class DatasetFactory(ABC):
         image_size = tf.minimum(self.image_size, tf.shape(input_image)[0])
 
         # Concatenate the low light and enhanced image
-        concatenated_image = tf.concat(
-            [input_image[None, ...], enhanced_image[None, ...]],
-            axis=0,  # Note the batch dims
-        )
+        concatenated_image = tf.concat([input_image, enhanced_image], axis=-1)
 
         # Apply same *random* crop to the concantenated image and split the stack
         cropped_concatenated_image = tf.image.random_crop(
-            concatenated_image, (2, image_size, image_size, 3)
+            concatenated_image, (image_size, image_size, 6)
         )
         cropped_input_image, cropped_enhanced_image = tf.split(
-            cropped_concatenated_image, num_or_size_splits=2, axis=0
+            cropped_concatenated_image, num_or_size_splits=2, axis=-1
         )
-        
-        # We can also squeeze the batch dims
-        cropped_input_image = cropped_input_image[0]
-        cropped_enhanced_image = cropped_enhanced_image[0]
-        
+
         # Ensuring the dataset tensor_spec is not None is the spatial dimensions
         cropped_input_image.set_shape([self.image_size, self.image_size, 3])
         cropped_enhanced_image.set_shape([self.image_size, self.image_size, 3])
 
-        return (
-            cropped_input_image,
-            cropped_enhanced_image,
-        )
+        return cropped_input_image, cropped_enhanced_image
 
     def resize(
         self, input_image: tf.Tensor, enhanced_image: tf.Tensor
@@ -121,6 +111,11 @@ class DatasetFactory(ABC):
             enhanced_image,
             size=[image_size, image_size],
         )
+
+        # Ensuring the dataset tensor_spec is not None is the spatial dimensions
+        input_image.set_shape([self.image_size, self.image_size, 3])
+        enhanced_image.set_shape([self.image_size, self.image_size, 3])
+
         return input_image, enhanced_image
 
     def load_image(
@@ -166,9 +161,7 @@ class DatasetFactory(ABC):
             apply_augmentations (`bool`): Boolean flag to condition augmentations.
         """
         # Build a `tf.data.Dataset` from the filenames.
-        dataset = tf.data.Dataset.from_tensor_slices(
-            (input_images, enhanced_images)
-        )
+        dataset = tf.data.Dataset.from_tensor_slices((input_images, enhanced_images))
 
         # Build the mapping function and apply it to the dataset.
         map_fn = partial(self.load_image, apply_crop=apply_crop)

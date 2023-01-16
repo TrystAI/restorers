@@ -6,8 +6,8 @@ import tensorflow as tf
 from restorers.dataloader import LOLDataLoader, MITAdobe5KDataLoader
 
 
-class LowLightDataLoaderTester(unittest.TestCase) -> None:
-    def test_lol_dataloader(self):
+class LowLightDataLoaderTester(unittest.TestCase):
+    def test_lol_dataloader(self) -> None:
         data_loader = LOLDataLoader(
             image_size=128,
             bit_depth=8,

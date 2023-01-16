@@ -1,5 +1,5 @@
-import unittest
 import shutil
+import unittest
 
 import tensorflow as tf
 
@@ -18,9 +18,13 @@ class LowLightDataLoaderTester(unittest.TestCase):
         self.assertEqual(len(data_loader), 485)
         train_dataset, val_dataset = data_loader.get_datasets(batch_size=1)
         x, y = next(iter(train_dataset))
+        self.assertEqual(tuple(train_dataset.element_spec[0].shape), (1, 128, 128, 3))
+        self.assertEqual(tuple(train_dataset.element_spec[1].shape), (1, 128, 128, 3))
         self.assertEqual(x.shape, (1, 128, 128, 3))
         self.assertEqual(y.shape, (1, 128, 128, 3))
         x, y = next(iter(val_dataset))
+        self.assertEqual(tuple(val_dataset.element_spec[0].shape), (1, 128, 128, 3))
+        self.assertEqual(tuple(val_dataset.element_spec[1].shape), (1, 128, 128, 3))
         self.assertEqual(x.shape, (1, 128, 128, 3))
         self.assertEqual(y.shape, (1, 128, 128, 3))
         shutil.rmtree("./artifacts")
@@ -36,9 +40,13 @@ class LowLightDataLoaderTester(unittest.TestCase):
         self.assertEqual(len(data_loader), 5000)
         train_dataset, val_dataset = data_loader.get_datasets(batch_size=1)
         x, y = next(iter(train_dataset))
+        self.assertEqual(tuple(train_dataset.element_spec[0].shape), (1, 128, 128, 3))
+        self.assertEqual(tuple(train_dataset.element_spec[1].shape), (1, 128, 128, 3))
         self.assertEqual(x.shape, (1, 128, 128, 3))
         self.assertEqual(y.shape, (1, 128, 128, 3))
         x, y = next(iter(val_dataset))
+        self.assertEqual(tuple(val_dataset.element_spec[0].shape), (1, 128, 128, 3))
+        self.assertEqual(tuple(val_dataset.element_spec[1].shape), (1, 128, 128, 3))
         self.assertEqual(x.shape, (1, 128, 128, 3))
         self.assertEqual(y.shape, (1, 128, 128, 3))
         shutil.rmtree("./artifacts")

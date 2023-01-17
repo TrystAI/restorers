@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Dict
 
 import tensorflow as tf
 
@@ -14,7 +14,7 @@ class RecursiveResidualGroup(tf.keras.layers.Layer):
         groups: int,
         *args,
         **kwargs,
-    ):
+    ) -> None:
         super().__init__(*args, **kwargs)
 
         self.channels = channels
@@ -34,13 +34,13 @@ class RecursiveResidualGroup(tf.keras.layers.Layer):
             )
         )
 
-    def call(self, inputs, training: Optional[bool] = None):
+    def call(self, inputs, training: Optional[bool] = None) -> tf.Tensor:
         residual = inputs
         residual = self.layers(residual)
         residual = residual + inputs
         return residual
 
-    def get_config(self):
+    def get_config(self) -> Dict:
         return {
             "channels": self.channels,
             "num_mrb_blocks": self.num_mrb_blocks,
@@ -58,7 +58,7 @@ class MirNetv2(tf.keras.Model):
         add_residual_connection: bool,
         *args,
         **kwargs,
-    ):
+    ) -> None:
         super().__init__(*args, **kwargs)
 
         self.channels = channels
@@ -87,7 +87,7 @@ class MirNetv2(tf.keras.Model):
 
     def call(
         self, inputs, training: Optional[bool] = None, mask: Optional[bool] = None
-    ):
+    ) -> tf.Tensor:
         shallow_features = self.conv_in(inputs)
         deep_features = self.rrg_block_1(shallow_features)
         deep_features = self.rrg_block_2(deep_features)
@@ -97,7 +97,7 @@ class MirNetv2(tf.keras.Model):
         output = output + inputs if self.add_residual_connection else output
         return output
 
-    def get_config(self):
+    def get_config(self) -> Dict:
         return {
             "channels": self.channels,
             "num_mrb_blocks": self.num_mrb_blocks,

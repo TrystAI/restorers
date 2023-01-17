@@ -1,6 +1,10 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "restorers"
-version = "0.0.1"
+dynamic = ["version"]
 description = "Image Restoration toolkit in TensorFlow"
 readme = "README.md"
 classifiers = [
@@ -28,6 +32,4 @@ dynamic = ["version"]
 homepage = "https://github.com/soumik12345/restorers"
 repository = "https://github.com/soumik12345/restorers"
 
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Dict
 
 import tensorflow as tf
 
@@ -11,7 +11,7 @@ class ContextBlock(tf.keras.layers.Layer):
         channels (`int`): The channels of the feature map.
     """
 
-    def __init__(self, channels: int, *args, **kwargs):
+    def __init__(self, channels: int, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
         self.channels = channels
@@ -43,7 +43,7 @@ class ContextBlock(tf.keras.layers.Layer):
         channel_add_term = self.transform(context)
         return inputs + channel_add_term
 
-    def get_config(self):
+    def get_config(self) -> Dict:
         return {"channels": self.channels}
 
 
@@ -57,7 +57,7 @@ class ResidualContextBlock(tf.keras.layers.Layer):
         groups (`int`): Number of groups for the group conv layer.
     """
 
-    def __init__(self, channels: int, groups: int, *args, **kwargs):
+    def __init__(self, channels: int, groups: int, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
         self.channels = channels
@@ -77,12 +77,12 @@ class ResidualContextBlock(tf.keras.layers.Layer):
         self.leaky_relu = tf.keras.layers.LeakyReLU(alpha=0.2)
         self.context_block = ContextBlock(channels=self.channels)
 
-    def call(self, inputs: tf.Tensor, training: Optional[bool] = None):
+    def call(self, inputs: tf.Tensor, training: Optional[bool] = None) -> tf.Tensor:
         x = self.initial_conv(inputs)
         x = self.context_block(x)
         x = self.leaky_relu(x)
         x = x + inputs
         return x
 
-    def get_config(self):
+    def get_config(self) -> Dict:
         return {"channels": self.channels, "groups": self.groups}

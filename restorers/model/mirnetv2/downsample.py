@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Dict
 
 import numpy as np
 import tensorflow as tf
@@ -13,7 +13,7 @@ class DownBlock(tf.keras.layers.Layer):
         channel_factor (`float`): Ratio of downsampling.
     """
 
-    def __init__(self, channels: int, channel_factor: float, *args, **kwargs):
+    def __init__(self, channels: int, channel_factor: float, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
         self.channels = channels
@@ -33,7 +33,7 @@ class DownBlock(tf.keras.layers.Layer):
     def call(self, inputs: tf.Tensor, training: Optional[bool] = None) -> tf.Tensor:
         return self.downsample(inputs)
 
-    def get_config(self):
+    def get_config(self) -> Dict:
         return {"channels": self.channels, "channel_factor": self.channel_factor}
 
 
@@ -49,7 +49,7 @@ class DownSampleBlock(tf.keras.layers.Layer):
 
     def __init__(
         self, channels: int, scale_factor: float, channel_factor: float, *args, **kwargs
-    ):
+    ) -> None:
         super().__init__(*args, **kwargs)
 
         self.channels = channels
@@ -61,10 +61,10 @@ class DownSampleBlock(tf.keras.layers.Layer):
             self.layers.add(DownBlock(channels, self.channel_factor))
             channels = int(channels * self.channel_factor)
 
-    def call(self, inputs: tf.Tensor, training: Optional[bool] = None):
+    def call(self, inputs: tf.Tensor, training: Optional[bool] = None) -> tf.Tensor:
         return self.layers(inputs)
 
-    def get_config(self):
+    def get_config(self) -> Dict:
         return {
             "channels": self.channels,
             "scale_factor": self.scale_factor,

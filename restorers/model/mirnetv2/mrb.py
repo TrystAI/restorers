@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Dict
 
 import tensorflow as tf
 
@@ -20,7 +20,7 @@ class MultiScaleResidualBlock(tf.keras.layers.Layer):
 
     def __init__(
         self, channels: int, channel_factor: float, groups: int, *args, **kwargs
-    ):
+    ) -> None:
         super().__init__(*args, **kwargs)
 
         self.channels = channels
@@ -90,7 +90,7 @@ class MultiScaleResidualBlock(tf.keras.layers.Layer):
             self.channels, kernel_size=1, padding="same"
         )
 
-    def call(self, inputs: tf.Tensor, training: Optional[bool] = None):
+    def call(self, inputs: tf.Tensor, training: Optional[bool] = None) -> tf.Tensor:
         x_top = inputs
         x_middle = self.down_2(x_top)
         x_bottom = self.down_4_2(self.down_4_1(x_top))
@@ -114,7 +114,7 @@ class MultiScaleResidualBlock(tf.keras.layers.Layer):
 
         return output
 
-    def get_config(self):
+    def get_config(self) -> Dict:
         return {
             "channels": self.channels,
             "groups": self.groups,

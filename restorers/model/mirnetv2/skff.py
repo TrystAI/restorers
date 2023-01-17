@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Dict
 
 import tensorflow as tf
 
@@ -54,5 +54,5 @@ class SelectiveKernelFeatureFusion(tf.keras.layers.Layer):
         )
         return selected_features
 
-    def get_config(self):
+    def get_config(self) -> Dict:
         return {"channels": self.channels}

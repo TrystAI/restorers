@@ -34,7 +34,7 @@ class RecursiveResidualGroup(tf.keras.layers.Layer):
             )
         )
 
-    def call(self, inputs, training: Optional[bool] = None) -> tf.Tensor:
+    def call(self, inputs: tf.Tensor, training: Optional[bool] = None) -> tf.Tensor:
         residual = inputs
         residual = self.layers(residual)
         residual = residual + inputs
@@ -86,7 +86,10 @@ class MirNetv2(tf.keras.Model):
         self.conv_out = tf.keras.layers.Conv2D(3, kernel_size=3, padding="same")
 
     def call(
-        self, inputs, training: Optional[bool] = None, mask: Optional[bool] = None
+        self,
+        inputs: tf.Tensor,
+        training: Optional[bool] = None,
+        mask: Optional[bool] = None,
     ) -> tf.Tensor:
         shallow_features = self.conv_in(inputs)
         deep_features = self.rrg_block_1(shallow_features)

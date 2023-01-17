@@ -25,9 +25,6 @@ dependencies = [
     "wandb>=0.13.6"
 ]
 
-# This is set automatically by flit using `etils.__version__`
-dynamic = ["version"]
-
 [project.urls]
 homepage = "https://github.com/soumik12345/restorers"
 repository = "https://github.com/soumik12345/restorers"

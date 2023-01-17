@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Dict
 
 import numpy as np
 import tensorflow as tf
@@ -13,7 +13,7 @@ class UpBlock(tf.keras.layers.Layer):
         channel_factor (`float`): Ratio of channels.
     """
 
-    def __init__(self, channels: int, channel_factor: float, *args, **kwargs):
+    def __init__(self, channels: int, channel_factor: float, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
         self.channels = channels
@@ -31,10 +31,10 @@ class UpBlock(tf.keras.layers.Layer):
             ]
         )
 
-    def call(self, inputs: tf.Tensor, training: Optional[bool] = None):
+    def call(self, inputs: tf.Tensor, training: Optional[bool] = None) -> tf.Tensor:
         return self.upsample(inputs)
 
-    def get_config(self):
+    def get_config(self) -> Dict:
         return {"channels": self.channels, "channel_factor": self.channel_factor}
 
 
@@ -49,7 +49,7 @@ class UpSampleBlock(tf.keras.layers.Layer):
 
     def __init__(
         self, channels: int, scale_factor: float, channel_factor: float, *args, **kwargs
-    ):
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.channels = channels
         self.scale_factor = scale_factor
@@ -59,10 +59,10 @@ class UpSampleBlock(tf.keras.layers.Layer):
             self.layers.add(UpBlock(channels, channel_factor))
             channels = int(channels // channel_factor)
 
-    def call(self, inputs: tf.Tensor, training: Optional[bool] = None):
+    def call(self, inputs: tf.Tensor, training: Optional[bool] = None) -> tf.Tensor:
         return self.layers(inputs)
 
-    def get_config(self):
+    def get_config(self) -> Dict:
         return {
             "channels": self.channels,
             "scale_factor": self.scale_factor,

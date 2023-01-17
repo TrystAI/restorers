@@ -26,7 +26,7 @@ class DatasetFactory(ABC):
         bit_depth: int,
         val_split: float,
         visualize_on_wandb: bool,
-    ):
+    ) -> None:
         self.image_size = image_size
         self.normalization_factor = (2**bit_depth) - 1
         self.fetch_dataset(val_split, visualize_on_wandb)
@@ -149,7 +149,7 @@ class DatasetFactory(ABC):
         batch_size: int,
         apply_crop: bool,
         apply_augmentations: bool,
-    ):
+    ) -> tf.data.Dataset:
         """
         Function to build the dataset.
 
@@ -183,7 +183,7 @@ class DatasetFactory(ABC):
         dataset = dataset.batch(batch_size, drop_remainder=True)
         return dataset.prefetch(_AUTOTUNE)
 
-    def get_datasets(self, batch_size: int) -> tf.data.Dataset:
+    def get_datasets(self, batch_size: int) -> Tuple[tf.data.Dataset]:
         """
         Function to retrieve a dataset.
 

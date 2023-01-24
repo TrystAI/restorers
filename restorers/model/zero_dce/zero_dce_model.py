@@ -68,12 +68,8 @@ class ZeroDCE(tf.keras.Model):
         with tf.GradientTape() as tape:
             output = self.deep_curve_estimation(data)
             losses = self.compute_losses(data, output)
-        gradients = tape.gradient(
-            losses["total_loss"], self.deep_curve_estimation.trainable_weights
-        )
-        self.optimizer.apply_gradients(
-            zip(gradients, self.deep_curve_estimation.trainable_weights)
-        )
+        gradients = tape.gradient(losses["total_loss"], self.trainable_weights)
+        self.optimizer.apply_gradients(zip(gradients, self.trainable_weights))
         return losses
 
     def test_step(self, data):

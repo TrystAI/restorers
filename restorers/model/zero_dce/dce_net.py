@@ -62,3 +62,9 @@ class DeepCurveEstimationNetwork(tf.keras.Model):
         out_6 = self.convolution_6(tf.concat([out_2, out_5], axis=-1))
         alphas_stacked = self.convolution_7(tf.concat([out_1, out_6], axis=-1))
         return alphas_stacked
+
+    def get_config(self) -> Dict:
+        return {
+            "num_intermediate_filters": self.num_intermediate_filters,
+            "num_iterations": self.num_iterations,
+        }

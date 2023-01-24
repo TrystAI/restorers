@@ -73,3 +73,9 @@ class ZeroDCE(tf.keras.Model):
     def test_step(self, data):
         output = self.dce_net(data)
         return self.compute_losses(data, output)
+
+    def get_config(self) -> Dict:
+        return {
+            "num_intermediate_filters": self.num_intermediate_filters,
+            "num_iterations": self.num_iterations,
+        }

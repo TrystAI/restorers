@@ -71,7 +71,7 @@ def main(_):
 
     strategy = initialize_device()
     batch_size = (
-        experiment_configs.data_loader_configs.local_batch_size
+        FLAGS.experiment_configs.data_loader_configs.local_batch_size
         * strategy.num_replicas_in_sync
     )
     wandb.config.global_batch_size = batch_size
@@ -82,11 +82,13 @@ def main(_):
         image = tf.image.resize(
             images=image,
             size=[
-                experiment_configs.data_loader_configs.image_size,
-                experiment_configs.data_loader_configs.image_size,
+                FLAGS.experiment_configs.data_loader_configs.image_size,
+                FLAGS.experiment_configs.data_loader_configs.image_size,
             ],
         )
-        image = image / ((2**experiment_configs.data_loader_configs.bit_depth) - 1)
+        image = image / (
+            (2**FLAGS.experiment_configs.data_loader_configs.bit_depth) - 1
+        )
         return image
 
     def data_generator(low_light_images):
@@ -96,7 +98,8 @@ def main(_):
         return dataset
 
     artifact = wandb.use_artifact(
-        experiment_configs.data_loader_configs.dataset_artifact_address, type="dataset"
+        FLAGS.experiment_configs.data_loader_configs.dataset_artifact_address,
+        type="dataset",
     )
     artifact_dir = artifact.download()
 
@@ -104,7 +107,7 @@ def main(_):
         glob(os.path.join(artifact_dir, "our485", "low", "*"))
     )
     num_train_images = int(
-        (1 - experiment_configs.data_loader_configs.val_split)
+        (1 - FLAGS.experiment_configs.data_loader_configs.val_split)
         * len(train_low_light_images)
     )
     val_low_light_images = train_low_light_images[num_train_images:]
@@ -115,19 +118,19 @@ def main(_):
 
     with strategy.scope():
         model = ZeroDCE(
-            num_intermediate_filters=experiment_configs.model_configs.num_intermediate_filters,
-            num_iterations=experiment_configs.model_configs.num_iterations,
+            num_intermediate_filters=FLAGS.experiment_configs.model_configs.num_intermediate_filters,
+            num_iterations=FLAGS.experiment_configs.model_configs.num_iterations,
         )
         model.compile(
             optimizer=tf.keras.optimizers.Adam(
-                learning_rate=experiment_configs.training_configs.learning_rate
+                learning_rate=FLAGS.experiment_configs.training_configs.learning_rate
             )
         )
 
     callbacks = [
         get_model_checkpoint_callback(
             filepath="checkpoint",
-            save_best_only=experiment_configs.training_configs.save_best_checkpoint_only,
+            save_best_only=FLAGS.experiment_configs.training_configs.save_best_checkpoint_only,
             using_wandb=True,
         )
     ]
@@ -136,7 +139,7 @@ def main(_):
     model.fit(
         train_dataset,
         validation_data=val_dataset,
-        epochs=experiment_configs.training_configs.epochs,
+        epochs=FLAGS.experiment_configs.training_configs.epochs,
         callbacks=callbacks,
     )
 

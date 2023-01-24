@@ -2,7 +2,7 @@ from typing import Dict
 
 import tensorflow as tf
 
-from .dce_net import DeepCurveEstimationNetwork
+from .dce_layer import DeepCurveEstimationLayer
 from restorers.losses import SpatialConsistencyLoss
 from restorers.losses.zero_reference import (
     color_constancy,
@@ -20,7 +20,7 @@ class ZeroDCE(tf.keras.Model):
         self.num_intermediate_filters = num_intermediate_filters
         self.num_iterations = num_iterations
 
-        self.dce_net = DeepCurveEstimationNetwork(
+        self.deep_curve_estimation = DeepCurveEstimationLayer(
             num_intermediate_filters=self.num_intermediate_filters,
             num_iterations=self.num_iterations,
         )
@@ -39,7 +39,7 @@ class ZeroDCE(tf.keras.Model):
         return enhanced_image
 
     def call(self, data):
-        dce_net_output = self.dce_net(data)
+        dce_net_output = self.deep_curve_estimation(data)
         return self.get_enhanced_image(data, dce_net_output)
 
     def compute_losses(self, data, output):
@@ -66,14 +66,14 @@ class ZeroDCE(tf.keras.Model):
 
     def train_step(self, data):
         with tf.GradientTape() as tape:
-            output = self.dce_net(data)
+            output = self.deep_curve_estimation(data)
             losses = self.compute_losses(data, output)
-        gradients = tape.gradient(losses["total_loss"], self.dce_net.trainable_weights)
-        self.optimizer.apply_gradients(zip(gradients, self.dce_net.trainable_weights))
+        gradients = tape.gradient(losses["total_loss"], self.deep_curve_estimation.trainable_weights)
+        self.optimizer.apply_gradients(zip(gradients, self.deep_curve_estimation.trainable_weights))
         return losses
 
     def test_step(self, data):
-        output = self.dce_net(data)
+        output = self.deep_curve_estimation(data)
         return self.compute_losses(data, output)
 
     def get_config(self) -> Dict:

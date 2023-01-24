@@ -3,7 +3,7 @@ from typing import Dict
 import tensorflow as tf
 
 
-class DeepCurveEstimationNetwork(tf.keras.Model):
+class DeepCurveEstimationLayer(tf.keras.layers.Layer):
     def __init__(
         self, num_intermediate_filters: int, num_iterations: int, *args, **kwargs
     ) -> None:

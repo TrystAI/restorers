@@ -1,2 +1,2 @@
-from .dce_net import DeepCurveEstimationNetwork
+from .dce_layer import DeepCurveEstimationLayer
 from .zero_dce_model import ZeroDCE

@@ -81,8 +81,10 @@ class ZeroDCE(tf.keras.Model):
             "num_intermediate_filters": self.num_intermediate_filters,
             "num_iterations": self.num_iterations,
         }
-    
+
     def save(self, filepath, *args, **kwargs):
         input_tensor = tf.keras.Input(shape=[None, None, 3])
-        saved_model = tf.keras.Model(inputs=input_tensor, outputs=self.call(input_tensor))
+        saved_model = tf.keras.Model(
+            inputs=input_tensor, outputs=self.call(input_tensor)
+        )
         saved_model.save(filepath, *args, **kwargs)

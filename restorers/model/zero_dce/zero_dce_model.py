@@ -1,3 +1,5 @@
+from typing import Dict
+
 import tensorflow as tf
 
 from .dce_net import DeepCurveEstimationNetwork

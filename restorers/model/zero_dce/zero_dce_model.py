@@ -46,8 +46,8 @@ class ZeroDCE(tf.keras.Model):
         loss_spatial_constancy = tf.reduce_mean(
             self.spatial_constancy_loss(enhanced_image, data)
         )
-        loss_color_constancy = 5 * tf.reduce_mean(color_constancy_loss(enhanced_image))
-        loss_exposure = 10 * tf.reduce_mean(exposure_loss(enhanced_image))
+        loss_color_constancy = 5 * tf.reduce_mean(color_constancy(enhanced_image))
+        loss_exposure = 10 * tf.reduce_mean(exposure_control_loss(enhanced_image))
         total_loss = (
             loss_illumination
             + loss_spatial_constancy
@@ -58,8 +58,8 @@ class ZeroDCE(tf.keras.Model):
             "total_loss": total_loss,
             "illumination_smoothness_loss": loss_illumination,
             "spatial_constancy_loss": loss_spatial_constancy,
-            "color_constancy_loss": loss_color_constancy,
-            "exposure_loss": loss_exposure,
+            "color_constancy": loss_color_constancy,
+            "exposure_control_loss": loss_exposure,
         }
 
     def train_step(self, data):

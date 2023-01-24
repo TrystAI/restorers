@@ -86,7 +86,7 @@ def main(_):
                 experiment_configs.data_loader_configs.image_size,
             ],
         )
-        image = image / 255.0
+        image = image / ((2 ** experiment_configs.data_loader_configs.bit_depth) - 1)
         return image
 
     def data_generator(low_light_images):

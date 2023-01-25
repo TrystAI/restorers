@@ -28,6 +28,9 @@ def get_training_configs() -> ml_collections.ConfigDict:
 
     config.global_batch_size = 16
     config.learning_rate = 1e-4
+    config.weight_exposure_loss = 1.0
+    config.weight_color_constancy_loss = 0.5
+    config.weight_illumination_smoothness_loss = 20
     config.save_best_checkpoint_only = False
     config.num_evaluation_batches = 2
     config.epochs = 100

@@ -123,7 +123,10 @@ def main(_):
         )
         model.compile(
             optimizer=tf.keras.optimizers.Adam(
-                learning_rate=FLAGS.experiment_configs.training_configs.learning_rate
+                learning_rate=FLAGS.experiment_configs.training_configs.learning_rate,
+                weight_exposure_loss=FLAGS.experiment_configs.training_configs.weight_exposure_loss,
+                weight_color_constancy_loss=FLAGS.experiment_configs.training_configs.weight_color_constancy_loss,
+                weight_illumination_smoothness_loss=FLAGS.experiment_configs.training_configs.weight_illumination_smoothness_loss,
             )
         )
 

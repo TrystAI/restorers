@@ -4,10 +4,10 @@ import ml_collections
 def get_dataloader_configs() -> ml_collections.ConfigDict:
     config = ml_collections.ConfigDict()
 
-    config.image_size = 256
+    config.image_size = 512
     config.bit_depth = 8
     config.val_split = 0.2
-    config.local_batch_size = 16
+    config.local_batch_size = 8
     config.visualize_on_wandb = False
     config.dataset_artifact_address = "ml-colabs/mirnet-v2/lol-dataset:v0"
 
@@ -26,7 +26,7 @@ def get_model_configs() -> ml_collections.ConfigDict:
 def get_training_configs() -> ml_collections.ConfigDict:
     config = ml_collections.ConfigDict()
 
-    config.global_batch_size = 16
+    config.global_batch_size = 8
     config.learning_rate = 1e-4
     config.weight_exposure_loss = 1.0
     config.weight_color_constancy_loss = 0.5

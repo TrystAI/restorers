@@ -54,24 +54,17 @@ class ZeroDCE(tf.keras.Model):
 
     def compute_losses(self, data, output):
         enhanced_image = self.get_enhanced_image(data, output)
-        loss_illumination = (
-            self.weight_illumination_smoothness_loss
-            * illumination_smoothness_loss(output)
-        )
+        loss_illumination = illumination_smoothness_loss(output)
         loss_spatial_constancy = tf.reduce_mean(
             self.spatial_constancy_loss(enhanced_image, data)
         )
-        loss_color_constancy = self.weight_color_constancy_loss * tf.reduce_mean(
-            color_constancy(enhanced_image)
-        )
-        loss_exposure = self.weight_exposure_loss * tf.reduce_mean(
-            exposure_control_loss(enhanced_image)
-        )
+        loss_color_constancy = tf.reduce_mean(color_constancy(enhanced_image))
+        loss_exposure = tf.reduce_mean(exposure_control_loss(enhanced_image))
         total_loss = (
-            loss_illumination
-            + loss_spatial_constancy
-            + loss_color_constancy
-            + loss_exposure
+            loss_spatial_constancy
+            + self.weight_illumination_smoothness_loss * loss_illumination
+            + self.weight_color_constancy_loss * loss_color_constancy
+            + self.weight_exposure_loss * loss_exposure
         )
         return {
             "total_loss": total_loss,

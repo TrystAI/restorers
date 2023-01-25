@@ -25,8 +25,18 @@ class ZeroDCE(tf.keras.Model):
             num_iterations=self.num_iterations,
         )
 
-    def compile(self, *args, **kwargs):
+    def compile(
+        self,
+        weight_exposure_loss: float,
+        weight_color_constancy_loss: float,
+        weight_illumination_smoothness_loss: float,
+        *args,
+        **kwargs
+    ):
         super().compile(*args, **kwargs)
+        self.weight_exposure_loss = weight_exposure_loss
+        self.weight_color_constancy_loss = weight_color_constancy_loss
+        self.weight_illumination_smoothness_loss = weight_illumination_smoothness_loss
         self.spatial_constancy_loss = SpatialConsistencyLoss()
 
     def get_enhanced_image(self, data, output):
@@ -44,12 +54,19 @@ class ZeroDCE(tf.keras.Model):
 
     def compute_losses(self, data, output):
         enhanced_image = self.get_enhanced_image(data, output)
-        loss_illumination = 200 * illumination_smoothness_loss(output)
+        loss_illumination = (
+            self.weight_illumination_smoothness_loss
+            * illumination_smoothness_loss(output)
+        )
         loss_spatial_constancy = tf.reduce_mean(
             self.spatial_constancy_loss(enhanced_image, data)
         )
-        loss_color_constancy = 5 * tf.reduce_mean(color_constancy(enhanced_image))
-        loss_exposure = 10 * tf.reduce_mean(exposure_control_loss(enhanced_image))
+        loss_color_constancy = self.weight_color_constancy_loss * tf.reduce_mean(
+            color_constancy(enhanced_image)
+        )
+        loss_exposure = self.weight_exposure_loss * tf.reduce_mean(
+            exposure_control_loss(enhanced_image)
+        )
         total_loss = (
             loss_illumination
             + loss_spatial_constancy

@@ -39,3 +39,13 @@ def scale_tensor(tensor):
     _min = tf.math.reduce_min(tensor)
     _max = tf.math.reduce_max(tensor)
     return (tensor - _min) / (_max - _min)
+
+
+def plot_results(images, titles, figure_size=(12, 12)):
+    """A simple utility for plotting the results"""
+    fig = plt.figure(figsize=figure_size)
+    for i in range(len(images)):
+        fig.add_subplot(1, len(images), i + 1).set_title(titles[i])
+        _ = plt.imshow(images[i])
+        plt.axis("off")
+    plt.show()

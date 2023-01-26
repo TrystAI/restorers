@@ -2,7 +2,7 @@ import tensorflow as tf
 
 
 class SpatialConsistencyLoss(tf.keras.losses.Loss):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(reduction="none")
 
         self.left_kernel = tf.constant(
@@ -18,7 +18,7 @@ class SpatialConsistencyLoss(tf.keras.losses.Loss):
             [[[[0, 0, 0]], [[0, 1, 0]], [[0, -1, 0]]]], dtype=tf.float32
         )
 
-    def call(self, y_true, y_pred):
+    def call(self, y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
         original_mean = tf.reduce_mean(y_true, 3, keepdims=True)
         enhanced_mean = tf.reduce_mean(y_pred, 3, keepdims=True)
         original_pool = tf.nn.avg_pool2d(

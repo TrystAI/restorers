@@ -1,7 +1,7 @@
 isort==5.10.1
 black==22.6.0
 pytest==7.1.2
-matplotlib>=3.6.3
+matplotlib>=3.5.3
 ml-collections==0.1.1
 pillow
 tqdm

@@ -55,7 +55,9 @@ class DeepCurveEstimationLayer(tf.keras.layers.Layer):
             activation="tanh",
         )
 
-    def call(self, inputs, training=None, mask=None):
+    def call(
+        self, inputs: tf.Tensor, training=None, mask=None, *args, **kwargs
+    ) -> tf.Tensor:
         out_1 = self.convolution_1(inputs)
         out_2 = self.convolution_2(out_1)
         out_3 = self.convolution_3(out_2)

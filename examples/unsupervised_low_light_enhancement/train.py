@@ -18,18 +18,14 @@ import os
 from glob import glob
 
 import tensorflow as tf
-
 import wandb
-from wandb.keras import WandbMetricsLogger
-
 from absl import app, flags, logging
+from low_light_config import get_config
 from ml_collections.config_flags import config_flags
+from wandb.keras import WandbMetricsLogger
 
 from restorers.model.zero_dce import ZeroDCE
 from restorers.utils import get_model_checkpoint_callback, initialize_device
-
-from low_light_config import get_config
-
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string(
@@ -52,7 +48,7 @@ flags.DEFINE_integer(
 config_flags.DEFINE_config_file("experiment_configs")
 
 
-def main(_):
+def main(_) -> None:
     using_wandb = False
     if FLAGS.wandb_project_name is not None:
         try:
@@ -76,7 +72,7 @@ def main(_):
     )
     wandb.config.global_batch_size = batch_size
 
-    def load_data(image_path):
+    def load_data(image_path: str) -> tf.Tensor:
         image = tf.io.read_file(image_path)
         image = tf.image.decode_png(image, channels=3)
         image = tf.image.resize(
@@ -91,7 +87,7 @@ def main(_):
         )
         return image
 
-    def data_generator(low_light_images):
+    def data_generator(low_light_images: tf.TypeSpec) -> tf.data.Dataset:
         dataset = tf.data.Dataset.from_tensor_slices((low_light_images))
         dataset = dataset.map(load_data, num_parallel_calls=tf.data.AUTOTUNE)
         dataset = dataset.batch(batch_size, drop_remainder=True)

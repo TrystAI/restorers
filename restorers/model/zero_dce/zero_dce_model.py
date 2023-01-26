@@ -1,8 +1,7 @@
-from typing import Dict
+from typing import Dict, Tuple
 
 import tensorflow as tf
 
-from .dce_layer import DeepCurveEstimationLayer
 from restorers.losses import SpatialConsistencyLoss
 from restorers.losses.zero_reference import (
     color_constancy,
@@ -10,11 +9,13 @@ from restorers.losses.zero_reference import (
     illumination_smoothness_loss,
 )
 
+from .dce_layer import DeepCurveEstimationLayer
+
 
 class ZeroDCE(tf.keras.Model):
     def __init__(
         self, num_intermediate_filters: int, num_iterations: int, *args, **kwargs
-    ):
+    ) -> None:
         super().__init__(*args, **kwargs)
 
         self.num_intermediate_filters = num_intermediate_filters
@@ -32,14 +33,16 @@ class ZeroDCE(tf.keras.Model):
         weight_illumination_smoothness_loss: float,
         *args,
         **kwargs
-    ):
+    ) -> None:
         super().compile(*args, **kwargs)
         self.weight_exposure_loss = weight_exposure_loss
         self.weight_color_constancy_loss = weight_color_constancy_loss
         self.weight_illumination_smoothness_loss = weight_illumination_smoothness_loss
         self.spatial_constancy_loss = SpatialConsistencyLoss()
 
-    def get_enhanced_image(self, data, output):
+    def get_enhanced_image(
+        self, data: tf.Tensor, output: tf.Tensor
+    ) -> Tuple[tf.Tensor]:
         curves = tf.split(output, self.num_iterations, axis=-1)
         enhanced_image, enhanced_images = data, []
         for idx in range(self.num_iterations):
@@ -49,11 +52,13 @@ class ZeroDCE(tf.keras.Model):
             enhanced_images.append(enhanced_image)
         return enhanced_images[:-1], enhanced_image
 
-    def call(self, data):
+    def call(self, data: tf.Tensor, training=None, mask=None) -> Tuple[tf.Tensor]:
         dce_net_output = self.deep_curve_estimation(data)
         return self.get_enhanced_image(data, dce_net_output)
 
-    def compute_losses(self, data, output):
+    def compute_losses(
+        self, data: tf.Tensor, output: tf.Tensor
+    ) -> Dict[str, tf.Tensor]:
         enhanced_image = self.get_enhanced_image(data, output)
         loss_illumination = illumination_smoothness_loss(output)
         loss_spatial_constancy = tf.reduce_mean(
@@ -75,7 +80,7 @@ class ZeroDCE(tf.keras.Model):
             "exposure_control_loss": loss_exposure,
         }
 
-    def train_step(self, data):
+    def train_step(self, data: tf.Tensor) -> Dict[str, tf.Tensor]:
         with tf.GradientTape() as tape:
             _, output = self.deep_curve_estimation(data)
             losses = self.compute_losses(data, output)
@@ -83,7 +88,7 @@ class ZeroDCE(tf.keras.Model):
         self.optimizer.apply_gradients(zip(gradients, self.trainable_weights))
         return losses
 
-    def test_step(self, data):
+    def test_step(self, data: tf.Tensor) -> Dict[str, tf.Tensor]:
         _, output = self.deep_curve_estimation(data)
         return self.compute_losses(data, output)
 
@@ -93,7 +98,7 @@ class ZeroDCE(tf.keras.Model):
             "num_iterations": self.num_iterations,
         }
 
-    def save(self, filepath, *args, **kwargs):
+    def save(self, filepath: str, *args, **kwargs) -> None:
         input_tensor = tf.keras.Input(shape=[None, None, 3])
         saved_model = tf.keras.Model(
             inputs=input_tensor, outputs=self.call(input_tensor)

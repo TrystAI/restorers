@@ -48,7 +48,9 @@ def scale_tensor(tensor: tf.Tensor) -> tf.Tensor:
 
 
 def plot_results(
-    images: List[Image], titles: List[str], figure_size: Tuple[int, int] = (12, 12)
+    images: List[Image.Image],
+    titles: List[str],
+    figure_size: Tuple[int, int] = (12, 12),
 ) -> None:
     """A simple utility for plotting the results"""
     fig = plt.figure(figsize=figure_size)

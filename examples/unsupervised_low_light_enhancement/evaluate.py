@@ -15,23 +15,21 @@ train.py:
 """
 
 import os
-import numpy as np
-from time import time
 from glob import glob
-from tqdm.auto import tqdm
-from PIL import Image, ImageOps
+from time import time
+from typing import Callable, List
 
+import numpy as np
 import tensorflow as tf
-
 import wandb
-from wandb.keras import WandbMetricsLogger
-
 from absl import app, flags, logging
 from ml_collections.config_flags import config_flags
+from PIL import Image, ImageOps
+from tqdm.auto import tqdm
+from wandb.keras import WandbMetricsLogger
 
 from restorers.model.zero_dce import ZeroDCE
-from restorers.utils import scale_tensor, plot_results
-
+from restorers.utils import plot_results, scale_tensor
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string(
@@ -54,7 +52,7 @@ flags.DEFINE_string(
 config_flags.DEFINE_config_file("experiment_configs")
 
 
-def main(_):
+def main(_) -> None:
     using_wandb = False
     if FLAGS.wandb_project_name is not None:
         try:
@@ -106,7 +104,7 @@ def main(_):
         "Number of ground-truth images in Eval15 split:", len(test_ground_truth_images)
     )
 
-    def preprocess_image(image):
+    def preprocess_image(image: Image.Image) -> np.ndarray:
         """Preprocesses the image for inference.
 
         Returns:
@@ -118,7 +116,7 @@ def main(_):
         )
         return np.expand_dims(image, axis=0)
 
-    def postprocess_image(model_output):
+    def postprocess_image(model_output) -> Image.Image:
         """Postprocesses the model output for inference.
 
         Returns:
@@ -135,7 +133,9 @@ def main(_):
         )
         return Image.fromarray(np.uint8(image))
 
-    def infer_and_visualize(low_light_image_file, ground_truth_image_file, model):
+    def infer_and_visualize(
+        low_light_image_file: str, ground_truth_image_file: str, model: Callable
+    ):
         low_light_image = Image.open(low_light_image_file)
         ground_truth_image = Image.open(ground_truth_image_file)
         preprocessed_image = preprocess_image(low_light_image)

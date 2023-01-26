@@ -32,3 +32,10 @@ def get_model_checkpoint_callback(filepath, save_best_only: bool, using_wandb: b
             initial_value_threshold=None,
         )
     )
+
+
+def scale_tensor(tensor):
+    """Utility for scaling the values of a tensor in [0,1]"""
+    _min = tf.math.reduce_min(tensor)
+    _max = tf.math.reduce_max(tensor)
+    return (tensor - _min) / (_max - _min)

@@ -41,12 +41,13 @@ class ZeroDCE(tf.keras.Model):
 
     def get_enhanced_image(self, data, output):
         curves = tf.split(output, self.num_iterations, axis=-1)
-        enhanced_image = data
+        enhanced_image, enhanced_images = data, []
         for idx in range(self.num_iterations):
             enhanced_image = enhanced_image + curves[idx] * (
                 tf.square(enhanced_image) - enhanced_image
             )
-        return enhanced_image
+            enhanced_images.append(enhanced_image)
+        return enhanced_images[:-1], enhanced_image
 
     def call(self, data):
         dce_net_output = self.deep_curve_estimation(data)
@@ -76,14 +77,14 @@ class ZeroDCE(tf.keras.Model):
 
     def train_step(self, data):
         with tf.GradientTape() as tape:
-            output = self.deep_curve_estimation(data)
+            _, output = self.deep_curve_estimation(data)
             losses = self.compute_losses(data, output)
         gradients = tape.gradient(losses["total_loss"], self.trainable_weights)
         self.optimizer.apply_gradients(zip(gradients, self.trainable_weights))
         return losses
 
     def test_step(self, data):
-        output = self.deep_curve_estimation(data)
+        _, output = self.deep_curve_estimation(data)
         return self.compute_losses(data, output)
 
     def get_config(self) -> Dict:

@@ -1,2 +1,2 @@
 from .charbonnier_loss import CharbonnierLoss
-from .spatial_constancy_loss import SpatialConsistencyLoss
+from .spatial_consistency_loss import SpatialConsistencyLoss

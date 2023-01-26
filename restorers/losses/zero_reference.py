@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 
-def color_constancy(x):
+def color_constancy(x: tf.Tensor) -> tf.Tensor:
     mean_rgb = tf.reduce_mean(x, axis=(1, 2), keepdims=True)
     mean_red, mean_green, mean_blue = tf.split(mean_rgb, 3, axis=3)
     difference_red_green = tf.square(mean_red - mean_green)
@@ -14,13 +14,15 @@ def color_constancy(x):
     )
 
 
-def exposure_control_loss(x, window_size: int = 16, mean_val: float = 0.6):
+def exposure_control_loss(
+    x: tf.Tensor, window_size: int = 16, mean_val: float = 0.6
+) -> tf.Tensor:
     x = tf.reduce_mean(x, axis=-1, keepdims=True)
     mean = tf.nn.avg_pool2d(x, ksize=window_size, strides=window_size, padding="VALID")
     return tf.reduce_mean(tf.square(mean - mean_val))
 
 
-def illumination_smoothness_loss(x):
+def illumination_smoothness_loss(x: tf.Tensor) -> tf.Tensor:
     batch_size = tf.shape(x)[0]
     h_x = tf.shape(x)[1]
     w_x = tf.shape(x)[2]

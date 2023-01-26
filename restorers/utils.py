@@ -1,5 +1,6 @@
 import tensorflow as tf
 from absl import logging
+from matplotlib import pyplot as plt
 from wandb.keras import WandbModelCheckpoint
 
 

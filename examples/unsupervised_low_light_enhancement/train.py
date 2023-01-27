@@ -40,11 +40,6 @@ flags.DEFINE_string(
 flags.DEFINE_string(
     name="wandb_job_type", default=None, help="Type of Weights & Biases Job"
 )
-flags.DEFINE_integer(
-    name="num_batches_for_eval",
-    default=2,
-    help="Number of batches to be evaluated every epoch for visualization on Weights & Biases",
-)
 config_flags.DEFINE_config_file("experiment_configs")
 
 

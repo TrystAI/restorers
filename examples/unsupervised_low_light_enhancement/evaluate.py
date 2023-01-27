@@ -1,13 +1,13 @@
 """
 CLI Usage:
-train.py:
+evaluate.py:
   --experiment_configs: path to config file.
     (default: 'None')
   --wandb_entity_name: Name of Weights & Biases Entity
   --wandb_job_type: Type of Weights & Biases Job
   --wandb_project_name: Name of Weights & Biases Project
 Example of overriding default configs using the CLI:
-train.py:
+evaluate.py:
   --experiment_configs configs/low_light.py
   --experiment_configs.data_loader_configs.batch_size 16
   --experiment_configs.model_configs.num_residual_recursive_groups 4

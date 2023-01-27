@@ -4,6 +4,34 @@ import tensorflow as tf
 
 
 class DeepCurveEstimationLayer(tf.keras.layers.Layer):
+    """The Deep Curve Estimation layer (also referred to as the DCE-Net) implemented as a
+    `tf.keras.layers.Layer`.
+
+    The input to the DCE layer is a low-light image while the outputs are a set of pixel-wise
+    curve parameter maps for corresponding higherorder curves. The DCE layer contains seven
+    convolutional layers with symmetrical skip-connection. In the first six convolutional layers,
+    each convolutional layer consists of 32 convolutional kernels of size 3×3 and stride 1 followed
+    by the ReLU activation function. The last convolutional layer consists of 24 convolutional kernels
+    of size 3×3 and stride 1 followed by the Tanh activation function, which produces 24 curve parameter
+    maps for eight iterations, where each iteration requires three curve parameter maps for the three
+    channels (i.e., RGB channels).
+
+    ![](https://i.imgur.com/HtIg34W.png)
+
+    Reference:
+
+    1. [Zero-DCE: Zero-reference Deep Curve Estimation for Low-light Image Enhancement](https://openaccess.thecvf.com/content_CVPR_2020/papers/Guo_Zero-Reference_Deep_Curve_Estimation_for_Low-Light_Image_Enhancement_CVPR_2020_paper.pdf)
+    2. [Zero-Reference Learning for Low-Light Image Enhancement (Supplementary Material)](https://openaccess.thecvf.com/content_CVPR_2020/supplemental/Guo_Zero-Reference_Deep_Curve_CVPR_2020_supplemental.pdf)
+    3. [Official PyTorch implementation of Zero-DCE](https://github.com/Li-Chongyi/Zero-DCE/blob/master/Zero-DCE_code/model.py)
+    4. [Unofficial PyTorch implementation of Zero-DCE](https://github.com/bsun0802/Zero-DCE/blob/master/code/model.py)
+    5. [Tensorflow implementation of Zero-DCE](https://github.com/tuvovan/Zero_DCE_TF)
+    6. [Keras tutorial for implementing Zero-DCE](https://keras.io/examples/vision/zero_dce/#dcenet)
+
+    Args:
+        num_intermediate_filters (int): number of filters in the intermediate convolutional layers.
+        num_iterations (int): number of iterations of enhancement.
+    """
+
     def __init__(
         self, num_intermediate_filters: int, num_iterations: int, *args, **kwargs
     ) -> None:

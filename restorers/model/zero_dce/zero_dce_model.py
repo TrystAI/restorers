@@ -13,6 +13,32 @@ from .dce_layer import DeepCurveEstimationLayer
 
 
 class ZeroDCE(tf.keras.Model):
+    """The Zero-reference Deep Curve Estimation (Zero-DCE) model implemented as a
+    `tf.keras.Model`.
+
+    Zero-reference deep curve estimation is a method for unsupervised low-light image enhancement
+    that utilizes a deep learning model to estimate the enhancement curve for an image without any
+    reference to the original, well-lit image. The model is trained on a dataset of low-light and
+    normal-light images, and learns to predict the enhancement curve that will best improve the visual
+    quality of the low-light image. Once the enhancement curve is estimated, it can be applied to the
+    low-light image to enhance its visibility. This approach allows for real-time enhancement of
+    low-light images without the need for a reference image, making it useful in situations where a
+    reference image is not available or impractical to obtain.
+
+    Reference:
+
+    1. [Zero-DCE: Zero-reference Deep Curve Estimation for Low-light Image Enhancement](https://openaccess.thecvf.com/content_CVPR_2020/papers/Guo_Zero-Reference_Deep_Curve_Estimation_for_Low-Light_Image_Enhancement_CVPR_2020_paper.pdf)
+    2. [Zero-Reference Learning for Low-Light Image Enhancement (Supplementary Material)](https://openaccess.thecvf.com/content_CVPR_2020/supplemental/Guo_Zero-Reference_Deep_Curve_CVPR_2020_supplemental.pdf)
+    3. [Official PyTorch implementation of Zero-DCE](https://github.com/Li-Chongyi/Zero-DCE)
+    4. [Unofficial PyTorch implementation of Zero-DCE](https://github.com/bsun0802/Zero-DCE)
+    5. [Tensorflow implementation of Zero-DCE](https://github.com/tuvovan/Zero_DCE_TF)
+    6. [Keras tutorial for implementing Zero-DCE](https://keras.io/examples/vision/zero_dce/#deep-curve-estimation-model)
+
+    Args:
+        num_intermediate_filters (int): number of filters in the intermediate convolutional layers.
+        num_iterations (int): number of iterations of enhancement.
+    """
+
     def __init__(
         self, num_intermediate_filters: int, num_iterations: int, *args, **kwargs
     ) -> None:
@@ -34,6 +60,24 @@ class ZeroDCE(tf.keras.Model):
         *args,
         **kwargs
     ) -> None:
+        """Configures the model for training.
+
+        Example:
+
+        ```python
+        model.compile(
+            optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
+            weight_exposure_loss=1.0,
+            weight_color_constancy_loss=0.5,
+            weight_illumination_smoothness_loss=20.0,
+        )
+        ```
+
+        Args:
+            weight_exposure_loss (float): weight of the exposure control loss.
+            weight_color_constancy_loss (float): weight of the color constancy loss.
+            weight_illumination_smoothness_loss (float): weight of the illumination smoothness loss.
+        """
         super().compile(*args, **kwargs)
         self.weight_exposure_loss = weight_exposure_loss
         self.weight_color_constancy_loss = weight_color_constancy_loss

@@ -34,6 +34,12 @@ class DepthwiseSeparableConvolution(tf.keras.layers.Layer):
     def call(self, inputs: tf.Tensor) -> tf.Tensor:
         return self.pointwise_convolution(self.depthwise_convolution(inputs))
 
+    def get_config(self) -> Dict:
+        return {
+            "input_channels": self.input_channels,
+            "output_channels": self.output_channels,
+        }
+
 
 class DeepCurveEstimationLayer(tf.keras.layers.Layer):
     """The Deep Curve Estimation layer (also referred to as the DCE-Net) implemented as a

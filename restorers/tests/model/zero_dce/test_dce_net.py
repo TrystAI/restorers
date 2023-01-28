@@ -2,7 +2,11 @@ import unittest
 
 import tensorflow as tf
 
-from restorers.model.zero_dce import DeepCurveEstimationLayer, ZeroDCE
+from restorers.model.zero_dce import (
+    DeepCurveEstimationLayer,
+    FastDeepCurveEstimationLayer,
+    ZeroDCE,
+)
 from restorers.model.zero_dce.dw_conv import DepthwiseSeparableConvolution
 
 
@@ -33,3 +37,11 @@ class ZeroDCE2Test(unittest.TestCase):
         )
         y = dw_conv_layer(x)
         self.assertEqual(y.shape, (1, 256, 256, dw_conv_layer.output_channels))
+
+    def test_dce_layer(self) -> None:
+        x = tf.ones((1, 256, 256, 3))
+        dce_layer = FastDeepCurveEstimationLayer(
+            num_intermediate_filters=32, num_iterations=8
+        )
+        y = dce_layer(x)
+        self.assertEqual(y.shape, (1, 256, 256, 3 * dce_layer.num_iterations))

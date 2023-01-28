@@ -2,6 +2,8 @@ from typing import Dict
 
 import tensorflow as tf
 
+from .dw_conv import DepthwiseSeparableConvolution
+
 
 class DeepCurveEstimationLayer(tf.keras.layers.Layer):
     """The Deep Curve Estimation layer (also referred to as the DCE-Net) implemented as a
@@ -40,6 +42,9 @@ class DeepCurveEstimationLayer(tf.keras.layers.Layer):
         self.num_intermediate_filters = num_intermediate_filters
         self.num_iterations = num_iterations
 
+        self.define_convolution_layers()
+
+    def define_convolution_layers(self) -> None:
         self.convolution_1 = tf.keras.layers.Conv2D(
             filters=self.num_intermediate_filters,
             kernel_size=(3, 3),
@@ -100,3 +105,50 @@ class DeepCurveEstimationLayer(tf.keras.layers.Layer):
             "num_intermediate_filters": self.num_intermediate_filters,
             "num_iterations": self.num_iterations,
         }
+
+
+class FastDeepCurveEstimationLayer(DeepCurveEstimationLayer):
+    """A faster version of the Deep Curve Estimation layer implemented as a
+    `tf.keras.layers.Layer`.
+
+    Reference:
+
+    1. [Official PyTorch implementation of Zero-DCE++](https://github.com/Li-Chongyi/Zero-DCE_extension/blob/main/Zero-DCE%2B%2B/model.py#L8)
+
+    Args:
+        num_intermediate_filters (int): number of filters in the intermediate convolutional layers.
+        num_iterations (int): number of iterations of enhancement.
+    """
+
+    def __init__(
+        self, num_intermediate_filters: int, num_iterations: int, *args, **kwargs
+    ):
+        super().__init__(num_intermediate_filters, num_iterations, *args, **kwargs)
+
+    def define_convolution_layers(self):
+        self.convolution_1 = DepthwiseSeparableConvolution(
+            intermediate_channels=3, output_channels=self.num_intermediate_filters
+        )
+        self.convolution_2 = DepthwiseSeparableConvolution(
+            intermediate_channels=self.num_intermediate_filters,
+            output_channels=self.num_intermediate_filters,
+        )
+        self.convolution_3 = DepthwiseSeparableConvolution(
+            intermediate_channels=self.num_intermediate_filters,
+            output_channels=self.num_intermediate_filters,
+        )
+        self.convolution_4 = DepthwiseSeparableConvolution(
+            intermediate_channels=self.num_intermediate_filters,
+            output_channels=self.num_intermediate_filters,
+        )
+        self.convolution_5 = DepthwiseSeparableConvolution(
+            intermediate_channels=self.num_intermediate_filters * 2,
+            output_channels=self.num_intermediate_filters,
+        )
+        self.convolution_6 = DepthwiseSeparableConvolution(
+            intermediate_channels=self.num_intermediate_filters * 2,
+            output_channels=self.num_intermediate_filters,
+        )
+        self.convolution_7 = DepthwiseSeparableConvolution(
+            intermediate_channels=self.num_intermediate_filters * 2, output_channels=3
+        )

@@ -152,3 +152,6 @@ class FastDeepCurveEstimationLayer(DeepCurveEstimationLayer):
         self.convolution_7 = DepthwiseSeparableConvolution(
             intermediate_channels=self.num_intermediate_filters * 2, output_channels=3
         )
+    
+    def call(self, inputs):
+        return tf.tanh(super().call(inputs))

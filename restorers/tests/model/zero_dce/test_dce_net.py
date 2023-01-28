@@ -44,4 +44,4 @@ class ZeroDCE2Test(unittest.TestCase):
             num_intermediate_filters=32, num_iterations=8
         )
         y = dce_layer(x)
-        self.assertEqual(y.shape, (1, 256, 256, 3 * dce_layer.num_iterations))
+        self.assertEqual(y.shape, (1, 256, 256, 3))

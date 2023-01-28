@@ -16,7 +16,7 @@ class DepthwiseSeparableConvolution(tf.keras.layers.Layer):
     def __init__(
         self, intermediate_channels: int, output_channels: int, *args, **kwargs
     ):
-        super().__init(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.intermediate_channels = intermediate_channels
         self.output_channels = output_channels

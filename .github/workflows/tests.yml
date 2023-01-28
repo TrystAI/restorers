@@ -3,9 +3,7 @@ on:
   pull_request:
     paths:
       - .github/**
-      - mirnetv2/**
-      - tests.py
-      - requirements.txt
+      - restorers/**
 
 jobs:
   lint:

@@ -3,44 +3,6 @@ from typing import Dict
 import tensorflow as tf
 
 
-class DepthwiseSeparableConvolution(tf.keras.layers.Layer):
-    """Depthwise-separable convolution implemented as a `tf.keras.layers.Layer`.
-
-    Reference:
-
-    1. [Official PyTorch implementation of Zero-DCE++](https://github.com/Li-Chongyi/Zero-DCE_extension/blob/main/Zero-DCE%2B%2B/model.py#L8)
-
-    Args:
-        input_channels (int): number of input channels.
-        output_channels (int): number of output channels.
-    """
-
-    def __init__(self, input_channels: int, output_channels: int, *args, **kwargs):
-        super().__init(*args, **kwargs)
-
-        self.input_channels = input_channels
-        self.output_channels = output_channels
-
-        self.depthwise_convolution = tf.keras.layers.Conv2D(
-            filters=input_channels,
-            kernel_size=(3, 3),
-            padding="same",
-            groups=input_channels,
-        )
-        self.pointwise_convolution = tf.keras.layers.Conv2D(
-            filters=output_channels, kernel_size=(1, 1), padding="valid"
-        )
-
-    def call(self, inputs: tf.Tensor) -> tf.Tensor:
-        return self.pointwise_convolution(self.depthwise_convolution(inputs))
-
-    def get_config(self) -> Dict:
-        return {
-            "input_channels": self.input_channels,
-            "output_channels": self.output_channels,
-        }
-
-
 class DeepCurveEstimationLayer(tf.keras.layers.Layer):
     """The Deep Curve Estimation layer (also referred to as the DCE-Net) implemented as a
     `tf.keras.layers.Layer`.

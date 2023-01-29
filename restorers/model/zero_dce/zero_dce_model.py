@@ -88,13 +88,12 @@ class ZeroDCE(tf.keras.Model):
         self, data: tf.Tensor, output: tf.Tensor
     ) -> Tuple[tf.Tensor]:
         curves = tf.split(output, self.num_iterations, axis=-1)
-        enhanced_image, enhanced_images = data, []
+        enhanced_image = data
         for idx in range(self.num_iterations):
             enhanced_image = enhanced_image + curves[idx] * (
                 tf.square(enhanced_image) - enhanced_image
             )
-            enhanced_images.append(enhanced_image)
-        return enhanced_images[:-1], enhanced_image
+        return enhanced_image
 
     def call(self, data: tf.Tensor, training=None, mask=None) -> Tuple[tf.Tensor]:
         dce_net_output = self.deep_curve_estimation(data)
@@ -126,14 +125,14 @@ class ZeroDCE(tf.keras.Model):
 
     def train_step(self, data: tf.Tensor) -> Dict[str, tf.Tensor]:
         with tf.GradientTape() as tape:
-            _, output = self.deep_curve_estimation(data)
+            output = self.deep_curve_estimation(data)
             losses = self.compute_losses(data, output)
         gradients = tape.gradient(losses["total_loss"], self.trainable_weights)
         self.optimizer.apply_gradients(zip(gradients, self.trainable_weights))
         return losses
 
     def test_step(self, data: tf.Tensor) -> Dict[str, tf.Tensor]:
-        _, output = self.deep_curve_estimation(data)
+        output = self.deep_curve_estimation(data)
         return self.compute_losses(data, output)
 
     def get_config(self) -> Dict:
@@ -182,10 +181,9 @@ class FastZeroDce(ZeroDCE):
         )
 
     def get_enhanced_image(self, data, output):
-        enhanced_image, enhanced_images = data, []
+        enhanced_image = data
         for idx in range(self.num_iterations):
             enhanced_image = enhanced_image + output * (
                 tf.square(enhanced_image) - enhanced_image
             )
-            enhanced_images.append(enhanced_image)
-        return enhanced_images[:-1], enhanced_image
+        return enhanced_image

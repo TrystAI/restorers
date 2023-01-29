@@ -17,6 +17,7 @@ def get_dataloader_configs() -> ml_collections.ConfigDict:
 def get_model_configs() -> ml_collections.ConfigDict:
     config = ml_collections.ConfigDict()
 
+    config.use_faster_variant = False
     config.num_intermediate_filters = 32
     config.num_iterations = 8
 

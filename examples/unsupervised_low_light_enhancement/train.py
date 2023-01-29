@@ -24,7 +24,7 @@ from low_light_config import get_config
 from ml_collections.config_flags import config_flags
 from wandb.keras import WandbMetricsLogger
 
-from restorers.model.zero_dce import ZeroDCE
+from restorers.model.zero_dce import ZeroDCE, FastZeroDce
 from restorers.utils import get_model_checkpoint_callback, initialize_device
 
 FLAGS = flags.FLAGS
@@ -108,9 +108,16 @@ def main(_) -> None:
     val_dataset = data_generator(val_low_light_images)
 
     with strategy.scope():
-        model = ZeroDCE(
-            num_intermediate_filters=FLAGS.experiment_configs.model_configs.num_intermediate_filters,
-            num_iterations=FLAGS.experiment_configs.model_configs.num_iterations,
+        model = (
+            ZeroDCE(
+                num_intermediate_filters=FLAGS.experiment_configs.model_configs.num_intermediate_filters,
+                num_iterations=FLAGS.experiment_configs.model_configs.num_iterations,
+            )
+            if not FLAGS.experiment_configs.model_configs.use_faster_variant
+            else FastZeroDce(
+                num_intermediate_filters=FLAGS.experiment_configs.model_configs.num_intermediate_filters,
+                num_iterations=FLAGS.experiment_configs.model_configs.num_iterations,
+            )
         )
         model.compile(
             optimizer=tf.keras.optimizers.Adam(

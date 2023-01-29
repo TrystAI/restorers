@@ -17,7 +17,7 @@ class DepthwiseSeparableConvolution(tf.keras.layers.Layer):
 
     def __init__(
         self, intermediate_channels: int, output_channels: int, *args, **kwargs
-    ):
+    ) -> None:
         super().__init__(*args, **kwargs)
 
         self.intermediate_channels = intermediate_channels
@@ -37,7 +37,9 @@ class DepthwiseSeparableConvolution(tf.keras.layers.Layer):
         return self.pointwise_convolution(self.depthwise_convolution(inputs))
 
     def get_config(self) -> Dict:
-        return {
+        config = super().get_config()
+        config.update({
             "intermediate_channels": self.intermediate_channels,
             "output_channels": self.output_channels,
-        }
+        })
+        return config

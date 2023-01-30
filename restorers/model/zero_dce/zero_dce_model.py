@@ -9,7 +9,7 @@ from restorers.losses.zero_reference import (
     illumination_smoothness_loss,
 )
 
-from .dce_layer import DeepCurveEstimationLayer
+from .dce_layer import DeepCurveEstimationLayer, FastDeepCurveEstimationLayer
 
 
 class ZeroDCE(tf.keras.Model):
@@ -88,13 +88,12 @@ class ZeroDCE(tf.keras.Model):
         self, data: tf.Tensor, output: tf.Tensor
     ) -> Tuple[tf.Tensor]:
         curves = tf.split(output, self.num_iterations, axis=-1)
-        enhanced_image, enhanced_images = data, []
+        enhanced_image = data
         for idx in range(self.num_iterations):
             enhanced_image = enhanced_image + curves[idx] * (
                 tf.square(enhanced_image) - enhanced_image
             )
-            enhanced_images.append(enhanced_image)
-        return enhanced_images[:-1], enhanced_image
+        return enhanced_image
 
     def call(self, data: tf.Tensor, training=None, mask=None) -> Tuple[tf.Tensor]:
         dce_net_output = self.deep_curve_estimation(data)
@@ -126,14 +125,14 @@ class ZeroDCE(tf.keras.Model):
 
     def train_step(self, data: tf.Tensor) -> Dict[str, tf.Tensor]:
         with tf.GradientTape() as tape:
-            _, output = self.deep_curve_estimation(data)
+            output = self.deep_curve_estimation(data)
             losses = self.compute_losses(data, output)
         gradients = tape.gradient(losses["total_loss"], self.trainable_weights)
         self.optimizer.apply_gradients(zip(gradients, self.trainable_weights))
         return losses
 
     def test_step(self, data: tf.Tensor) -> Dict[str, tf.Tensor]:
-        _, output = self.deep_curve_estimation(data)
+        output = self.deep_curve_estimation(data)
         return self.compute_losses(data, output)
 
     def get_config(self) -> Dict:
@@ -148,3 +147,43 @@ class ZeroDCE(tf.keras.Model):
             inputs=input_tensor, outputs=self.call(input_tensor)
         )
         saved_model.save(filepath, *args, **kwargs)
+
+
+class FastZeroDce(ZeroDCE):
+    """A faster version of the Zero-DCE (Zero-DCE++) model implemented as a `tf.keras.Model`.
+
+    Zero-reference deep curve estimation is a method for unsupervised low-light image enhancement
+    that utilizes a deep learning model to estimate the enhancement curve for an image without any
+    reference to the original, well-lit image. The model is trained on a dataset of low-light and
+    normal-light images, and learns to predict the enhancement curve that will best improve the visual
+    quality of the low-light image. Once the enhancement curve is estimated, it can be applied to the
+    low-light image to enhance its visibility. This approach allows for real-time enhancement of
+    low-light images without the need for a reference image, making it useful in situations where a
+    reference image is not available or impractical to obtain.
+
+    Reference:
+
+    1. [Learning to Enhance Low-Light Image via Zero-Reference Deep Curve Estimation](https://li-chongyi.github.io/Proj_Zero-DCE++.html)
+    2. https://github.com/Li-Chongyi/Zero-DCE_extension
+
+    Args:
+        num_intermediate_filters (int): number of filters in the intermediate convolutional layers.
+        num_iterations (int): number of iterations of enhancement.
+    """
+
+    def __init__(
+        self, num_intermediate_filters: int, num_iterations: int, *args, **kwargs
+    ):
+        super().__init__(num_intermediate_filters, num_iterations, *args, **kwargs)
+        self.deep_curve_estimation = FastDeepCurveEstimationLayer(
+            num_intermediate_filters=self.num_intermediate_filters,
+            num_iterations=self.num_iterations,
+        )
+
+    def get_enhanced_image(self, data, output):
+        enhanced_image = data
+        for idx in range(self.num_iterations):
+            enhanced_image = enhanced_image + output * (
+                tf.square(enhanced_image) - enhanced_image
+            )
+        return enhanced_image

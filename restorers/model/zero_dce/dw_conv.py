@@ -38,8 +38,10 @@ class DepthwiseSeparableConvolution(tf.keras.layers.Layer):
 
     def get_config(self) -> Dict:
         config = super().get_config()
-        config.update({
-            "intermediate_channels": self.intermediate_channels,
-            "output_channels": self.output_channels,
-        })
+        config.update(
+            {
+                "intermediate_channels": self.intermediate_channels,
+                "output_channels": self.output_channels,
+            }
+        )
         return config

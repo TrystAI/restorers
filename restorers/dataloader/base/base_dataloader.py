@@ -116,8 +116,8 @@ class DatasetFactory(ABC):
             apply_crop (`bool`): Boolean flag to condition random cropping.
         """
         # Read the image off the file path.
-        input_image = self.read_image(input_image_path, self.normalization_factor)
-        enhanced_image = self.read_image(enhanced_image_path, self.normalization_factor)
+        input_image = read_image(input_image_path, self.normalization_factor)
+        enhanced_image = read_image(enhanced_image_path, self.normalization_factor)
 
         # Apply random cropping based on the boolean flag.
         input_image, enhanced_image = (

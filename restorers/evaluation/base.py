@@ -6,6 +6,7 @@ import PIL
 import wandb
 import numpy as np
 import tensorflow as tf
+from tqdm.auto import tqdm
 
 
 class BaseEvaluator(ABC):
@@ -23,7 +24,7 @@ class BaseEvaluator(ABC):
         raise NotImplementedError(f"{self.__class__.__name__ }.preprocess")
 
     @abstractmethod
-    def postprocess(self, image_path: str):
+    def postprocess(self, input_tensor: np.array):
         raise NotImplementedError(f"{self.__class__.__name__ }.postprocess")
 
     @abstractmethod
@@ -32,11 +33,10 @@ class BaseEvaluator(ABC):
 
     def create_wandb_table(self) -> wandb.Table:
         columns = ["Split", "Input-Image", "Ground-Truth-Image", "Enhanced-Image"]
-        for key, _ in self.metrics.items():
-            columns.append(key)
+        columns = columns + [metric_alias for metric_alias, _ in self.metrics.items()]
         return wandb.Table(columns=columns)
 
-    def fetch_model_from_wandb_artifact(self, artifact_address: str) -> None:
+    def initialize_model_from_wandb_artifact(self, artifact_address: str) -> None:
         model_path = (
             wandb.Api()
             .artifact(self.dataset_artifact_address, type="dataset")
@@ -123,13 +123,61 @@ class BaseEvaluator(ABC):
         # convert to GFLOPs
         return (flops.total_float_ops / 1e9) / 2
 
-    def report_results(self):
+    def evaluate_splits(self):
+        for split, (
+            input_image_files,
+            ground_truth_image_files,
+        ) in self.image_paths.items():
+            pbar = tqdm(
+                zip(input_image_files, ground_truth_image_files),
+                total=len(input_image_files),
+                desc=f"Evaluating {split} split",
+            )
+            total_metric_results = [0.0] * len(self.metrics.keys())
+            for input_image_file, ground_truth_image_file in pbar:
+                preprocessed_input_image = self.preprocess(input_image_file)
+                preprocessed_ground_truth_image = self.preprocess(
+                    ground_truth_image_file
+                )
+                model_output = self.model.predict(preprocessed_input_image, verbose=0)
+                metric_results = [
+                    metric_fn(preprocessed_ground_truth_image, model_output)
+                    .numpy()
+                    .item()
+                    for _, metric_fn in self.metrics.items()
+                ]
+                total_metric_results = [
+                    total_metric_results[idx] + metric_results[idx]
+                    for idx in range(len(self.metrics.keys()))
+                ]
+                postprocessed_input_image = self.postprocess(preprocessed_input_image)
+                postprocessed_ground_truth_image = self.postprocess(
+                    preprocessed_ground_truth_image
+                )
+                postprocessed_enhanced_image = self.postprocess(model_output)
+                if self.wandb_table is not None:
+                    table_data = [
+                        split,
+                        wandb.Image(postprocessed_input_image),
+                        wandb.Image(postprocessed_ground_truth_image),
+                        wandb.Image(postprocessed_enhanced_image),
+                    ] + metric_results
+                    self.wandb_table.add_data(*table_data)
+            mean_metric_results = [
+                metric_result / len(input_image_files)
+                for metric_result in total_metric_results
+            ]
+            metric_results = {}
+            for idx, (key, _) in enumerate(self.metrics.keys()):
+                self.evaluation_report[f"{split}/{key}"] = mean_metric_results[idx]
+
+    def evaluate(self):
         trainable_parameters = (
-            count_params(self.model._collected_trainable_weights)
-            if hasattr(model, "_collected_trainable_weights")
-            else count_params(self.model.trainable_weights)
+            self.count_params(self.model._collected_trainable_weights)
+            if hasattr(self.model, "_collected_trainable_weights")
+            else self.count_params(self.model.trainable_weights)
         )
-        non_trainable_parameters = count_params(self.model.non_trainable_weights)
+        non_trainable_parameters = self.count_params(self.model.non_trainable_weights)
 
         self.evaluation_report["GFLOPs"] = self.get_gflops()
         self.evaluation_report["Trainable Parameters"] = trainable_parameters
@@ -137,6 +185,8 @@ class BaseEvaluator(ABC):
         self.evaluation_report["Total Parameters"] = (
             trainable_parameters + non_trainable_parameters
         )
+
+        self.evaluate_splits()
 
         if wandb.run is not None:
             wandb.log(self.evaluation_report)

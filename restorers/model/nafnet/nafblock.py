@@ -58,8 +58,8 @@ class NAFBlock(keras.layers.Layer):
 
         self.dropout2 = keras.layers.Dropout(drop_out_rate)
 
-        self.beta = tf.Variable(tf.ones((1, input_channels, 1, 1)), trainable=balanced_skip_connection)
-        self.gamma = tf.Variable(tf.ones((1, input_channels, 1, 1)), trainable=balanced_skip_connection)
+        self.beta = tf.Variable(tf.ones((1, 1, 1, input_channels)), trainable=balanced_skip_connection)
+        self.gamma = tf.Variable(tf.ones((1, 1, 1, input_channels)), trainable=balanced_skip_connection)
 
     def call(self, inputs):
 
@@ -72,7 +72,7 @@ class NAFBlock(keras.layers.Layer):
         x = self.conv3(x)
 
         # Residual connection
-        x = x + inputs
+        x = x + self.beta * inputs
 
         # Block 2
         y = self.layer_norm2(x)
@@ -82,7 +82,7 @@ class NAFBlock(keras.layers.Layer):
 
         print(y.shape, x.shape)
         # Residual connection
-        y = y + x
+        y = y + self.gamma * x
 
         return y
 

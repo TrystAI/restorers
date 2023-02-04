@@ -8,6 +8,7 @@ from PIL import Image
 from tqdm.autonotebook import tqdm
 
 from .base_dataloader import DatasetFactory
+from restorers.utils import fetch_wandb_artifact
 
 
 class LowLightDatasetFactory(DatasetFactory):
@@ -82,14 +83,8 @@ class LowLightDatasetFactory(DatasetFactory):
                 archive_format="zip",
             ).split(".zip")[0]
         elif self.dataset_artifact_address is not None:
-            dataset_path = (
-                wandb.Api()
-                .artifact(self.dataset_artifact_address, type="dataset")
-                .download()
-                if wandb.run is None
-                else wandb.use_artifact(
-                    self.dataset_artifact_address, type="dataset"
-                ).download()
+            dataset_path = fetch_wandb_artifact(
+                self.dataset_artifact_address, artifact_type="dataset"
             )
         else:
             raise ValueError(

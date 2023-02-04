@@ -64,9 +64,7 @@ def plot_results(
 
 def fetch_wandb_artifact(artifact_address: str, artifact_type: str):
     return (
-        wandb.Api().artifact(self.dataset_artifact_address, type="dataset").download()
+        wandb.Api().artifact(artifact_address, type=artifact_type).download()
         if wandb.run is None
-        else wandb.use_artifact(
-            self.dataset_artifact_address, type="dataset"
-        ).download()
+        else wandb.use_artifact(artifact_address, type=artifact_type).download()
     )

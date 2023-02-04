@@ -1,12 +1,52 @@
-from abc import ABC
+from abc import ABC, abstractmethod
+from collections import OrderedDict
+from typing import Union, List, Dict, Callable, Optional
 
+import PIL
 import wandb
+import numpy as np
 import tensorflow as tf
 
 
 class BaseEvaluator(ABC):
-    def __init__(self, model: tf.keras.Model):
+    def __init__(
+        self, metrics: Dict[str, Callable], model: Optional[tf.keras.Model] = None
+    ):
         self.model = model
+        self.metrics = OrderedDict(metrics)
+        self.evaluation_report = {}
+        self.image_paths = self.populate_image_paths()
+        self.wandb_table = self.create_wandb_table() if wandb.run is not None else None
+
+    @abstractmethod
+    def preprocess(self, image_path: str):
+        raise NotImplementedError(f"{self.__class__.__name__ }.preprocess")
+
+    @abstractmethod
+    def postprocess(self, image_path: str):
+        raise NotImplementedError(f"{self.__class__.__name__ }.postprocess")
+
+    @abstractmethod
+    def populate_image_paths(self) -> Dict[str, Dict[str, List[str]]]:
+        raise NotImplementedError(f"{self.__class__.__name__ }.postprocess")
+
+    def create_wandb_table(self) -> wandb.Table:
+        columns = ["Split", "Input-Image", "Ground-Truth-Image", "Enhanced-Image"]
+        for key, _ in self.metrics.items():
+            columns.append(key)
+        return wandb.Table(columns=columns)
+
+    def fetch_model_from_wandb_artifact(self, artifact_address: str) -> None:
+        model_path = (
+            wandb.Api()
+            .artifact(self.dataset_artifact_address, type="dataset")
+            .download()
+            if wandb.run is None
+            else wandb.use_artifact(
+                self.dataset_artifact_address, type="model"
+            ).download()
+        )
+        self.model = tf.keras.models.load_model(model_path, compile=False)
 
     def count_params(self, weights) -> int:
         """Count the total number of scalars composing the weights.
@@ -84,7 +124,6 @@ class BaseEvaluator(ABC):
         return (flops.total_float_ops / 1e9) / 2
 
     def report_results(self):
-        gflops = self.get_gflops()
         trainable_parameters = (
             count_params(self.model._collected_trainable_weights)
             if hasattr(model, "_collected_trainable_weights")
@@ -92,14 +131,14 @@ class BaseEvaluator(ABC):
         )
         non_trainable_parameters = count_params(self.model.non_trainable_weights)
 
-        evaluation_report = {
-            "GFLOPs": gflops,
-            "Trainable Parameters": trainable_parameters,
-            "Non-Trainable Parameters": non_trainable_parameters,
-            "Total Parameters": trainable_parameters + non_trainable_parameters,
-        }
+        self.evaluation_report["GFLOPs"] = self.get_gflops()
+        self.evaluation_report["Trainable Parameters"] = trainable_parameters
+        self.evaluation_report["Non-Trainable Parameters"] = non_trainable_parameters
+        self.evaluation_report["Total Parameters"] = (
+            trainable_parameters + non_trainable_parameters
+        )
 
         if wandb.run is not None:
-            wandb.log(evaluation_report)
+            wandb.log(self.evaluation_report)
 
-        return evaluation_report
+        return self.evaluation_report

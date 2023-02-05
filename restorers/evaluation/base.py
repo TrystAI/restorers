@@ -8,6 +8,8 @@ import numpy as np
 import tensorflow as tf
 from tqdm.auto import tqdm
 
+from ..utils import fetch_wandb_artifact
+
 
 class BaseEvaluator(ABC):
     def __init__(
@@ -29,7 +31,7 @@ class BaseEvaluator(ABC):
 
     @abstractmethod
     def populate_image_paths(self) -> Dict[str, Dict[str, List[str]]]:
-        raise NotImplementedError(f"{self.__class__.__name__ }.postprocess")
+        raise NotImplementedError(f"{self.__class__.__name__ }.populate_image_paths")
 
     def create_wandb_table(self) -> wandb.Table:
         columns = ["Split", "Input-Image", "Ground-Truth-Image", "Enhanced-Image"]
@@ -37,15 +39,7 @@ class BaseEvaluator(ABC):
         return wandb.Table(columns=columns)
 
     def initialize_model_from_wandb_artifact(self, artifact_address: str) -> None:
-        model_path = (
-            wandb.Api()
-            .artifact(self.dataset_artifact_address, type="dataset")
-            .download()
-            if wandb.run is None
-            else wandb.use_artifact(
-                self.dataset_artifact_address, type="model"
-            ).download()
-        )
+        model_path = fetch_wandb_artifact(artifact_address, artifact_type="model")
         self.model = tf.keras.models.load_model(model_path, compile=False)
 
     def count_params(self, weights) -> int:
@@ -168,8 +162,10 @@ class BaseEvaluator(ABC):
                 for metric_result in total_metric_results
             ]
             metric_results = {}
-            for idx, (key, _) in enumerate(self.metrics.keys()):
+            for idx, (key, _) in enumerate(self.metrics.items()):
                 self.evaluation_report[f"{split}/{key}"] = mean_metric_results[idx]
+            if self.wandb_table is not None:
+                self.evaluation_report["Evaluation-Table"] = self.wandb_table
 
     def evaluate(self):
         trainable_parameters = (

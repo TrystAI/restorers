@@ -1,3 +1,5 @@
+import os
+from glob import glob
 from typing import Dict, Callable, Optional
 
 import wandb
@@ -15,10 +17,12 @@ class LoLEvaluator(BaseEvaluator):
         metrics: Dict[str, Callable],
         model: Optional[tf.keras.Model] = None,
         bit_depth: float = 8,
+        benchmark_against_input: bool = False,
     ):
-        super().__init__(metrics, model)
         self.normalization_factor = (2**bit_depth) - 1
         self.dataset_artifact_address = "ml-colabs/dataset/LoL:v0"
+        self.benchmark_against_input = benchmark_against_input
+        super().__init__(metrics, model)
 
     def preprocess(self, image_path):
         return tf.expand_dims(read_image(image_path, self.normalization_factor), axis=0)
@@ -42,7 +46,14 @@ class LoLEvaluator(BaseEvaluator):
         test_enhanced_images = sorted(
             glob(os.path.join(dataset_path, "eval15", "high", "*"))
         )
-        return {
-            "train": (train_low_light_images, train_enhanced_images),
-            "eval15": (test_low_light_images, test_enhanced_images),
-        }
+        return (
+            {
+                "train": (train_low_light_images, train_enhanced_images),
+                "eval15": (test_low_light_images, test_enhanced_images),
+            }
+            if not self.benchmark_against_input
+            else {
+                "train": (train_low_light_images, train_low_light_images),
+                "eval15": (test_low_light_images, test_low_light_images),
+            }
+        )

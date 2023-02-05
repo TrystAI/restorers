@@ -3,6 +3,15 @@ from tensorflow import keras
 
 
 class SimpleGate(keras.layers.Layer):
+    """
+    Simple Gate
+
+    It splits the input of size (b,h,w,c) into tensors of size (b,h,w,c//factor) and returns their Hadamard product
+
+    Parameters:
+        factor: the amount by which the channels are scaled down
+    """
+
     def __init__(self, factor=2):
         super().__init__()
         self.factor = factor
@@ -16,6 +25,15 @@ class SimpleGate(keras.layers.Layer):
 
 
 class SimplifiedChannelAttention(keras.layers.Layer):
+    """
+    Simplified Channel Attention layer
+
+    It is a modification of channel attention without any non-linear activations.
+
+    Parameters:
+        channels: number of channels in input
+    """
+
     def __init__(self, channels, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.channels = channels
@@ -32,6 +50,18 @@ class SimplifiedChannelAttention(keras.layers.Layer):
 
 
 class NAFBlock(keras.layers.Layer):
+    """
+    NAFBlock (Nonlinear Activation Free Block)
+
+    Parameters:
+        input_channels: number of channels in the input (as NAFBlock retains the input size in the output)
+        factor: factor by which the channels must be increased before being reduced by simple gate.
+            (Higher factor denotes higher order polynomial in multiplication. Default factor is 2)
+        drop_out_rate: dropout rate
+        balanced_skip_connection: adds additional trainable parameters to the skip connections.
+            The parameter denotes how much importance should be given to the input in the skip connection.
+    """
+
     def __init__(
         self,
         input_channels,

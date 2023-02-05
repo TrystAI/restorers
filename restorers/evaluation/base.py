@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 from collections import OrderedDict
-from typing import Union, List, Dict, Callable, Optional
+from typing import List, Dict, Callable, Optional
 
-import PIL
 import wandb
 import numpy as np
 import tensorflow as tf
@@ -15,6 +14,7 @@ class BaseEvaluator(ABC):
     def __init__(
         self, metrics: Dict[str, Callable], model: Optional[tf.keras.Model] = None
     ):
+        """Base Class for Evaluating an Image Restoration Model"""
         self.model = model
         self.metrics = OrderedDict(metrics)
         self.evaluation_report = {}

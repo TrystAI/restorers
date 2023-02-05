@@ -2,7 +2,6 @@ import os
 from glob import glob
 from typing import Dict, Callable, Optional
 
-import wandb
 import numpy as np
 import tensorflow as tf
 
@@ -19,6 +18,14 @@ class LoLEvaluator(BaseEvaluator):
         bit_depth: float = 8,
         benchmark_against_input: bool = False,
     ):
+        """Evaluator for the LoL dataset.
+        
+        Args:
+            metrics (Dict[str, Callable]): A dictionary of metrics.
+            model (Optional[tf.keras.Model]): The `tf.keras.Model` to be evaluated.
+            bit_depth (float): bit depth of the input and ground truth images.
+            benchmark_against_input (bool): If True, the model output will be evaluated against the input image.
+        """
         self.normalization_factor = (2**bit_depth) - 1
         self.dataset_artifact_address = "ml-colabs/dataset/LoL:v0"
         self.benchmark_against_input = benchmark_against_input

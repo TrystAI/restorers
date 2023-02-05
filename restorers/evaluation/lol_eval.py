@@ -19,7 +19,7 @@ class LoLEvaluator(BaseEvaluator):
         benchmark_against_input: bool = False,
     ):
         """Evaluator for the LoL dataset.
-        
+
         Args:
             metrics (Dict[str, Callable]): A dictionary of metrics.
             model (Optional[tf.keras.Model]): The `tf.keras.Model` to be evaluated.

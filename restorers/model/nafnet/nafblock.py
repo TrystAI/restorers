@@ -3,17 +3,16 @@ from tensorflow import keras
 
 
 class SimpleGate(keras.layers.Layer):
-
     def __init__(self, factor=2):
         super().__init__()
         self.factor = factor
 
     def call(self, x):
-        x_list = tf.split(x, num_or_size_splits=self.factor, axis=-1)
-        result = x_list[0]
-        for i in range(1, len(x_list)):
-            result *= x_list[i]
-        return result
+        x = tf.expand_dims(x, axis=-1)
+        return tf.reduce_prod(
+            tf.concat(tf.split(x, num_or_size_splits=self.factor, axis=-2), axis=-1),
+            axis=-1,
+        )
 
 
 class SimplifiedChannelAttention(keras.layers.Layer):
@@ -25,14 +24,23 @@ class SimplifiedChannelAttention(keras.layers.Layer):
 
     def call(self, inputs):
         average_pooling = self.avg_pool(inputs)
-        feature_descriptor = tf.reshape(average_pooling, shape=(-1, 1, 1, self.channels))
+        feature_descriptor = tf.reshape(
+            average_pooling, shape=(-1, 1, 1, self.channels)
+        )
         features = self.conv(feature_descriptor)
         return inputs * features
 
 
 class NAFBlock(keras.layers.Layer):
-
-    def __init__(self, input_channels, factor=2, drop_out_rate=0., balanced_skip_connection=False, *args, **kwargs):
+    def __init__(
+        self,
+        input_channels,
+        factor=2,
+        drop_out_rate=0.0,
+        balanced_skip_connection=False,
+        *args,
+        **kwargs
+    ):
         super().__init__(*args, **kwargs)
         self.factor = factor
         dw_channel = input_channels * factor
@@ -40,12 +48,20 @@ class NAFBlock(keras.layers.Layer):
         self.layer_norm1 = keras.layers.LayerNormalization()
 
         self.conv1 = keras.layers.Conv2D(filters=dw_channel, kernel_size=1, strides=1)
-        self.dconv2 = keras.layers.Conv2D(filters=dw_channel, kernel_size=1, padding='same', strides=1, groups=dw_channel)
+        self.dconv2 = keras.layers.Conv2D(
+            filters=dw_channel,
+            kernel_size=1,
+            padding="same",
+            strides=1,
+            groups=dw_channel,
+        )
 
         self.simple_gate = SimpleGate(factor)
         self.simplified_attention = SimplifiedChannelAttention(input_channels)
 
-        self.conv3 = keras.layers.Conv2D(filters=input_channels, kernel_size=1, strides=1)
+        self.conv3 = keras.layers.Conv2D(
+            filters=input_channels, kernel_size=1, strides=1
+        )
 
         self.dropout1 = keras.layers.Dropout(drop_out_rate)
 
@@ -54,12 +70,18 @@ class NAFBlock(keras.layers.Layer):
         ffn_channel = input_channels * factor
 
         self.conv4 = keras.layers.Conv2D(filters=ffn_channel, kernel_size=1, strides=1)
-        self.conv5 = keras.layers.Conv2D(filters=input_channels, kernel_size=1, strides=1)
+        self.conv5 = keras.layers.Conv2D(
+            filters=input_channels, kernel_size=1, strides=1
+        )
 
         self.dropout2 = keras.layers.Dropout(drop_out_rate)
 
-        self.beta = tf.Variable(tf.ones((1, 1, 1, input_channels)), trainable=balanced_skip_connection)
-        self.gamma = tf.Variable(tf.ones((1, 1, 1, input_channels)), trainable=balanced_skip_connection)
+        self.beta = tf.Variable(
+            tf.ones((1, 1, 1, input_channels)), trainable=balanced_skip_connection
+        )
+        self.gamma = tf.Variable(
+            tf.ones((1, 1, 1, input_channels)), trainable=balanced_skip_connection
+        )
 
     def call(self, inputs):
 
@@ -85,6 +107,3 @@ class NAFBlock(keras.layers.Layer):
         y = y + self.gamma * x
 
         return y
-
-
-

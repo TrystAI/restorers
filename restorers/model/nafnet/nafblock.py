@@ -59,12 +59,11 @@ class NAFBlock(keras.layers.Layer):
             (Higher factor denotes higher order polynomial in multiplication. Default factor is 2)
         drop_out_rate: dropout rate
         balanced_skip_connection: adds additional trainable parameters to the skip connections.
-            The parameter denotes how much importance should be given to the input in the skip connection.
+            The parameter denotes how much importance should be given to the sub block in the skip connection.
     """
 
     def __init__(
         self,
-        input_channels,
         factor=2,
         drop_out_rate=0.0,
         balanced_skip_connection=False,
@@ -73,9 +72,33 @@ class NAFBlock(keras.layers.Layer):
     ):
         super().__init__(*args, **kwargs)
         self.factor = factor
-        dw_channel = input_channels * factor
+        self.balanced_skip_connection = balanced_skip_connection
 
         self.layer_norm1 = keras.layers.LayerNormalization()
+
+        self.conv1 = None
+        self.dconv2 = None
+
+        self.simple_gate = SimpleGate(factor)
+        self.simplified_attention = None
+
+        self.conv3 = None
+
+        self.dropout1 = keras.layers.Dropout(drop_out_rate)
+
+        self.layer_norm2 = keras.layers.LayerNormalization()
+
+        self.conv4 = None
+        self.conv5 = None
+
+        self.dropout2 = keras.layers.Dropout(drop_out_rate)
+
+        self.beta = None
+        self.gamma = None
+
+    def build(self, input_shape):
+        input_channels = input_shape[-1]
+        dw_channel = input_channels * self.factor
 
         self.conv1 = keras.layers.Conv2D(filters=dw_channel, kernel_size=1, strides=1)
         self.dconv2 = keras.layers.Conv2D(
@@ -86,31 +109,24 @@ class NAFBlock(keras.layers.Layer):
             groups=dw_channel,
         )
 
-        self.simple_gate = SimpleGate(factor)
         self.simplified_attention = SimplifiedChannelAttention(input_channels)
 
         self.conv3 = keras.layers.Conv2D(
             filters=input_channels, kernel_size=1, strides=1
         )
 
-        self.dropout1 = keras.layers.Dropout(drop_out_rate)
-
-        self.layer_norm2 = keras.layers.LayerNormalization()
-
-        ffn_channel = input_channels * factor
+        ffn_channel = input_channels * self.factor
 
         self.conv4 = keras.layers.Conv2D(filters=ffn_channel, kernel_size=1, strides=1)
         self.conv5 = keras.layers.Conv2D(
             filters=input_channels, kernel_size=1, strides=1
         )
 
-        self.dropout2 = keras.layers.Dropout(drop_out_rate)
-
         self.beta = tf.Variable(
-            tf.ones((1, 1, 1, input_channels)), trainable=balanced_skip_connection
+            tf.ones((1, 1, 1, input_channels)), trainable=self.balanced_skip_connection
         )
         self.gamma = tf.Variable(
-            tf.ones((1, 1, 1, input_channels)), trainable=balanced_skip_connection
+            tf.ones((1, 1, 1, input_channels)), trainable=self.balanced_skip_connection
         )
 
     def call(self, inputs):
@@ -122,18 +138,19 @@ class NAFBlock(keras.layers.Layer):
         x = self.simple_gate(x)
         x = self.simplified_attention(x)
         x = self.conv3(x)
+        x = self.dropout1(x)
 
         # Residual connection
-        x = x + self.beta * inputs
+        x = inputs + self.beta * x
 
         # Block 2
         y = self.layer_norm2(x)
         y = self.conv4(y)
         y = self.simple_gate(y)
         y = self.conv5(y)
+        y = self.dropout2(y)
 
-        print(y.shape, x.shape)
         # Residual connection
-        y = y + self.gamma * x
+        y = x + self.gamma * y
 
         return y

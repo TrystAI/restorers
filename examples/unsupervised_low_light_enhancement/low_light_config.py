@@ -20,6 +20,7 @@ def get_model_configs() -> ml_collections.ConfigDict:
     config.use_faster_variant = False
     config.num_intermediate_filters = 32
     config.num_iterations = 8
+    config.decoder_channel_factor = 1
 
     return config
 

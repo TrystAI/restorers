@@ -177,7 +177,7 @@ class BaseEvaluator(ABC):
 
         if self.input_size is not None:
             self.evaluation_report["GFLOPs"] = self.get_gflops()
-        
+
         self.evaluation_report["Trainable Parameters"] = trainable_parameters
         self.evaluation_report["Non-Trainable Parameters"] = non_trainable_parameters
         self.evaluation_report["Total Parameters"] = (

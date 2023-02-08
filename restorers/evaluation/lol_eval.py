@@ -1,6 +1,6 @@
 import os
 from glob import glob
-from typing import Dict, Callable, Optional
+from typing import List, Dict, Callable, Optional
 
 import numpy as np
 import tensorflow as tf
@@ -15,6 +15,7 @@ class LoLEvaluator(BaseEvaluator):
         self,
         metrics: Dict[str, Callable],
         model: Optional[tf.keras.Model] = None,
+        input_size: Optional[List[int]] = None,
         bit_depth: float = 8,
         benchmark_against_input: bool = False,
     ):
@@ -23,13 +24,15 @@ class LoLEvaluator(BaseEvaluator):
         Args:
             metrics (Dict[str, Callable]): A dictionary of metrics.
             model (Optional[tf.keras.Model]): The `tf.keras.Model` to be evaluated.
+            input_size (Optional[List[int]]): input size for the model. This is an optional parameter which if
+                specified will enable GFLOPs calculation.
             bit_depth (float): bit depth of the input and ground truth images.
             benchmark_against_input (bool): If True, the model output will be evaluated against the input image.
         """
         self.normalization_factor = (2**bit_depth) - 1
         self.dataset_artifact_address = "ml-colabs/dataset/LoL:v0"
         self.benchmark_against_input = benchmark_against_input
-        super().__init__(metrics, model)
+        super().__init__(metrics, model, input_size)
 
     def preprocess(self, image_path):
         return tf.expand_dims(read_image(image_path, self.normalization_factor), axis=0)

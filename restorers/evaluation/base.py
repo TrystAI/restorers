@@ -12,11 +12,15 @@ from ..utils import fetch_wandb_artifact
 
 class BaseEvaluator(ABC):
     def __init__(
-        self, metrics: Dict[str, Callable], model: Optional[tf.keras.Model] = None
+        self,
+        metrics: Dict[str, Callable],
+        model: Optional[tf.keras.Model] = None,
+        input_size: Optional[List[int]] = None,
     ):
         """Base Class for Evaluating an Image Restoration Model"""
         self.model = model
         self.metrics = OrderedDict(metrics)
+        self.input_size = input_size
         self.evaluation_report = {}
         self.image_paths = self.populate_image_paths()
         self.wandb_table = self.create_wandb_table() if wandb.run is not None else None
@@ -90,11 +94,7 @@ class BaseEvaluator(ABC):
         )
 
         # Compute FLOPs for one sample
-        batch_size = 1
-        inputs = [
-            tf.TensorSpec([batch_size] + inp.shape[1:], inp.dtype)
-            for inp in self.model.inputs
-        ]
+        inputs = [tf.TensorSpec([1] + self.input_size, tf.float32)]
 
         # convert tf.keras model into frozen graph to count FLOPs about operations used at inference
         real_model = tf.function(self.model).get_concrete_function(inputs)
@@ -175,7 +175,9 @@ class BaseEvaluator(ABC):
         )
         non_trainable_parameters = self.count_params(self.model.non_trainable_weights)
 
-        self.evaluation_report["GFLOPs"] = self.get_gflops()
+        if self.input_size is not None:
+            self.evaluation_report["GFLOPs"] = self.get_gflops()
+        
         self.evaluation_report["Trainable Parameters"] = trainable_parameters
         self.evaluation_report["Non-Trainable Parameters"] = non_trainable_parameters
         self.evaluation_report["Total Parameters"] = (

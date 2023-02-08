@@ -125,7 +125,6 @@ class NAFBlock(keras.layers.Layer):
         )
 
     def call(self, inputs):
-
         # Block 1
         x = self.layer_norm1(inputs)
         x = self.conv1(x)

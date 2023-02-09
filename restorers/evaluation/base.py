@@ -13,13 +13,15 @@ from ..utils import fetch_wandb_artifact
 class BaseEvaluator(ABC):
     def __init__(
         self,
-        metrics: Dict[str, Callable],
+        metrics: List[tf.keras.metrics.Metric],
         model: Optional[tf.keras.Model] = None,
         input_size: Optional[List[int]] = None,
     ):
         """Base Class for Evaluating an Image Restoration Model"""
         self.model = model
-        self.metrics = OrderedDict(metrics)
+        self.metrics = OrderedDict(
+            {type(metric).__name__: metric for metric in metrics}
+        )
         self.input_size = input_size
         self.evaluation_report = {}
         self.image_paths = self.populate_image_paths()

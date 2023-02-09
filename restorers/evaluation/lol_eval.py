@@ -13,7 +13,7 @@ from ..utils import scale_tensor, fetch_wandb_artifact
 class LoLEvaluator(BaseEvaluator):
     def __init__(
         self,
-        metrics: Dict[str, Callable],
+        metrics: List[tf.keras.metrics.Metric],
         model: Optional[tf.keras.Model] = None,
         input_size: Optional[List[int]] = None,
         bit_depth: float = 8,
@@ -22,7 +22,7 @@ class LoLEvaluator(BaseEvaluator):
         """Evaluator for the LoL dataset.
 
         Args:
-            metrics (Dict[str, Callable]): A dictionary of metrics.
+            metrics List[tf.keras.metrics.Metric]: A dictionary of metrics.
             model (Optional[tf.keras.Model]): The `tf.keras.Model` to be evaluated.
             input_size (Optional[List[int]]): input size for the model. This is an optional parameter which if
                 specified will enable GFLOPs calculation.

@@ -41,9 +41,6 @@ flags.DEFINE_string(
     default=None,
     help="The Weights & Biases artifact address for the model",
 )
-flags.DEFINE_string(
-    name="benchmark_against_input", default=False, help="Benchmark against input"
-)
 config_flags.DEFINE_config_file("experiment_configs")
 
 
@@ -62,12 +59,20 @@ def main(_) -> None:
         except:
             logging.error("Unable to initialize_device wandb run.")
 
+    benchmark_image_size = (
+        FLAGS.experiment_configs.evaluation_configs.benchmark_image_size
+    )
     evaluator = LoLEvaluator(
-        metrics={
-            "Peak-Singal-Noise-Ratio": PSNRMetric(max_val=1.0),
-            "Structural-Similarity": SSIMMetric(max_val=1.0),
-        },
-        benchmark_against_input=FLAGS.benchmark_against_input,
+        metrics=[
+            PSNRMetric(
+                max_val=FLAGS.experiment_configs.evaluation_configs.psnr_max_val
+            ),
+            SSIMMetric(
+                max_val=FLAGS.experiment_configs.evaluation_configs.ssim_max_val
+            ),
+        ],
+        input_size=[benchmark_image_size, benchmark_image_size, 3],
+        benchmark_against_input=FLAGS.experiment_configs.evaluation_configs.benchmark_against_input,
     )
     evaluator.initialize_model_from_wandb_artifact(
         artifact_address=FLAGS.model_artifact_address

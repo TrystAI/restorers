@@ -2,7 +2,13 @@ import unittest
 
 import tensorflow as tf
 
-from restorers.model.nafnet import NAFBlock, SimpleGate, SimplifiedChannelAttention
+from restorers.model.nafnet import (
+    NAFBlock,
+    SimpleGate,
+    SimplifiedChannelAttention,
+    NAFNet,
+    PixelShuffle,
+)
 
 
 class NAFBlockTest(unittest.TestCase):
@@ -33,7 +39,33 @@ class SimpleGateTest(unittest.TestCase):
             scaled_shape = list(input_shape)
             scaled_shape[-1] = input_shape[-1] * factor
             x = tf.ones(scaled_shape)
-            print(factor)
             simple_gate = SimpleGate(factor)
             y = simple_gate(x)
             self.assertEqual(y.shape, input_shape)
+
+
+class NAFNetTest(unittest.TestCase):
+    def test_nafnet(self) -> None:
+        input_shape = (1, 256, 256, 3)
+        x = tf.ones(input_shape)
+        nafnet = NAFNet()
+        y = nafnet(x)
+        self.assertEqual(y.shape, x.shape)
+
+
+class PixelShuffleTest(unittest.TestCase):
+    def setUp(self):
+        self.factors = [2, 3]
+
+    def test_pixelshuffle(self) -> None:
+        input_shape = (1, 256, 256, 3)
+        for factor in self.factors:
+            scaled_shape = list(input_shape)
+            scaled_shape[-1] = input_shape[-1] * factor * factor
+            x = tf.ones(scaled_shape)
+            ps = PixelShuffle(factor)
+            y = ps(x)
+            upscaled_input_shape = list(input_shape)
+            upscaled_input_shape[1] = input_shape[1] * factor
+            upscaled_input_shape[2] = input_shape[2] * factor
+            self.assertEqual(y.shape, upscaled_input_shape)

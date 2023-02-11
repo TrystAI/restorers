@@ -144,7 +144,6 @@ class NAFNet(keras.models.Model):
         return channels
 
     def call(self, inputs):
-
         x = self.intro(inputs)
 
         encoder_outputs = []

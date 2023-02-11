@@ -1,3 +1,5 @@
+from typing import Optional, Tuple
+
 import tensorflow as tf
 from tensorflow import keras
 from .nafblock import NAFBlock
@@ -10,11 +12,11 @@ class PixelShuffle(keras.layers.Layer):
     Wrapper Class for tf.nn.depth_to_space
     """
 
-    def __init__(self, upscale_factor, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, upscale_factor: int, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.upscale_factor = upscale_factor
 
-    def call(self, inputs):
+    def call(self, inputs: tf.Tensor, *args, **kwargs) -> tf.Tensor:
         return tf.nn.depth_to_space(inputs, self.upscale_factor)
 
 
@@ -45,14 +47,13 @@ class NAFNet(keras.models.Model):
 
     def __init__(
         self,
-        filters=16,
-        middle_block_num=1,
-        encoder_block_nums=(1, 1, 1, 1),
-        decoder_block_nums=(1, 1, 1, 1),
-        *args,
+        filters: Optional[int] = 16,
+        middle_block_num: Optional[int] = 1,
+        encoder_block_nums: Optional[Tuple[int]] = (1, 1, 1, 1),
+        decoder_block_nums: Optional[Tuple[int]] = (1, 1, 1, 1),
         **kwargs,
-    ):
-        super().__init__(*args, **kwargs)
+    ) -> None:
+        super().__init__(**kwargs)
         self.intro = keras.layers.Conv2D(filters=filters, kernel_size=3, padding="same")
         self.ending = None
 
@@ -96,13 +97,17 @@ class NAFNet(keras.models.Model):
                 f"In `create_decoder_and_up_blocks` {len(self.decoders)} decoder blocks were created."
             )
 
-    def build(self, input_shape):
+    def build(self, input_shape: tf.TensorShape) -> None:
         input_channels = input_shape[-1]
         self.ending = keras.layers.Conv2DTranspose(
             filters=input_channels, kernel_size=3, padding="same"
         )
 
-    def create_encoder_and_down_blocks(self, channels, encoder_block_nums) -> int:
+    def create_encoder_and_down_blocks(
+        self,
+        channels: int,
+        encoder_block_nums: : Optional[Tuple[int]],
+    ) -> int:
         """
         Creates equal number of encoder blocks and down blocks.
         """
@@ -117,12 +122,16 @@ class NAFNet(keras.models.Model):
             channels *= 2
         return channels
 
-    def create_middle_blocks(self, channels, middle_block_num):
+    def create_middle_blocks(self, channels: int, middle_block_num: Optional[int]) -> None:
         self.middle_blocks = keras.models.Sequential(
             [NAFBlock(channels) for _ in range(middle_block_num)]
         )
 
-    def create_decoder_and_up_blocks(self, channels, decoder_block_nums) -> int:
+    def create_decoder_and_up_blocks(
+        self,
+        channels: int,
+        decoder_block_nums: Optional[Tuple[int]],
+    ) -> int:
         """
         Creates equal number of decoder blocks and up blocks.
         """
@@ -143,7 +152,7 @@ class NAFNet(keras.models.Model):
             )
         return channels
 
-    def call(self, inputs):
+    def call(self, inputs: tf.Tensor, *args, **kwargs) -> tf.Tensor:
         x = self.intro(inputs)
 
         encoder_outputs = []

@@ -2,6 +2,7 @@ from typing import Optional, Tuple
 
 import tensorflow as tf
 from tensorflow import keras
+
 from .nafblock import NAFBlock
 
 
@@ -106,7 +107,7 @@ class NAFNet(keras.models.Model):
     def create_encoder_and_down_blocks(
         self,
         channels: int,
-        encoder_block_nums: : Optional[Tuple[int]],
+        encoder_block_nums: Optional[Tuple[int]],
     ) -> int:
         """
         Creates equal number of encoder blocks and down blocks.
@@ -122,7 +123,9 @@ class NAFNet(keras.models.Model):
             channels *= 2
         return channels
 
-    def create_middle_blocks(self, channels: int, middle_block_num: Optional[int]) -> None:
+    def create_middle_blocks(
+        self, channels: int, middle_block_num: Optional[int]
+    ) -> None:
         self.middle_blocks = keras.models.Sequential(
             [NAFBlock(channels) for _ in range(middle_block_num)]
         )

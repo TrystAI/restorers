@@ -4,7 +4,7 @@ from typing import List, Tuple
 
 import tensorflow as tf
 
-from .commons import random_horiontal_flip, random_vertical_flip
+from .commons import read_image, random_horiontal_flip, random_vertical_flip
 
 _AUTOTUNE = tf.data.AUTOTUNE
 
@@ -38,21 +38,6 @@ class DatasetFactory(ABC):
     @abstractmethod
     def sanity_tests(self):
         raise NotImplementedError(f"{self.__class__.__name__ }.sanity_tests")
-
-    def read_image(self, image_path: str) -> tf.Tensor:
-        """
-        Function to read an image from the file path.
-
-        Args:
-            image_path (`str`): The image file path.
-
-        Returns:
-            tf.Tensor image in channel-last format.
-        """
-        image = tf.io.read_file(image_path)
-        image = tf.io.decode_image(image, channels=3, expand_animations=False)
-        image = tf.cast(image, dtype=tf.float32) / self.normalization_factor
-        return image
 
     def random_crop(
         self, input_image: tf.Tensor, enhanced_image: tf.Tensor
@@ -131,8 +116,8 @@ class DatasetFactory(ABC):
             apply_crop (`bool`): Boolean flag to condition random cropping.
         """
         # Read the image off the file path.
-        input_image = self.read_image(input_image_path)
-        enhanced_image = self.read_image(enhanced_image_path)
+        input_image = read_image(input_image_path, self.normalization_factor)
+        enhanced_image = read_image(enhanced_image_path, self.normalization_factor)
 
         # Apply random cropping based on the boolean flag.
         input_image, enhanced_image = (

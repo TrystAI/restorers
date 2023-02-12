@@ -14,22 +14,14 @@ evaluate.py:
   --experiment_configs.training_configs.learning_rate 2e-4
 """
 
-import os
-from glob import glob
-from time import time
-from typing import Callable, List
-
-import numpy as np
-import tensorflow as tf
 import wandb
+
 from absl import app, flags, logging
 from ml_collections.config_flags import config_flags
-from PIL import Image, ImageOps
-from tqdm.auto import tqdm
-from wandb.keras import WandbMetricsLogger
 
-from restorers.model.zero_dce import ZeroDCE
-from restorers.utils import plot_results, scale_tensor
+from restorers.evaluation import LoLEvaluator
+from restorers.metrics import PSNRMetric, SSIMMetric
+
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string(
@@ -67,175 +59,28 @@ def main(_) -> None:
         except:
             logging.error("Unable to initialize_device wandb run.")
 
-    artifact = wandb.use_artifact(FLAGS.model_artifact_address, type="model")
-    model_configs = artifact.logged_by().config["model_configs"]
-    model_path = artifact.download()
-    model = tf.keras.models.load_model(model_path, compile=False)
-
-    artifact = wandb.use_artifact(
-        FLAGS.experiment_configs.data_loader_configs.dataset_artifact_address,
-        type="dataset",
+    benchmark_image_size = (
+        FLAGS.experiment_configs.evaluation_configs.benchmark_image_size
     )
-    dataset_dir = artifact.download()
-
-    train_val_low_light_images = sorted(
-        glob(os.path.join(dataset_dir, "our485", "low", "*.png"))
+    evaluator = LoLEvaluator(
+        metrics=[
+            PSNRMetric(
+                max_val=FLAGS.experiment_configs.evaluation_configs.psnr_max_val
+            ),
+            SSIMMetric(
+                max_val=FLAGS.experiment_configs.evaluation_configs.ssim_max_val
+            ),
+        ],
+        input_size=[benchmark_image_size, benchmark_image_size, 3],
+        benchmark_against_input=FLAGS.experiment_configs.evaluation_configs.benchmark_against_input,
     )
-    train_val_ground_truth_images = sorted(
-        glob(os.path.join(dataset_dir, "our485", "high", "*.png"))
+    evaluator.initialize_model_from_wandb_artifact(
+        artifact_address=FLAGS.model_artifact_address
     )
-    test_low_light_images = sorted(
-        glob(os.path.join(dataset_dir, "eval15", "low", "*.png"))
-    )
-    test_ground_truth_images = sorted(
-        glob(os.path.join(dataset_dir, "eval15", "high", "*.png"))
-    )
+    evaluator.evaluate()
 
-    print(
-        "Number of low-light images in train-val split:",
-        len(train_val_low_light_images),
-    )
-    print(
-        "Number of ground-truth images in train-val split:",
-        len(train_val_ground_truth_images),
-    )
-    print("Number of low-light images in Eval15 split:", len(test_low_light_images))
-    print(
-        "Number of ground-truth images in Eval15 split:", len(test_ground_truth_images)
-    )
-
-    def preprocess_image(image: Image.Image) -> np.ndarray:
-        """Preprocesses the image for inference.
-
-        Returns:
-            A numpy array of shape (1, height, width, 3) preprocessed for inference.
-        """
-        image = tf.keras.preprocessing.image.img_to_array(image)
-        image = image.astype("float32") / (
-            (2**FLAGS.experiment_configs.data_loader_configs.bit_depth) - 1
-        )
-        return np.expand_dims(image, axis=0)
-
-    def postprocess_image(model_output) -> Image.Image:
-        """Postprocesses the model output for inference.
-
-        Returns:
-            A list of PIL.Image.Image objects postprocessed for visualization.
-        """
-        model_output = model_output * (
-            (2**FLAGS.experiment_configs.data_loader_configs.bit_depth) - 1
-        )
-        model_output = model_output.clip(
-            0, int((2**FLAGS.experiment_configs.data_loader_configs.bit_depth) - 1)
-        )
-        image = model_output[0].reshape(
-            (np.shape(model_output)[1], np.shape(model_output)[2], 3)
-        )
-        return Image.fromarray(np.uint8(image))
-
-    def infer_and_visualize(
-        low_light_image_file: str, ground_truth_image_file: str, model: Callable
-    ):
-        low_light_image = Image.open(low_light_image_file)
-        ground_truth_image = Image.open(ground_truth_image_file)
-        preprocessed_image = preprocess_image(low_light_image)
-        start = time()
-        preprocessed_ground_truth = preprocess_image(ground_truth_image)
-        inference_time = time() - start
-        model_output = model.predict(preprocessed_image, verbose=0)
-        psnr = tf.image.psnr(
-            scale_tensor(preprocessed_image), scale_tensor(model_output), max_val=1.0
-        )
-        ssim = tf.image.ssim(
-            scale_tensor(preprocessed_image), scale_tensor(model_output), max_val=1.0
-        )
-        post_processed_image = postprocess_image(model_output)
-        return (
-            low_light_image,
-            ground_truth_image,
-            post_processed_image,
-            psnr,
-            ssim,
-            inference_time,
-        )
-
-    table = wandb.Table(
-        columns=[
-            "Input-Image",
-            "Ground-Truth",
-            "Image-Enhanced-By-AutoContrast",
-            "Image-Enhanced-By-ZeroDCE",
-            "Peak-Signal-Noise-Ratio",
-            "Structual-Similarity",
-            "Inference-Time",
-            "Dataset",
-        ]
-    )
-
-    train_val_psnr, train_val_ssim = 0.0, 0.0
-    for idx in tqdm(range(len(train_val_low_light_images))):
-        (
-            low_light_image,
-            ground_truth_image,
-            mirnet_enhanced_image,
-            psnr,
-            ssim,
-            inference_time,
-        ) = infer_and_visualize(
-            train_val_low_light_images[idx], train_val_ground_truth_images[idx], model
-        )
-        autocontrast_enhanced_image = ImageOps.autocontrast(low_light_image)
-        table.add_data(
-            wandb.Image(low_light_image),
-            wandb.Image(ground_truth_image),
-            wandb.Image(autocontrast_enhanced_image),
-            wandb.Image(mirnet_enhanced_image),
-            psnr.numpy().item(),
-            ssim.numpy().item(),
-            inference_time,
-            "LoL/Train-Val",
-        )
-        train_val_psnr += psnr.numpy().item()
-        train_val_ssim += ssim.numpy().item()
-
-    test_psnr, test_ssim = 0.0, 0.0
-    for idx in tqdm(range(len(test_low_light_images))):
-        (
-            low_light_image,
-            ground_truth_image,
-            mirnet_enhanced_image,
-            psnr,
-            ssim,
-            inference_time,
-        ) = infer_and_visualize(
-            test_low_light_images[idx], test_ground_truth_images[idx], model
-        )
-        autocontrast_enhanced_image = ImageOps.autocontrast(low_light_image)
-        table.add_data(
-            wandb.Image(low_light_image),
-            wandb.Image(ground_truth_image),
-            wandb.Image(autocontrast_enhanced_image),
-            wandb.Image(mirnet_enhanced_image),
-            psnr.numpy().item(),
-            ssim.numpy().item(),
-            inference_time,
-            "LoL/Eval15",
-        )
-        test_psnr += psnr.numpy().item()
-        test_ssim += ssim.numpy().item()
-
-    wandb.log(
-        {
-            "Evaluation": table,
-            "Train-Val/Peak-Signal-Noise-Ratio": train_val_psnr
-            / len(train_val_low_light_images),
-            "Train-Val/Structual-Similarity": train_val_ssim
-            / len(train_val_low_light_images),
-            "Eval15/Peak-Signal-Noise-Ratio": test_psnr / len(test_low_light_images),
-            "Eval15/Structual-Similarity": test_ssim / len(test_low_light_images),
-        }
-    )
-    wandb.finish()
+    if using_wandb:
+        wandb.finish()
 
 
 if __name__ == "__main__":

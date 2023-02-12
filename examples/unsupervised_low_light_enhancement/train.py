@@ -112,11 +112,13 @@ def main(_) -> None:
             ZeroDCE(
                 num_intermediate_filters=FLAGS.experiment_configs.model_configs.num_intermediate_filters,
                 num_iterations=FLAGS.experiment_configs.model_configs.num_iterations,
+                decoder_channel_factor=FLAGS.experiment_configs.model_configs.decoder_channel_factor,
             )
             if not FLAGS.experiment_configs.model_configs.use_faster_variant
             else FastZeroDce(
                 num_intermediate_filters=FLAGS.experiment_configs.model_configs.num_intermediate_filters,
                 num_iterations=FLAGS.experiment_configs.model_configs.num_iterations,
+                decoder_channel_factor=FLAGS.experiment_configs.model_configs.decoder_channel_factor,
             )
         )
         model.compile(

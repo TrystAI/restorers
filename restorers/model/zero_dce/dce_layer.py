@@ -32,15 +32,22 @@ class DeepCurveEstimationLayer(tf.keras.layers.Layer):
     Args:
         num_intermediate_filters (int): number of filters in the intermediate convolutional layers.
         num_iterations (int): number of iterations of enhancement.
+        decoder_channel_factor (int): factor by which number filters in the decoder is multiplied.
     """
 
     def __init__(
-        self, num_intermediate_filters: int, num_iterations: int, *args, **kwargs
+        self,
+        num_intermediate_filters: int,
+        num_iterations: int,
+        decoder_channel_factor: int,
+        *args,
+        **kwargs
     ) -> None:
         super().__init__(*args, **kwargs)
 
         self.num_intermediate_filters = num_intermediate_filters
         self.num_iterations = num_iterations
+        self.decoder_channel_factor = decoder_channel_factor
 
         self.define_convolution_layers()
 
@@ -70,13 +77,13 @@ class DeepCurveEstimationLayer(tf.keras.layers.Layer):
             activation="relu",
         )
         self.convolution_5 = tf.keras.layers.Conv2D(
-            filters=self.num_intermediate_filters * 2,
+            filters=self.num_intermediate_filters,
             kernel_size=(3, 3),
             padding="same",
             activation="relu",
         )
         self.convolution_6 = tf.keras.layers.Conv2D(
-            filters=self.num_intermediate_filters * 2,
+            filters=self.num_intermediate_filters,
             kernel_size=(3, 3),
             padding="same",
             activation="relu",
@@ -104,6 +111,7 @@ class DeepCurveEstimationLayer(tf.keras.layers.Layer):
         return {
             "num_intermediate_filters": self.num_intermediate_filters,
             "num_iterations": self.num_iterations,
+            "decoder_channel_factor": self.decoder_channel_factor,
         }
 
 
@@ -121,9 +129,20 @@ class FastDeepCurveEstimationLayer(DeepCurveEstimationLayer):
     """
 
     def __init__(
-        self, num_intermediate_filters: int, num_iterations: int, *args, **kwargs
+        self,
+        num_intermediate_filters: int,
+        num_iterations: int,
+        decoder_channel_factor: int,
+        *args,
+        **kwargs
     ):
-        super().__init__(num_intermediate_filters, num_iterations, *args, **kwargs)
+        super().__init__(
+            num_intermediate_filters,
+            num_iterations,
+            decoder_channel_factor,
+            *args,
+            **kwargs
+        )
 
     def define_convolution_layers(self):
         self.convolution_1 = DepthwiseSeparableConvolution(
@@ -142,11 +161,13 @@ class FastDeepCurveEstimationLayer(DeepCurveEstimationLayer):
             output_channels=self.num_intermediate_filters,
         )
         self.convolution_5 = DepthwiseSeparableConvolution(
-            intermediate_channels=self.num_intermediate_filters * 2,
+            intermediate_channels=self.num_intermediate_filters
+            * self.decoder_channel_factor,
             output_channels=self.num_intermediate_filters,
         )
         self.convolution_6 = DepthwiseSeparableConvolution(
-            intermediate_channels=self.num_intermediate_filters * 2,
+            intermediate_channels=self.num_intermediate_filters
+            * self.decoder_channel_factor,
             output_channels=self.num_intermediate_filters,
         )
         self.convolution_7 = DepthwiseSeparableConvolution(

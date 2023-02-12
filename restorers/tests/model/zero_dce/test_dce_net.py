@@ -15,14 +15,16 @@ class ZeroDCETest(unittest.TestCase):
     def test_dce_layer(self) -> None:
         x = tf.ones((1, 256, 256, 3))
         dce_layer = DeepCurveEstimationLayer(
-            num_intermediate_filters=32, num_iterations=8
+            num_intermediate_filters=32, num_iterations=8, decoder_channel_factor=1
         )
         y = dce_layer(x)
         self.assertEqual(y.shape, (1, 256, 256, 3 * dce_layer.num_iterations))
 
     def test_zero_dce(self) -> None:
         x = tf.ones((1, 256, 256, 3))
-        model = ZeroDCE(num_intermediate_filters=32, num_iterations=8)
+        model = ZeroDCE(
+            num_intermediate_filters=32, num_iterations=8, decoder_channel_factor=1
+        )
         output = model(x)
         self.assertEqual(output.shape, (1, 256, 256, 3))
 
@@ -39,13 +41,15 @@ class FastZeroDCETest(unittest.TestCase):
     def test_dce_layer(self) -> None:
         x = tf.ones((1, 256, 256, 3))
         dce_layer = FastDeepCurveEstimationLayer(
-            num_intermediate_filters=32, num_iterations=8
+            num_intermediate_filters=32, num_iterations=8, decoder_channel_factor=1
         )
         y = dce_layer(x)
         self.assertEqual(y.shape, (1, 256, 256, 3))
 
     def test_zero_dce(self) -> None:
         x = tf.ones((1, 256, 256, 3))
-        model = FastZeroDce(num_intermediate_filters=32, num_iterations=8)
+        model = FastZeroDce(
+            num_intermediate_filters=32, num_iterations=8, decoder_channel_factor=1
+        )
         output = model(x)
         self.assertEqual(output.shape, (1, 256, 256, 3))

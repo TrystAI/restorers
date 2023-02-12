@@ -1,5 +1,6 @@
 from typing import List, Tuple
 
+import wandb
 import tensorflow as tf
 from absl import logging
 from matplotlib import pyplot as plt
@@ -59,3 +60,11 @@ def plot_results(
         _ = plt.imshow(images[i])
         plt.axis("off")
     plt.show()
+
+
+def fetch_wandb_artifact(artifact_address: str, artifact_type: str):
+    return (
+        wandb.Api().artifact(artifact_address, type=artifact_type).download()
+        if wandb.run is None
+        else wandb.use_artifact(artifact_address, type=artifact_type).download()
+    )

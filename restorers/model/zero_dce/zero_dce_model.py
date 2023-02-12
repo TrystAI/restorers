@@ -37,19 +37,28 @@ class ZeroDCE(tf.keras.Model):
     Args:
         num_intermediate_filters (int): number of filters in the intermediate convolutional layers.
         num_iterations (int): number of iterations of enhancement.
+        decoder_channel_factor (int): factor by which number filters in the decoder of deep curve
+            estimation layer is multiplied.
     """
 
     def __init__(
-        self, num_intermediate_filters: int, num_iterations: int, *args, **kwargs
+        self,
+        num_intermediate_filters: int,
+        num_iterations: int,
+        decoder_channel_factor: int,
+        *args,
+        **kwargs
     ) -> None:
         super().__init__(*args, **kwargs)
 
         self.num_intermediate_filters = num_intermediate_filters
         self.num_iterations = num_iterations
+        self.decoder_channel_factor = decoder_channel_factor
 
         self.deep_curve_estimation = DeepCurveEstimationLayer(
             num_intermediate_filters=self.num_intermediate_filters,
             num_iterations=self.num_iterations,
+            decoder_channel_factor=self.decoder_channel_factor,
         )
 
     def compile(
@@ -139,6 +148,7 @@ class ZeroDCE(tf.keras.Model):
         return {
             "num_intermediate_filters": self.num_intermediate_filters,
             "num_iterations": self.num_iterations,
+            "decoder_channel_factor": self.decoder_channel_factor,
         }
 
     def save(self, filepath: str, *args, **kwargs) -> None:
@@ -169,15 +179,29 @@ class FastZeroDce(ZeroDCE):
     Args:
         num_intermediate_filters (int): number of filters in the intermediate convolutional layers.
         num_iterations (int): number of iterations of enhancement.
+        decoder_channel_factor (int): factor by which number filters in the decoder of deep curve
+            estimation layer is multiplied.
     """
 
     def __init__(
-        self, num_intermediate_filters: int, num_iterations: int, *args, **kwargs
+        self,
+        num_intermediate_filters: int,
+        num_iterations: int,
+        decoder_channel_factor: int,
+        *args,
+        **kwargs
     ):
-        super().__init__(num_intermediate_filters, num_iterations, *args, **kwargs)
+        super().__init__(
+            num_intermediate_filters,
+            num_iterations,
+            decoder_channel_factor,
+            *args,
+            **kwargs
+        )
         self.deep_curve_estimation = FastDeepCurveEstimationLayer(
             num_intermediate_filters=self.num_intermediate_filters,
             num_iterations=self.num_iterations,
+            decoder_channel_factor=self.decoder_channel_factor,
         )
 
     def get_enhanced_image(self, data, output):

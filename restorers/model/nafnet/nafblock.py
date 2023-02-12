@@ -23,6 +23,12 @@ class SimpleGate(keras.layers.Layer):
             axis=-1,
         )
 
+    def get_config(self) -> dict:
+        """Add factor to the config"""
+        config = super().get_config()
+        config.update({"factor": self.factor})
+        return config
+
 
 class SimplifiedChannelAttention(keras.layers.Layer):
     """
@@ -46,6 +52,12 @@ class SimplifiedChannelAttention(keras.layers.Layer):
         features = self.conv(feature_descriptor)
         return inputs * features
 
+    def get_config(self) -> dict:
+        """Add channels to the config"""
+        config = super().get_config()
+        config.update({"channels": self.channels})
+        return config
+
 
 class NAFBlock(keras.layers.Layer):
     """
@@ -68,6 +80,7 @@ class NAFBlock(keras.layers.Layer):
     ) -> None:
         super().__init__(**kwargs)
         self.factor = factor
+        self.drop_out_rate = drop_out_rate
         self.balanced_skip_connection = balanced_skip_connection
 
         self.layer_norm1 = keras.layers.LayerNormalization()
@@ -149,3 +162,16 @@ class NAFBlock(keras.layers.Layer):
         y = x + self.gamma * y
 
         return y
+
+    def get_config(self) -> dict:
+        """Add constructor arguments to the config"""
+        config = super().get_config()
+        config.update(
+            {
+                "channels": self.channels,
+                "factor": self.factor,
+                "drop_out_rate": self.drop_out_rate,
+                "balanced_skip_connection": self.balanced_skip_connection,
+            }
+        )
+        return config

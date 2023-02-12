@@ -20,6 +20,12 @@ class PixelShuffle(keras.layers.Layer):
     def call(self, inputs: tf.Tensor, *args, **kwargs) -> tf.Tensor:
         return tf.nn.depth_to_space(inputs, self.upscale_factor)
 
+    def get_config(self) -> dict:
+        """Add upscale factor to the config"""
+        config = super().get_config()
+        config.update({"upscale_factor": self.upscale_factor})
+        return config
+
 
 class NAFNet(keras.models.Model):
     """
@@ -55,6 +61,12 @@ class NAFNet(keras.models.Model):
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
+
+        self.filters = filters
+        self.middle_block_num = middle_block_num
+        self.encoder_block_nums = encoder_block_nums
+        self.decoder_block_nums = decoder_block_nums
+
         self.intro = keras.layers.Conv2D(filters=filters, kernel_size=3, padding="same")
         self.ending = None
 
@@ -179,3 +191,16 @@ class NAFNet(keras.models.Model):
         x = x + inputs
 
         return x
+
+    def get_config(self) -> dict:
+        """Add upscale factor to the config"""
+        config = super().get_config()
+        config.update(
+            {
+                "filters": self.filters,
+                "middle_block_num": self.middle_block_num,
+                "encoder_block_nums": self.encoder_block_nums,
+                "decoder_block_nums": self.decoder_block_nums,
+            }
+        )
+        return config

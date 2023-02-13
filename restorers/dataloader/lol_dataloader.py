@@ -6,7 +6,11 @@ from functools import partial
 import tensorflow as tf
 
 from .base import LowLightDatasetFactory
-from .base.commons import read_image, unsupervised_random_horizontal_flip, unsupervised_random_vertical_flip
+from .base.commons import (
+    read_image,
+    unsupervised_random_horizontal_flip,
+    unsupervised_random_vertical_flip,
+)
 
 _AUTOTUNE = tf.data.AUTOTUNE
 
@@ -111,8 +115,12 @@ class UnsupervisedLOLDataLoader(LOLDataLoader):
 
         # Apply augmentations.
         if apply_augmentations:
-            dataset = dataset.map(unsupervised_random_horizontal_flip, num_parallel_calls=_AUTOTUNE)
-            dataset = dataset.map(unsupervised_random_vertical_flip, num_parallel_calls=_AUTOTUNE)
+            dataset = dataset.map(
+                unsupervised_random_horizontal_flip, num_parallel_calls=_AUTOTUNE
+            )
+            dataset = dataset.map(
+                unsupervised_random_vertical_flip, num_parallel_calls=_AUTOTUNE
+            )
 
         dataset = dataset.batch(batch_size, drop_remainder=True)
         return dataset.prefetch(_AUTOTUNE)

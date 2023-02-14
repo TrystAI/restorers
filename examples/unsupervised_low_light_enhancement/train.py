@@ -72,7 +72,7 @@ def main(_) -> None:
         image_size=FLAGS.experiment_configs.data_loader_configs.image_size,
         bit_depth=FLAGS.experiment_configs.data_loader_configs.bit_depth,
         val_split=FLAGS.experiment_configs.data_loader_configs.val_split,
-        visualize_on_wand=False,
+        visualize_on_wandb=False,
         dataset_artifact_address=FLAGS.experiment_configs.data_loader_configs.dataset_artifact_address,
     )
 

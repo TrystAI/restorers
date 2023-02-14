@@ -25,6 +25,7 @@ from ml_collections.config_flags import config_flags
 from wandb.keras import WandbMetricsLogger
 
 from restorers.model.zero_dce import ZeroDCE, FastZeroDce
+from restorers.dataloader import UnsupervisedLOLDataLoader
 from restorers.utils import get_model_checkpoint_callback, initialize_device
 
 FLAGS = flags.FLAGS
@@ -67,45 +68,15 @@ def main(_) -> None:
     )
     wandb.config.global_batch_size = batch_size
 
-    def load_data(image_path: str) -> tf.Tensor:
-        image = tf.io.read_file(image_path)
-        image = tf.image.decode_png(image, channels=3)
-        image = tf.image.resize(
-            images=image,
-            size=[
-                FLAGS.experiment_configs.data_loader_configs.image_size,
-                FLAGS.experiment_configs.data_loader_configs.image_size,
-            ],
-        )
-        image = image / (
-            (2**FLAGS.experiment_configs.data_loader_configs.bit_depth) - 1
-        )
-        return image
-
-    def data_generator(low_light_images: tf.TypeSpec) -> tf.data.Dataset:
-        dataset = tf.data.Dataset.from_tensor_slices((low_light_images))
-        dataset = dataset.map(load_data, num_parallel_calls=tf.data.AUTOTUNE)
-        dataset = dataset.batch(batch_size, drop_remainder=True)
-        return dataset
-
-    artifact = wandb.use_artifact(
-        FLAGS.experiment_configs.data_loader_configs.dataset_artifact_address,
-        type="dataset",
+    data_loader = UnsupervisedLOLDataLoader(
+        image_size=FLAGS.experiment_configs.data_loader_configs.image_size,
+        bit_depth=FLAGS.experiment_configs.data_loader_configs.bit_depth,
+        val_split=FLAGS.experiment_configs.data_loader_configs.val_split,
+        visualize_on_wand=False,
+        dataset_artifact_address=FLAGS.experiment_configs.data_loader_configs.dataset_artifact_address,
     )
-    artifact_dir = artifact.download()
 
-    train_low_light_images = sorted(
-        glob(os.path.join(artifact_dir, "our485", "low", "*"))
-    )
-    num_train_images = int(
-        (1 - FLAGS.experiment_configs.data_loader_configs.val_split)
-        * len(train_low_light_images)
-    )
-    val_low_light_images = train_low_light_images[num_train_images:]
-    train_low_light_images = train_low_light_images[:num_train_images]
-
-    train_dataset = data_generator(train_low_light_images)
-    val_dataset = data_generator(val_low_light_images)
+    tran_dataset, val_dataset = data_loader.get_datasets(batch_size=batch_size)
 
     with strategy.scope():
         model = (

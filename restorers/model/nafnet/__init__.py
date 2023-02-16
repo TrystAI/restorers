@@ -1,2 +1,3 @@
 from .nafblock import SimpleGate, SimplifiedChannelAttention, NAFBlock
-from .nafnet import NAFNet, PixelShuffle
+from .baseline import ChannelAttention, BaselineBlock
+from .nafnet import NAFNet, PixelShuffle, UpScale, BlockStack

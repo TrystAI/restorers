@@ -4,36 +4,10 @@ import tensorflow as tf
 from tensorflow import keras
 
 
-class SimpleGate(keras.layers.Layer):
+class ChannelAttention(keras.layers.Layer):
     """
-    Simple Gate
-    It splits the input of size (b,h,w,c) into tensors of size (b,h,w,c//factor) and returns their Hadamard product
-    Parameters:
-        factor: the amount by which the channels are scaled down
-    """
+    Channel Attention layer
 
-    def __init__(self, factor: Optional[int] = 2, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.factor = factor
-
-    def call(self, x: tf.Tensor, *args, **kwargs) -> tf.Tensor:
-        x = tf.expand_dims(x, axis=-1)
-        return tf.reduce_prod(
-            tf.concat(tf.split(x, num_or_size_splits=self.factor, axis=-2), axis=-1),
-            axis=-1,
-        )
-
-    def get_config(self) -> dict:
-        """Add factor to the config"""
-        config = super().get_config()
-        config.update({"factor": self.factor})
-        return config
-
-
-class SimplifiedChannelAttention(keras.layers.Layer):
-    """
-    Simplified Channel Attention layer
-    It is a modification of channel attention without any non-linear activations.
     Parameters:
         channels: number of channels in input
     """
@@ -42,15 +16,20 @@ class SimplifiedChannelAttention(keras.layers.Layer):
         super().__init__(**kwargs)
         self.channels = channels
         self.avg_pool = keras.layers.GlobalAveragePooling2D()
-        self.conv = keras.layers.Conv2D(filters=channels, kernel_size=1)
+        self.conv1 = keras.layers.Conv2D(
+            filters=channels // 2, kernel_size=1, activation=keras.activations.relu
+        )
+        self.conv2 = keras.layers.Conv2D(
+            filters=channels, kernel_size=1, activation=keras.activations.sigmoid
+        )
 
     def call(self, inputs: tf.Tensor, *args, **kwargs) -> tf.Tensor:
         average_pooling = self.avg_pool(inputs)
         feature_descriptor = tf.reshape(
             average_pooling, shape=(-1, 1, 1, self.channels)
         )
-        features = self.conv(feature_descriptor)
-        return inputs * features
+        x = self.conv1(feature_descriptor)
+        return inputs * self.conv2(x)
 
     def get_config(self) -> dict:
         """Add channels to the config"""
@@ -59,9 +38,13 @@ class SimplifiedChannelAttention(keras.layers.Layer):
         return config
 
 
-class NAFBlock(keras.layers.Layer):
+class BaselineBlock(keras.layers.Layer):
     """
-    NAFBlock (Nonlinear Activation Free Block)
+    BaselineBlock Layer
+
+    This is the baseline block proposed in NAFNet Paper.
+    From this block all the non-linear activations are removed to generate the NAFBlock
+
     Parameters:
         input_channels: number of channels in the input (as NAFBlock retains the input size in the output)
         factor: factor by which the channels must be increased before being reduced by simple gate.
@@ -83,23 +66,18 @@ class NAFBlock(keras.layers.Layer):
         self.drop_out_rate = drop_out_rate
         self.balanced_skip_connection = balanced_skip_connection
 
-        self.layer_norm1 = keras.layers.LayerNormalization()
-
         self.conv1 = None
         self.dconv2 = None
-
-        self.simple_gate = SimpleGate(factor)
-        self.simplified_attention = None
-
         self.conv3 = None
+        self.channel_attention = None
 
-        self.dropout1 = keras.layers.Dropout(drop_out_rate)
-
+        self.layer_norm1 = keras.layers.LayerNormalization()
         self.layer_norm2 = keras.layers.LayerNormalization()
 
         self.conv4 = None
         self.conv5 = None
 
+        self.dropout1 = keras.layers.Dropout(drop_out_rate)
         self.dropout2 = keras.layers.Dropout(drop_out_rate)
 
         self.beta = None
@@ -107,22 +85,21 @@ class NAFBlock(keras.layers.Layer):
 
     def build(self, input_shape: tf.TensorShape) -> None:
         input_channels = input_shape[-1]
-        dw_channel = input_channels * self.factor
 
-        self.conv1 = keras.layers.Conv2D(filters=dw_channel, kernel_size=1, strides=1)
+        self.conv1 = keras.layers.Conv2D(input_channels, kernel_size=1, strides=1)
         self.dconv2 = keras.layers.Conv2D(
-            filters=dw_channel,
-            kernel_size=3,
+            filters=input_channels,
+            kernel_size=1,
             padding="same",
             strides=1,
-            groups=dw_channel,
+            groups=input_channels,
         )
-
-        self.simplified_attention = SimplifiedChannelAttention(input_channels)
 
         self.conv3 = keras.layers.Conv2D(
             filters=input_channels, kernel_size=1, strides=1
         )
+
+        self.channel_attention = ChannelAttention(input_channels)
 
         ffn_channel = input_channels * self.factor
 
@@ -143,8 +120,8 @@ class NAFBlock(keras.layers.Layer):
         x = self.layer_norm1(inputs)
         x = self.conv1(x)
         x = self.dconv2(x)
-        x = self.simple_gate(x)
-        x = self.simplified_attention(x)
+        x = keras.activations.gelu(x)
+        x = self.channel_attention(x)
         x = self.conv3(x)
         x = self.dropout1(x)
 
@@ -154,7 +131,7 @@ class NAFBlock(keras.layers.Layer):
         # Block 2
         y = self.layer_norm2(x)
         y = self.conv4(y)
-        y = self.simple_gate(y)
+        y = keras.activations.gelu(y)
         y = self.conv5(y)
         y = self.dropout2(y)
 

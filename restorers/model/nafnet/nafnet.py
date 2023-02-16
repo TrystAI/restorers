@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Type
 
 import tensorflow as tf
 from tensorflow import keras
@@ -24,6 +24,90 @@ class PixelShuffle(keras.layers.Layer):
         """Add upscale factor to the config"""
         config = super().get_config()
         config.update({"upscale_factor": self.upscale_factor})
+        return config
+
+
+class BlockStack(keras.layers.Layer):
+    def __init__(
+        self,
+        block_class: Type[keras.layers.Layer],
+        num_blocks: int,
+        *args,
+        **kwargs,
+    ):
+        super().__init__()
+        self.block_class = block_class
+        self.num_blocks = num_blocks
+        self.block_list = []
+        self.args = args
+        self.kwargs = kwargs
+
+        for i in range(self.num_blocks):
+            self.block_list.append(self.block_class(*args, **kwargs))
+
+    def call(self, inputs: tf.Tensor, *args, **kwargs) -> tf.Tensor:
+        x = inputs
+        for block in self.block_list:
+            x = block(x)
+        return x
+
+    def get_config(self) -> dict:
+        "Get config for BlockStack"
+        config = super().get_config()
+        config.update(
+            {
+                "block_class": self.block_class,
+                "num_blocks": self.num_blocks,
+                "args": self.args,
+                "kwargs": self.kwargs,
+            }
+        )
+        return config
+
+
+class UpScale(keras.layers.Layer):
+    """
+    UpScale Layer
+
+    Given channels and pixel_shuffle_factor as input, it will generate an output
+    of size
+    (
+        H*pixel_shuffle_factor,
+        W*pixel_shuffle_factor,
+        channels//(pixel_shuffle_factor**2)
+    )
+    While giving input, make sure that (pixel_shuffle_factor**2) divides channels
+    """
+
+    def __init__(self, channels: int, pixel_shuffle_factor: int, **kwargs):
+        super().__init__(**kwargs)
+        self.channels = channels
+        self.pixel_shuffle_factor = pixel_shuffle_factor
+
+        if channels % (pixel_shuffle_factor**2) != 0:
+            raise ValueError(
+                f"Number of channels must divide square of pixel_shuffle_factor"
+                f"In the constructor {channels} channels and "
+                f"{pixel_shuffle_factor} pixel_shuffle_factor was passed"
+            )
+
+        self.conv = keras.layers.Conv2D(
+            channels, kernel_size=1, strides=1, use_bias=False
+        )
+        self.pixel_shuffle = PixelShuffle(pixel_shuffle_factor)
+
+    def call(self, inputs: tf.Tensor, *args, **kwargs) -> tf.Tensor:
+        return self.pixel_shuffle(self.conv(inputs))
+
+    def get_config(self) -> dict:
+        """Add channels and pixel_shuffle_factor to the config"""
+        config = super().get_config()
+        config.update(
+            {
+                "channels": self.channels,
+                "pixel_shuffle_factor": self.pixel_shuffle_factor,
+            }
+        )
         return config
 
 
@@ -92,7 +176,7 @@ class NAFNet(keras.models.Model):
                 f" and {len(self.downs)} down blocks were created."
             )
 
-        self.create_middle_blocks(channels, middle_block_num)
+        self.middle_blocks = BlockStack(NAFBlock, middle_block_num)
 
         self.create_decoder_and_up_blocks(channels, decoder_block_nums)
 
@@ -126,21 +210,12 @@ class NAFNet(keras.models.Model):
         """
 
         for num in encoder_block_nums:
-            self.encoders.append(
-                keras.models.Sequential([NAFBlock(channels) for _ in range(num)])
-            )
+            self.encoders.append(BlockStack(NAFBlock, num))
             self.downs.append(
                 keras.layers.Conv2D(2 * channels, kernel_size=2, strides=2)
             )
             channels *= 2
         return channels
-
-    def create_middle_blocks(
-        self, channels: int, middle_block_num: Optional[int]
-    ) -> None:
-        self.middle_blocks = keras.models.Sequential(
-            [NAFBlock(channels) for _ in range(middle_block_num)]
-        )
 
     def create_decoder_and_up_blocks(
         self,
@@ -151,20 +226,9 @@ class NAFNet(keras.models.Model):
         Creates equal number of decoder blocks and up blocks.
         """
         for num in decoder_block_nums:
-            self.ups.append(
-                keras.models.Sequential(
-                    [
-                        keras.layers.Conv2D(
-                            2 * channels, kernel_size=1, strides=1, use_bias=False
-                        ),
-                        PixelShuffle(2),
-                    ]
-                )
-            )
+            self.ups.append(UpScale(2 * channels, pixel_shuffle_factor=2))
             channels = channels // 2
-            self.decoders.append(
-                keras.models.Sequential([NAFBlock(channels) for _ in range(num)])
-            )
+            self.decoders.append(BlockStack(NAFBlock, num))
         return channels
 
     def call(self, inputs: tf.Tensor, *args, **kwargs) -> tf.Tensor:

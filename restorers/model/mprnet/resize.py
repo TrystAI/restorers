@@ -19,7 +19,7 @@ class DownSample(tf.keras.layers.Layer):
 
         self.downsample = tf.keras.Sequential(
             [
-                tf.keras.layers.UpSampling2D(size=0.5, interpolation="bilinear"),
+                tf.keras.layers.AveragePooling2D(pool_size=2, strides=2),
                 tf.keras.layers.Conv2D(
                     filters=int(self.channels * self.channel_factor),
                     kernel_size=1,
@@ -116,7 +116,7 @@ class SkipUpSample(tf.keras.layers.Layer):
         self, inputs: tf.Tensor, residual: tf.Tensor, training: Optional[bool] = None
     ) -> tf.Tensor:
         processed_input = self.skipupsample(inputs)
-        return tf.concat([processed_input, residual], axis=-1)
+        return processed_input + residual
 
     def get_config(self) -> dict:
         config = super().get_config()

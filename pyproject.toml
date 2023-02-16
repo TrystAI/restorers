@@ -28,4 +28,8 @@ dependencies = [
 homepage = "https://github.com/soumik12345/restorers"
 repository = "https://github.com/soumik12345/restorers"
 
-
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+	"ignore::UserWarning"
+]

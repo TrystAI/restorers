@@ -34,8 +34,8 @@ class BlockStack(keras.layers.Layer):
         num_blocks: int,
         *args,
         **kwargs,
-    ):
-        super().__init__()
+    ) -> None:
+        super().__init__(**kwargs)
         self.block_class = block_class
         self.num_blocks = num_blocks
         self.block_list = []
@@ -79,7 +79,7 @@ class UpScale(keras.layers.Layer):
     While giving input, make sure that (pixel_shuffle_factor**2) divides channels
     """
 
-    def __init__(self, channels: int, pixel_shuffle_factor: int, **kwargs):
+    def __init__(self, channels: int, pixel_shuffle_factor: int, **kwargs) -> None:
         super().__init__(**kwargs)
         self.channels = channels
         self.pixel_shuffle_factor = pixel_shuffle_factor

@@ -46,5 +46,7 @@ class ModelTester(unittest.TestCase):
 
     def test_encoder(self) -> None:
         x = tf.ones((1, 128, 128, 180))
-        y = Encoder(num_features=180, kernel_size=3, scale_features=48, csff=False)(x)
+        y = Encoder(
+            num_features=180, kernel_size=3, scale_features=48, apply_csff=False
+        )(x)
         self.assertEqual(y.shape, (1, 128, 128, 180))

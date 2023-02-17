@@ -11,32 +11,39 @@ class ChannelAttentionLayer(tf.keras.layers.Layer):
         use_bias: Optional[bool] = False,
         name: str = "Channel Attention Layer",
         *args,
-        **kwargs
+        **kwargs,
     ) -> None:
+        self.channels = channels
+        self.reduction = reduction
+        self.use_bias = use_bias
+
         super().__init__(name=name, *args, **kwargs)
 
-        self.avg_pool = tf.keras.layers.AveragePooling2D((1, 1))
+        self.avg_pool = tf.keras.layers.GlobalAveragePooling2D()
         self.stem = tf.keras.Sequential(
             [
                 tf.keras.layers.Conv2D(
-                    filters=int(channels // reduction),
+                    filters=int(self.channels // self.reduction),
                     kernel_size=1,
+                    strides=1,
                     padding="same",
-                    use_bias=use_bias,
+                    use_bias=self.use_bias,
+                    activation="relu",
                 ),
-                tf.keras.layers.ReLU(),
                 tf.keras.layers.Conv2D(
-                    filters=channels,
+                    filters=self.channels,
                     kernel_size=1,
+                    strides=1,
                     padding="same",
-                    use_bias=use_bias,
+                    use_bias=self.use_bias,
+                    activation="sigmoid",
                 ),
-                tf.keras.layers.Activation("sigmoid"),
             ],
         )
 
     def call(self, inputs: tf.Tensor, training: Optional[bool] = None) -> tf.Tensor:
         x = self.avg_pool(inputs)
+        x = tf.reshape(x, shape=(-1, 1, 1, self.channels))
         x = self.stem(x)
         return inputs * x
 
@@ -62,7 +69,7 @@ class ChannelAttentionBlock(tf.keras.layers.Layer):
         activation: Optional[Type[tf.keras.layers.Activation]] = tf.keras.layers.PReLU,
         name: str = "Channel Attention Block",
         *args,
-        **kwargs
+        **kwargs,
     ) -> None:
         super().__init__(name=name, *args, **kwargs)
 
@@ -77,6 +84,7 @@ class ChannelAttentionBlock(tf.keras.layers.Layer):
                 tf.keras.layers.Conv2D(
                     filters=self.num_features,
                     kernel_size=self.kernel_size,
+                    strides=1,
                     padding="same",
                     use_bias=self.use_bias,
                 ),
@@ -84,6 +92,7 @@ class ChannelAttentionBlock(tf.keras.layers.Layer):
                 tf.keras.layers.Conv2D(
                     filters=self.num_features,
                     kernel_size=self.kernel_size,
+                    strides=1,
                     padding="same",
                     use_bias=self.use_bias,
                 ),
@@ -98,9 +107,9 @@ class ChannelAttentionBlock(tf.keras.layers.Layer):
 
     def call(self, inputs: tf.Tensor, training: Optional[bool] = None) -> tf.Tensor:
         x = self.stem(inputs)
+        assert x.shape == inputs.shape, f"{x.shape} != {inputs.shape}"
         x = self.channel_attention(x)
-        x += inputs
-        return x
+        return tf.keras.layers.Add()([x, inputs])
 
     def get_config(self) -> dict:
         config = super().get_config()
@@ -124,7 +133,7 @@ class SupervisedAttentionBlock(tf.keras.layers.Layer):
         use_bias: Optional[bool] = False,
         name: str = "Supervised Attention Block",
         *args,
-        **kwargs
+        **kwargs,
     ) -> None:
         super().__init__(name=name, *args, **kwargs)
 
@@ -135,6 +144,7 @@ class SupervisedAttentionBlock(tf.keras.layers.Layer):
         self.conv_layer_1 = tf.keras.layers.Conv2D(
             filters=self.num_features,
             kernel_size=self.kernel_size,
+            strides=1,
             padding="same",
             use_bias=self.use_bias,
         )
@@ -142,6 +152,7 @@ class SupervisedAttentionBlock(tf.keras.layers.Layer):
         self.conv_layer_2 = tf.keras.layers.Conv2D(
             filters=3,
             kernel_size=self.kernel_size,
+            strides=1,
             padding="same",
             use_bias=self.use_bias,
         )
@@ -149,8 +160,10 @@ class SupervisedAttentionBlock(tf.keras.layers.Layer):
         self.conv_layer_3 = tf.keras.layers.Conv2D(
             filters=self.num_features,
             kernel_size=self.kernel_size,
+            strides=1,
             padding="same",
             use_bias=self.use_bias,
+            activation="sigmoid",
         )
 
     def call(
@@ -161,7 +174,7 @@ class SupervisedAttentionBlock(tf.keras.layers.Layer):
     ) -> tf.Tensor:
         x1 = self.conv_layer_1(inputs)
         img = self.conv_layer_2(inputs) + image_inputs
-        x2 = tf.keras.activations.sigmoid((self.conv_layer_3(img)))
+        x2 = self.conv_layer_3(img)
         x1 = x1 * x2
         return x1 + inputs, img
 

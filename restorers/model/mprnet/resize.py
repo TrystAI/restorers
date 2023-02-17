@@ -58,7 +58,7 @@ class UpSample(tf.keras.layers.Layer):
         self.channels = channels
         self.channel_factor = channel_factor
 
-        self.downsample = tf.keras.Sequential(
+        self.upsample = tf.keras.Sequential(
             [
                 tf.keras.layers.UpSampling2D(size=2, interpolation="bilinear"),
                 tf.keras.layers.Conv2D(
@@ -72,7 +72,7 @@ class UpSample(tf.keras.layers.Layer):
         )
 
     def call(self, inputs: tf.Tensor, training: Optional[bool] = None) -> tf.Tensor:
-        return self.downsample(inputs)
+        return self.upsample(inputs)
 
     def get_config(self) -> dict:
         config = super().get_config()

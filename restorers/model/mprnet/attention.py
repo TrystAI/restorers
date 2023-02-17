@@ -7,7 +7,7 @@ class ChannelAttentionLayer(tf.keras.layers.Layer):
     def __init__(
         self,
         channels: int,
-        reduction: Optional[int] = 16,
+        reduction: Optional[int] = 4,
         use_bias: Optional[bool] = False,
         name: str = "Channel Attention Layer",
         *args,

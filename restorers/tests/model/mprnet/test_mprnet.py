@@ -8,6 +8,7 @@ from restorers.model.mprnet.attention import (
     SupervisedAttentionBlock,
 )
 from restorers.model.mprnet.resize import DownSample, SkipUpSample, UpSample
+from restorers.model.mprnet.subnetwork import Encoder
 
 
 class ModelTester(unittest.TestCase):
@@ -41,4 +42,9 @@ class ModelTester(unittest.TestCase):
         x = tf.ones((1, 128, 128, 180))
         x_img = tf.ones((1, 128, 128, 3))
         y, y_img = SupervisedAttentionBlock(num_features=180, kernel_size=3)(x, x_img)
+        self.assertEqual(y.shape, (1, 128, 128, 180))
+
+    def test_encoder(self) -> None:
+        x = tf.ones((1, 128, 128, 180))
+        y = Encoder(num_features=180, kernel_size=3, scale_features=48, csff=False)(x)
         self.assertEqual(y.shape, (1, 128, 128, 180))

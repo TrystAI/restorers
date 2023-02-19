@@ -10,6 +10,14 @@ class PixelShuffle(keras.layers.Layer):
     """
     PixelShuffle Layer
 
+    Given input of size (H,W,C), it will generate an output
+    of size
+    (
+        H*pixel_shuffle_factor,
+        W*pixel_shuffle_factor,
+        channels//(pixel_shuffle_factor**2)
+    )
+
     Wrapper Class for tf.nn.depth_to_space
     """
 
@@ -28,6 +36,12 @@ class PixelShuffle(keras.layers.Layer):
 
 
 class BlockStack(keras.layers.Layer):
+    """
+    BlockStack Layer
+
+    Simple utility class to generate a sequential list of same layer
+    """
+
     def __init__(
         self,
         block_class: Type[keras.layers.Layer],
@@ -152,7 +166,6 @@ class NAFNet(keras.models.Model):
         self.decoder_block_nums = decoder_block_nums
 
         self.intro = keras.layers.Conv2D(filters=filters, kernel_size=3, padding="same")
-        self.ending = None
 
         self.encoders = []
         self.decoders = []

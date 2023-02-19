@@ -85,25 +85,13 @@ class NAFBlock(keras.layers.Layer):
 
         self.layer_norm1 = keras.layers.LayerNormalization()
 
-        self.conv1 = None
-        self.dconv2 = None
-
         self.simple_gate = SimpleGate(factor)
-        self.simplified_attention = None
-
-        self.conv3 = None
 
         self.dropout1 = keras.layers.Dropout(drop_out_rate)
 
         self.layer_norm2 = keras.layers.LayerNormalization()
 
-        self.conv4 = None
-        self.conv5 = None
-
         self.dropout2 = keras.layers.Dropout(drop_out_rate)
-
-        self.beta = None
-        self.gamma = None
 
     def build(self, input_shape: tf.TensorShape) -> None:
         input_channels = input_shape[-1]

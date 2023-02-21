@@ -66,33 +66,25 @@ class BaselineBlock(keras.layers.Layer):
         self.drop_out_rate = drop_out_rate
         self.balanced_skip_connection = balanced_skip_connection
 
-        self.conv1 = None
-        self.dconv2 = None
-        self.conv3 = None
-        self.channel_attention = None
-
         self.layer_norm1 = keras.layers.LayerNormalization()
         self.layer_norm2 = keras.layers.LayerNormalization()
-
-        self.conv4 = None
-        self.conv5 = None
 
         self.dropout1 = keras.layers.Dropout(drop_out_rate)
         self.dropout2 = keras.layers.Dropout(drop_out_rate)
 
-        self.beta = None
-        self.gamma = None
-
     def build(self, input_shape: tf.TensorShape) -> None:
         input_channels = input_shape[-1]
 
-        self.conv1 = keras.layers.Conv2D(input_channels, kernel_size=1, strides=1)
+        self.conv1 = keras.layers.Conv2D(
+            filters=input_channels, kernel_size=1, strides=1
+        )
         self.dconv2 = keras.layers.Conv2D(
             filters=input_channels,
             kernel_size=1,
             padding="same",
             strides=1,
             groups=input_channels,
+            activation="gelu",
         )
 
         self.conv3 = keras.layers.Conv2D(
@@ -103,7 +95,9 @@ class BaselineBlock(keras.layers.Layer):
 
         ffn_channel = input_channels * self.factor
 
-        self.conv4 = keras.layers.Conv2D(filters=ffn_channel, kernel_size=1, strides=1)
+        self.conv4 = keras.layers.Conv2D(
+            filters=ffn_channel, kernel_size=1, strides=1, activation="gelu"
+        )
         self.conv5 = keras.layers.Conv2D(
             filters=input_channels, kernel_size=1, strides=1
         )
@@ -120,7 +114,6 @@ class BaselineBlock(keras.layers.Layer):
         x = self.layer_norm1(inputs)
         x = self.conv1(x)
         x = self.dconv2(x)
-        x = keras.activations.gelu(x)
         x = self.channel_attention(x)
         x = self.conv3(x)
         x = self.dropout1(x)
@@ -131,7 +124,6 @@ class BaselineBlock(keras.layers.Layer):
         # Block 2
         y = self.layer_norm2(x)
         y = self.conv4(y)
-        y = keras.activations.gelu(y)
         y = self.conv5(y)
         y = self.dropout2(y)
 

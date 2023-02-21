@@ -12,6 +12,7 @@ from restorers.model.nafnet import (
     BlockStack,
     BaselineBlock,
     ChannelAttention,
+    PlainBlock,
 )
 
 
@@ -30,6 +31,15 @@ class BaselineBlockTest(unittest.TestCase):
         x = tf.ones(input_shape)
         baselineblock = BaselineBlock()
         y = baselineblock(x)
+        self.assertEqual(y.shape, x.shape)
+
+
+class PlainBlockTest(unittest.TestCase):
+    def test_plainblock(self) -> None:
+        input_shape = (1, 256, 256, 3)
+        x = tf.ones(input_shape)
+        plainblock = PlainBlock()
+        y = plainblock(x)
         self.assertEqual(y.shape, x.shape)
 
 
@@ -113,7 +123,7 @@ class UpScaleTest(unittest.TestCase):
 
 class BlockStackTest(unittest.TestCase):
     def setUp(self):
-        self.block_class_list = [NAFBlock, BaselineBlock]
+        self.block_class_list = [NAFBlock, BaselineBlock, PlainBlock]
         self.block_nums = [2, 3]
 
     def test_blockstack(self) -> None:

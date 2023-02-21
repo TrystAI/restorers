@@ -56,8 +56,6 @@ class PlainBlock(keras.layers.Layer):
             filters=input_channels, kernel_size=1, strides=1
         )
 
-        self.channel_attention = ChannelAttention(input_channels)
-
         ffn_channel = input_channels * self.factor
 
         self.conv4 = keras.layers.Conv2D(

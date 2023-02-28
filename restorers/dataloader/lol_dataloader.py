@@ -94,7 +94,7 @@ class UnsupervisedLoLDataloader:
         self.train_enhanced_images = enhanced_images[:num_train_images]
         self.val_input_images = low_light_images[num_train_images:]
         self.val_enhanced_images = enhanced_images[num_train_images:]
-    
+
     def __len__(self):
         return self.num_data_points
 

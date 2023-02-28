@@ -25,7 +25,7 @@ from ml_collections.config_flags import config_flags
 from wandb.keras import WandbMetricsLogger
 
 from restorers.model.zero_dce import ZeroDCE, FastZeroDce
-from restorers.dataloader import UnsupervisedLOLDataLoader
+from restorers.dataloader import UnsupervisedLoLDataloader
 from restorers.utils import get_model_checkpoint_callback, initialize_device
 
 FLAGS = flags.FLAGS
@@ -61,50 +61,49 @@ def main(_) -> None:
 
     tf.keras.utils.set_random_seed(FLAGS.experiment_configs.seed)
 
+    data_loader_configs = FLAGS.experiment_configs.data_loader_configs
+    model_configs = FLAGS.experiment_configs.model_configs
+    training_configs = FLAGS.experiment_configs.training_configs
+
     strategy = initialize_device()
-    batch_size = (
-        FLAGS.experiment_configs.data_loader_configs.local_batch_size
-        * strategy.num_replicas_in_sync
-    )
+    batch_size = data_loader_configs.local_batch_size * strategy.num_replicas_in_sync
     wandb.config.global_batch_size = batch_size
 
-    data_loader = UnsupervisedLOLDataLoader(
-        image_size=FLAGS.experiment_configs.data_loader_configs.image_size,
-        bit_depth=FLAGS.experiment_configs.data_loader_configs.bit_depth,
-        val_split=FLAGS.experiment_configs.data_loader_configs.val_split,
-        visualize_on_wandb=False,
-        dataset_artifact_address=FLAGS.experiment_configs.data_loader_configs.dataset_artifact_address,
+    data_loader = UnsupervisedLoLDataloader(
+        image_size=data_loader_configs.image_size,
+        bit_depth=data_loader_configs.bit_depth,
+        val_split=data_loader_configs.val_split,
+        dataset_artifact_address=data_loader_configs.dataset_artifact_address,
     )
-
-    tran_dataset, val_dataset = data_loader.get_datasets(batch_size=batch_size)
+    train_dataset, val_dataset = data_loader.get_datasets(batch_size=batch_size)
 
     with strategy.scope():
         model = (
             ZeroDCE(
-                num_intermediate_filters=FLAGS.experiment_configs.model_configs.num_intermediate_filters,
-                num_iterations=FLAGS.experiment_configs.model_configs.num_iterations,
-                decoder_channel_factor=FLAGS.experiment_configs.model_configs.decoder_channel_factor,
+                num_intermediate_filters=model_configs.num_intermediate_filters,
+                num_iterations=model_configs.num_iterations,
+                decoder_channel_factor=model_configs.decoder_channel_factor,
             )
-            if not FLAGS.experiment_configs.model_configs.use_faster_variant
+            if not model_configs.use_faster_variant
             else FastZeroDce(
-                num_intermediate_filters=FLAGS.experiment_configs.model_configs.num_intermediate_filters,
-                num_iterations=FLAGS.experiment_configs.model_configs.num_iterations,
-                decoder_channel_factor=FLAGS.experiment_configs.model_configs.decoder_channel_factor,
+                num_intermediate_filters=model_configs.num_intermediate_filters,
+                num_iterations=model_configs.num_iterations,
+                decoder_channel_factor=model_configs.decoder_channel_factor,
             )
         )
         model.compile(
             optimizer=tf.keras.optimizers.Adam(
-                learning_rate=FLAGS.experiment_configs.training_configs.learning_rate,
+                learning_rate=training_configs.learning_rate
             ),
-            weight_exposure_loss=FLAGS.experiment_configs.training_configs.weight_exposure_loss,
-            weight_color_constancy_loss=FLAGS.experiment_configs.training_configs.weight_color_constancy_loss,
-            weight_illumination_smoothness_loss=FLAGS.experiment_configs.training_configs.weight_illumination_smoothness_loss,
+            weight_exposure_loss=training_configs.weight_exposure_loss,
+            weight_color_constancy_loss=training_configs.weight_color_constancy_loss,
+            weight_illumination_smoothness_loss=training_configs.weight_illumination_smoothness_loss,
         )
 
     callbacks = [
         get_model_checkpoint_callback(
             filepath="checkpoint",
-            save_best_only=FLAGS.experiment_configs.training_configs.save_best_checkpoint_only,
+            save_best_only=training_configs.save_best_checkpoint_only,
             using_wandb=True,
         )
     ]
@@ -113,7 +112,7 @@ def main(_) -> None:
     model.fit(
         train_dataset,
         validation_data=val_dataset,
-        epochs=FLAGS.experiment_configs.training_configs.epochs,
+        epochs=training_configs.epochs,
         callbacks=callbacks,
     )
 

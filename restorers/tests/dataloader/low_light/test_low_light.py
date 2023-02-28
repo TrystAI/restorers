@@ -5,7 +5,7 @@ import tensorflow as tf
 
 from restorers.dataloader import (
     LOLDataLoader,
-    UnsupervisedLOLDataLoader,
+    UnsupervisedLoLDataloader,
     MITAdobe5KDataLoader,
 )
 
@@ -34,11 +34,10 @@ class LowLightDataLoaderTester(unittest.TestCase):
         shutil.rmtree("./artifacts")
 
     def test_unsupervised_lol_dataloader(self) -> None:
-        data_loader = UnsupervisedLOLDataLoader(
+        data_loader = UnsupervisedLoLDataloader(
             image_size=128,
             bit_depth=8,
             val_split=0.2,
-            visualize_on_wandb=False,
             dataset_artifact_address="ml-colabs/dataset/LoL:v0",
         )
         self.assertEqual(len(data_loader), 485)

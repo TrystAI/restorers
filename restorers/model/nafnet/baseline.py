@@ -3,6 +3,8 @@ from typing import Optional
 import tensorflow as tf
 from tensorflow import keras
 
+from .plainnet import PlainBlock
+
 
 class ChannelAttention(keras.layers.Layer):
     """
@@ -38,12 +40,13 @@ class ChannelAttention(keras.layers.Layer):
         return config
 
 
-class BaselineBlock(keras.layers.Layer):
+class BaselineBlock(PlainBlock):
     """
     BaselineBlock Layer
 
     This is the baseline block proposed in NAFNet Paper.
-    From this block all the non-linear activations are removed to generate the NAFBlock
+    The baseline block is derived from plainblock by adding layer norm, channel attention,
+     and replacing relu with gelu.
 
     Parameters:
         input_channels: number of channels in the input (as NAFBlock retains the input size in the output)
@@ -61,86 +64,21 @@ class BaselineBlock(keras.layers.Layer):
         balanced_skip_connection: Optional[bool] = False,
         **kwargs
     ) -> None:
-        super().__init__(**kwargs)
-        self.factor = factor
-        self.drop_out_rate = drop_out_rate
-        self.balanced_skip_connection = balanced_skip_connection
+        super().__init__(factor, drop_out_rate, balanced_skip_connection, **kwargs)
 
         self.layer_norm1 = keras.layers.LayerNormalization()
         self.layer_norm2 = keras.layers.LayerNormalization()
 
-        self.dropout1 = keras.layers.Dropout(drop_out_rate)
-        self.dropout2 = keras.layers.Dropout(drop_out_rate)
+        self.activation = keras.layers.Activation("gelu")
 
-    def build(self, input_shape: tf.TensorShape) -> None:
+    def get_attention_layer(self, input_shape: tf.TensorShape) -> None:
         input_channels = input_shape[-1]
+        return ChannelAttention(input_channels)
 
-        self.conv1 = keras.layers.Conv2D(
-            filters=input_channels, kernel_size=1, strides=1
-        )
-        self.dconv2 = keras.layers.Conv2D(
-            filters=input_channels,
-            kernel_size=1,
-            padding="same",
-            strides=1,
-            groups=input_channels,
-            activation="gelu",
-        )
-
-        self.conv3 = keras.layers.Conv2D(
-            filters=input_channels, kernel_size=1, strides=1
-        )
-
-        self.channel_attention = ChannelAttention(input_channels)
-
-        ffn_channel = input_channels * self.factor
-
-        self.conv4 = keras.layers.Conv2D(
-            filters=ffn_channel, kernel_size=1, strides=1, activation="gelu"
-        )
-        self.conv5 = keras.layers.Conv2D(
-            filters=input_channels, kernel_size=1, strides=1
-        )
-
-        self.beta = tf.Variable(
-            tf.ones((1, 1, 1, input_channels)), trainable=self.balanced_skip_connection
-        )
-        self.gamma = tf.Variable(
-            tf.ones((1, 1, 1, input_channels)), trainable=self.balanced_skip_connection
-        )
-
-    def call(self, inputs: tf.Tensor, *args, **kwargs) -> tf.Tensor:
-        # Block 1
+    def call_block1(self, inputs: tf.Tensor) -> tf.Tensor:
         x = self.layer_norm1(inputs)
-        x = self.conv1(x)
-        x = self.dconv2(x)
-        x = self.channel_attention(x)
-        x = self.conv3(x)
-        x = self.dropout1(x)
+        return super().call_block1(x)
 
-        # Residual connection
-        x = inputs + self.beta * x
-
-        # Block 2
-        y = self.layer_norm2(x)
-        y = self.conv4(y)
-        y = self.conv5(y)
-        y = self.dropout2(y)
-
-        # Residual connection
-        y = x + self.gamma * y
-
-        return y
-
-    def get_config(self) -> dict:
-        """Add constructor arguments to the config"""
-        config = super().get_config()
-        config.update(
-            {
-                "channels": self.channels,
-                "factor": self.factor,
-                "drop_out_rate": self.drop_out_rate,
-                "balanced_skip_connection": self.balanced_skip_connection,
-            }
-        )
-        return config
+    def call_block2(self, inputs: tf.Tensor) -> tf.Tensor:
+        x = self.layer_norm2(inputs)
+        return super().call_block2(x)

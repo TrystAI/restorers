@@ -10,8 +10,6 @@ class PlainBlock(keras.layers.Layer):
 
     This is the plain block proposed in NAFNet Paper.
     This is inspired from the restormer's block, keeping the most common components.
-    The baseline block is derived from plainblock by adding layer norm, channel attention,
-     and replacing relu with gelu.
 
     Parameters:
         input_channels: number of channels in the input (as NAFBlock retains the input size in the output)
@@ -34,33 +32,43 @@ class PlainBlock(keras.layers.Layer):
         self.drop_out_rate = drop_out_rate
         self.balanced_skip_connection = balanced_skip_connection
 
+        self.activation = keras.layers.Activation("relu")
+
         self.dropout1 = keras.layers.Dropout(drop_out_rate)
+
         self.dropout2 = keras.layers.Dropout(drop_out_rate)
+
+    def get_dw_channel(self, input_channels: int) -> int:
+        return input_channels
+
+    def get_ffn_channel(self, input_channels: int) -> int:
+        return input_channels * self.factor
+
+    def get_attention_layer(self, input_shape: tf.TensorShape) -> None:
+        return keras.layers.Identity()
 
     def build(self, input_shape: tf.TensorShape) -> None:
         input_channels = input_shape[-1]
+        dw_channel = self.get_dw_channel(input_channels)
 
-        self.conv1 = keras.layers.Conv2D(
-            filters=input_channels, kernel_size=1, strides=1
-        )
+        self.conv1 = keras.layers.Conv2D(filters=dw_channel, kernel_size=1, strides=1)
         self.dconv2 = keras.layers.Conv2D(
-            filters=input_channels,
-            kernel_size=1,
+            filters=dw_channel,
+            kernel_size=3,
             padding="same",
             strides=1,
-            groups=input_channels,
-            activation="relu",
+            groups=dw_channel,
         )
+
+        self.attention = self.get_attention_layer(input_shape)
 
         self.conv3 = keras.layers.Conv2D(
             filters=input_channels, kernel_size=1, strides=1
         )
 
-        ffn_channel = input_channels * self.factor
+        ffn_channel = self.get_ffn_channel(input_channels)
 
-        self.conv4 = keras.layers.Conv2D(
-            filters=ffn_channel, kernel_size=1, strides=1, activation="relu"
-        )
+        self.conv4 = keras.layers.Conv2D(filters=ffn_channel, kernel_size=1, strides=1)
         self.conv5 = keras.layers.Conv2D(
             filters=input_channels, kernel_size=1, strides=1
         )
@@ -72,20 +80,31 @@ class PlainBlock(keras.layers.Layer):
             tf.ones((1, 1, 1, input_channels)), trainable=self.balanced_skip_connection
         )
 
-    def call(self, inputs: tf.Tensor, *args, **kwargs) -> tf.Tensor:
-        # Block 1
+    def call_block1(self, inputs: tf.Tensor) -> tf.Tensor:
         x = self.conv1(inputs)
         x = self.dconv2(x)
+        x = self.activation(x)
+        x = self.attention(x)
         x = self.conv3(x)
         x = self.dropout1(x)
+        return x
+
+    def call_block2(self, inputs: tf.Tensor) -> tf.Tensor:
+        y = self.conv4(inputs)
+        y = self.activation(y)
+        y = self.conv5(y)
+        y = self.dropout2(y)
+        return y
+
+    def call(self, inputs: tf.Tensor, *args, **kwargs) -> tf.Tensor:
+        # Block 1
+        x = self.call_block1(inputs)
 
         # Residual connection
         x = inputs + self.beta * x
 
         # Block 2
-        y = self.conv4(x)
-        y = self.conv5(y)
-        y = self.dropout2(y)
+        y = self.call_block2(x)
 
         # Residual connection
         y = x + self.gamma * y

@@ -2,8 +2,6 @@ import os
 from glob import glob
 from typing import Union
 
-import tensorflow as tf
-
 from .base import LowLightDatasetFactory, UnsupervisedDatasetFactory
 from ..utils import fetch_wandb_artifact
 

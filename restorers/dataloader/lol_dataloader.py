@@ -1,19 +1,11 @@
 import os
 from glob import glob
-from functools import partial
-from typing import Union, List, Tuple
+from typing import Union
 
 import tensorflow as tf
 
 from .base import LowLightDatasetFactory, UnsupervisedDatasetFactory
-from .base.commons import (
-    read_image,
-    unsupervised_random_horizontal_flip,
-    unsupervised_random_vertical_flip,
-)
 from ..utils import fetch_wandb_artifact
-
-_AUTOTUNE = tf.data.AUTOTUNE
 
 
 class LOLDataLoader(LowLightDatasetFactory):

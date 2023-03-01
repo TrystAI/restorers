@@ -24,8 +24,8 @@ class EnlightenGANDataLoader(UnsupervisedDatasetFactory):
         artifact_dir = fetch_wandb_artifact(
             artifact_address=dataset_artifact_address, artifact_type="dataset"
         )
-        train_a_paths = sorted(glob(os.path.join(artifact_dir, " trainA", "*")))
-        train_b_paths = sorted(glob(os.path.join(artifact_dir, " trainA", "*")))
+        train_a_paths = sorted(glob(os.path.join(artifact_dir, "trainA", "*")))
+        train_b_paths = sorted(glob(os.path.join(artifact_dir, "trainB", "*")))
         input_image_paths = (
             train_a_paths
             if self.use_low_light_images_only

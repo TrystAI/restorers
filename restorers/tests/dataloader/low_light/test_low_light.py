@@ -81,7 +81,7 @@ class LowLightDataLoaderTester(unittest.TestCase):
             use_low_light_images_only=False,
             dataset_artifact_address="ml-colabs/dataset/EnlightenGAN-Dataset:v0",
         )
-        self.assertEqual(len(data_loader), 5000)
+        self.assertEqual(len(data_loader), 1930)
         train_dataset, val_dataset = data_loader.get_datasets(batch_size=1)
         x, y = next(iter(train_dataset))
         self.assertEqual(tuple(train_dataset.element_spec[0].shape), (1, 128, 128, 3))

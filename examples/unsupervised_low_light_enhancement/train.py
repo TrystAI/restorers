@@ -73,6 +73,7 @@ def main(_) -> None:
         image_size=data_loader_configs.image_size,
         bit_depth=data_loader_configs.bit_depth,
         val_split=data_loader_configs.val_split,
+        use_low_light_images_only=data_loader_configs.use_low_light_images_only,
         dataset_artifact_address=data_loader_configs.dataset_artifact_address,
     )
     train_dataset, val_dataset = data_loader.get_datasets(batch_size=batch_size)

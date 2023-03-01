@@ -4,7 +4,13 @@ from typing import List, Tuple
 
 import tensorflow as tf
 
-from .commons import read_image, random_horiontal_flip, random_vertical_flip
+from .commons import (
+    read_image,
+    random_horiontal_flip,
+    random_vertical_flip,
+    unsupervised_random_horizontal_flip,
+    unsupervised_random_vertical_flip,
+)
 
 _AUTOTUNE = tf.data.AUTOTUNE
 
@@ -190,6 +196,60 @@ class DatasetFactory(ABC):
             enhanced_images=self.val_enhanced_images,
             batch_size=batch_size,
             apply_crop=False,
+            apply_augmentations=False,
+        )
+        return train_dataset, val_dataset
+
+
+class UnsupervisedDatasetFactory(ABC):
+    def __init__(self, image_size: int, bit_depth: int, val_split: float) -> None:
+        self.image_size = image_size
+        self.bit_depth = bit_depth
+        self.val_split = val_split
+
+    @abstractmethod
+    def fetch_dataset(self, val_split: float, dataset_artifact_address: str):
+        raise NotImplementedError(f"{self.__class__.__name__ }.fetch_dataset")
+
+    def load_data(self, image_path: str) -> tf.Tensor:
+        image = tf.io.read_file(image_path)
+        image = tf.image.decode_png(image, channels=3)
+        image = tf.image.resize(
+            images=image,
+            size=[self.image_size, self.image_size],
+        )
+        image = image / ((2**self.bit_depth) - 1)
+        return image
+
+    def __len__(self):
+        return self.num_data_points
+
+    def build_dataset(
+        self, input_image: List[str], batch_size: int, apply_augmentations: bool
+    ) -> tf.data.Dataset:
+        dataset = tf.data.Dataset.from_tensor_slices((input_image))
+        dataset = dataset.map(self.load_data, num_parallel_calls=_AUTOTUNE)
+        if apply_augmentations:
+            dataset = dataset.map(
+                unsupervised_random_horizontal_flip,
+                num_parallel_calls=_AUTOTUNE,
+            )
+            dataset = dataset.map(
+                unsupervised_random_vertical_flip,
+                num_parallel_calls=_AUTOTUNE,
+            )
+        dataset = dataset.batch(batch_size, drop_remainder=True)
+        return dataset.prefetch(_AUTOTUNE)
+
+    def get_datasets(self, batch_size: int) -> Tuple[tf.data.Dataset]:
+        train_dataset = self.build_dataset(
+            input_image=self.train_input_images,
+            batch_size=batch_size,
+            apply_augmentations=True,
+        )
+        val_dataset = self.build_dataset(
+            input_image=self.val_input_images,
+            batch_size=batch_size,
             apply_augmentations=False,
         )
         return train_dataset, val_dataset

@@ -108,9 +108,8 @@ class NAFBlock(keras.layers.Layer):
         drop_out_rate: dropout rate
         balanced_skip_connection: adds additional trainable parameters to the skip connections.
             The parameter denotes how much importance should be given to the sub block in the skip connection.
-        mode:
-            NAFBlock has 3 mode.
-            'plain' mode uses the PlainBlock. 
+        mode: NAFBlock has 3 mode.
+            'plain' mode uses the PlainBlock.
                 It is derived from the restormer block, keeping the most common components
             'baseline' mode used the BaselineBlock
                 It is derived by adding layer normalization, channel attention to PlainBlock.

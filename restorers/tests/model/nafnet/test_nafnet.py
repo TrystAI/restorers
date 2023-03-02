@@ -1,17 +1,17 @@
 import unittest
 
-#import tensorflow as tf
+import tensorflow as tf
 
-# from restorers.model.nafnet import (
-#     NAFBlock,
-#     SimpleGate,
-#     SimplifiedChannelAttention,
-#     NAFNet,
-#     PixelShuffle,
-#     UpScale,
-#     BlockStack,
-#     ChannelAttention
-# )
+from restorers.model.nafnet import (
+    NAFBlock,
+    SimpleGate,
+    SimplifiedChannelAttention,
+    NAFNet,
+    PixelShuffle,
+    UpScale,
+    BlockStack,
+    ChannelAttention
+)
 
 
 class NAFBlockTest(unittest.TestCase):
@@ -27,7 +27,7 @@ class BaselineBlockTest(unittest.TestCase):
     def test_baselineblock(self) -> None:
         input_shape = (1, 256, 256, 3)
         x = tf.ones(input_shape)
-        baselineblock = NafBlock(mode='baseline')
+        baselineblock = NAFBlock(mode='baseline')
         y = baselineblock(x)
         self.assertEqual(y.shape, x.shape)
 
@@ -36,7 +36,7 @@ class PlainBlockTest(unittest.TestCase):
     def test_plainblock(self) -> None:
         input_shape = (1, 256, 256, 3)
         x = tf.ones(input_shape)
-        plainblock = NafBlock(mode='plain')
+        plainblock = NAFBlock(mode='plain')
         y = plainblock(x)
         self.assertEqual(y.shape, x.shape)
 
@@ -128,7 +128,7 @@ class BlockStackTest(unittest.TestCase):
         input_shape = (1, 256, 256, 3)
         x = tf.ones(input_shape)
         for num_blocks in self.block_nums:
-            for block_class_mode in self.block_class_list:
-                block_stack = BlockStack(NAFBlock, num_blocks, mode=block_class_mode)
+            for mode in self.block_class_mode:
+                block_stack = BlockStack(NAFBlock, num_blocks, mode=mode)
                 y = block_stack(x)
                 self.assertEqual(y.shape, x.shape)

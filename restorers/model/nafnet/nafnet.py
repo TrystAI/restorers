@@ -49,7 +49,7 @@ class BlockStack(keras.layers.Layer):
         *args,
         **kwargs,
     ) -> None:
-        super().__init__(*args, **kwargs)
+        super().__init__()
         self.block_class = block_class
         self.num_blocks = num_blocks
         self.block_list = []

@@ -114,7 +114,7 @@ class NAFBlock(keras.layers.Layer):
         factor: Optional[int] = 2,
         drop_out_rate: Optional[float] = 0.0,
         balanced_skip_connection: Optional[bool] = False,
-        mode: Optional[str] = NAFBLOCK
+        mode: Optional[str] = NAFBLOCK,
         **kwargs
     ) -> None:
         super().__init__(**kwargs)
@@ -145,7 +145,7 @@ class NAFBlock(keras.layers.Layer):
             self.layer_norm2 = keras.layers.LayerNormalization()
 
     def get_dw_channel(self, input_channels: int) -> int:
-        if mode == NAFBLOCK:
+        if self.mode == NAFBLOCK:
             return input_channels * self.factor
         else:
             return input_channels
@@ -155,9 +155,9 @@ class NAFBlock(keras.layers.Layer):
 
     def get_attention_layer(self, input_shape: tf.TensorShape) -> Optional[keras.layers.Layer]:
         input_channels = input_shape[-1]
-        if mode == NAFBLOCK:
+        if self.mode == NAFBLOCK:
             return SimplifiedChannelAttention(input_channels)
-        elif mode == BASELINE:
+        elif self.mode == BASELINE:
             return ChannelAttention(input_channels)
         else:
             return None

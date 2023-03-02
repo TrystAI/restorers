@@ -3,6 +3,10 @@ from typing import Optional
 import tensorflow as tf
 from tensorflow import keras
 
+NAFBLOCK = "nafblock"
+PLAIN = "plain"
+BASELINE = "baseline"
+
 
 class SimpleGate(keras.layers.Layer):
     """
@@ -27,6 +31,40 @@ class SimpleGate(keras.layers.Layer):
         """Add factor to the config"""
         config = super().get_config()
         config.update({"factor": self.factor})
+        return config
+
+
+class ChannelAttention(keras.layers.Layer):
+    """
+    Channel Attention layer
+
+    Parameters:
+        channels: number of channels in input
+    """
+
+    def __init__(self, channels: int, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.channels = channels
+        self.avg_pool = keras.layers.GlobalAveragePooling2D()
+        self.conv1 = keras.layers.Conv2D(
+            filters=channels // 2, kernel_size=1, activation=keras.activations.relu
+        )
+        self.conv2 = keras.layers.Conv2D(
+            filters=channels, kernel_size=1, activation=keras.activations.sigmoid
+        )
+
+    def call(self, inputs: tf.Tensor, *args, **kwargs) -> tf.Tensor:
+        average_pooling = self.avg_pool(inputs)
+        feature_descriptor = tf.reshape(
+            average_pooling, shape=(-1, 1, 1, self.channels)
+        )
+        x = self.conv1(feature_descriptor)
+        return inputs * self.conv2(x)
+
+    def get_config(self) -> dict:
+        """Add channels to the config"""
+        config = super().get_config()
+        config.update({"channels": self.channels})
         return config
 
 
@@ -62,6 +100,7 @@ class SimplifiedChannelAttention(keras.layers.Layer):
 class NAFBlock(keras.layers.Layer):
     """
     NAFBlock (Nonlinear Activation Free Block)
+
     Parameters:
         input_channels: number of channels in the input (as NAFBlock retains the input size in the output)
         factor: factor by which the channels must be increased before being reduced by simple gate.
@@ -69,6 +108,15 @@ class NAFBlock(keras.layers.Layer):
         drop_out_rate: dropout rate
         balanced_skip_connection: adds additional trainable parameters to the skip connections.
             The parameter denotes how much importance should be given to the sub block in the skip connection.
+        mode: NAFBlock has 3 mode.
+            'plain' mode uses the PlainBlock.
+                It is derived from the restormer block, keeping the most common components
+            'baseline' mode used the BaselineBlock
+                It is derived by adding layer normalization, channel attention to PlainBlock.
+                It also replaces ReLU activation with GeLU in PlainBlock.
+            'nafblock' mode uses the NAFBlock
+                It derived from BaselineBlock by removing all the non-linear activation.
+                Non-linear activations are replaced by equivalent matrix multiplication operations.
     """
 
     def __init__(
@@ -76,6 +124,7 @@ class NAFBlock(keras.layers.Layer):
         factor: Optional[int] = 2,
         drop_out_rate: Optional[float] = 0.0,
         balanced_skip_connection: Optional[bool] = False,
+        mode: Optional[str] = NAFBLOCK,
         **kwargs
     ) -> None:
         super().__init__(**kwargs)
@@ -83,48 +132,68 @@ class NAFBlock(keras.layers.Layer):
         self.drop_out_rate = drop_out_rate
         self.balanced_skip_connection = balanced_skip_connection
 
-        self.layer_norm1 = keras.layers.LayerNormalization()
+        valid_mode = {PLAIN, BASELINE, NAFBLOCK}
+        if mode not in valid_mode:
+            raise ValueError("Mode must be one of %r." % valid_mode)
+        self.mode = mode
 
-        self.conv1 = None
-        self.dconv2 = None
-
-        self.simple_gate = SimpleGate(factor)
-        self.simplified_attention = None
-
-        self.conv3 = None
+        if self.mode == PLAIN:
+            self.activation = keras.layers.Activation("relu")
+        elif self.mode == BASELINE:
+            self.activation = keras.layers.Activation("gelu")
+        else:
+            self.activation = SimpleGate(factor)
 
         self.dropout1 = keras.layers.Dropout(drop_out_rate)
 
-        self.layer_norm2 = keras.layers.LayerNormalization()
-
-        self.conv4 = None
-        self.conv5 = None
-
         self.dropout2 = keras.layers.Dropout(drop_out_rate)
 
-        self.beta = None
-        self.gamma = None
+        self.layer_norm1 = None
+        self.layer_norm2 = None
+        if self.mode in [NAFBLOCK, BASELINE]:
+            self.layer_norm1 = keras.layers.LayerNormalization()
+            self.layer_norm2 = keras.layers.LayerNormalization()
+
+    def get_dw_channel(self, input_channels: int) -> int:
+        if self.mode == NAFBLOCK:
+            return input_channels * self.factor
+        else:
+            return input_channels
+
+    def get_ffn_channel(self, input_channels: int) -> int:
+        return input_channels * self.factor
+
+    def get_attention_layer(
+        self, input_shape: tf.TensorShape
+    ) -> Optional[keras.layers.Layer]:
+        input_channels = input_shape[-1]
+        if self.mode == NAFBLOCK:
+            return SimplifiedChannelAttention(input_channels)
+        elif self.mode == BASELINE:
+            return ChannelAttention(input_channels)
+        else:
+            return None
 
     def build(self, input_shape: tf.TensorShape) -> None:
         input_channels = input_shape[-1]
-        dw_channel = input_channels * self.factor
+        dw_channel = self.get_dw_channel(input_channels)
 
         self.conv1 = keras.layers.Conv2D(filters=dw_channel, kernel_size=1, strides=1)
         self.dconv2 = keras.layers.Conv2D(
             filters=dw_channel,
-            kernel_size=1,
+            kernel_size=3,
             padding="same",
             strides=1,
             groups=dw_channel,
         )
 
-        self.simplified_attention = SimplifiedChannelAttention(input_channels)
+        self.attention = self.get_attention_layer(input_shape)
 
         self.conv3 = keras.layers.Conv2D(
             filters=input_channels, kernel_size=1, strides=1
         )
 
-        ffn_channel = input_channels * self.factor
+        ffn_channel = self.get_ffn_channel(input_channels)
 
         self.conv4 = keras.layers.Conv2D(filters=ffn_channel, kernel_size=1, strides=1)
         self.conv5 = keras.layers.Conv2D(
@@ -138,25 +207,38 @@ class NAFBlock(keras.layers.Layer):
             tf.ones((1, 1, 1, input_channels)), trainable=self.balanced_skip_connection
         )
 
-    def call(self, inputs: tf.Tensor, *args, **kwargs) -> tf.Tensor:
-        # Block 1
-        x = self.layer_norm1(inputs)
+    def call_block1(self, inputs: tf.Tensor) -> tf.Tensor:
+        x = inputs
+        if self.layer_norm1 != None:
+            x = self.layer_norm1(x)
         x = self.conv1(x)
         x = self.dconv2(x)
-        x = self.simple_gate(x)
-        x = self.simplified_attention(x)
+        x = self.activation(x)
+        if self.attention != None:
+            x = self.attention(x)
         x = self.conv3(x)
         x = self.dropout1(x)
+        return x
+
+    def call_block2(self, inputs: tf.Tensor) -> tf.Tensor:
+        y = inputs
+        if self.layer_norm2 != None:
+            y = self.layer_norm2(y)
+        y = self.conv4(y)
+        y = self.activation(y)
+        y = self.conv5(y)
+        y = self.dropout2(y)
+        return y
+
+    def call(self, inputs: tf.Tensor, *args, **kwargs) -> tf.Tensor:
+        # Block 1
+        x = self.call_block1(inputs)
 
         # Residual connection
         x = inputs + self.beta * x
 
         # Block 2
-        y = self.layer_norm2(x)
-        y = self.conv4(y)
-        y = self.simple_gate(y)
-        y = self.conv5(y)
-        y = self.dropout2(y)
+        y = self.call_block2(x)
 
         # Residual connection
         y = x + self.gamma * y
@@ -172,6 +254,7 @@ class NAFBlock(keras.layers.Layer):
                 "factor": self.factor,
                 "drop_out_rate": self.drop_out_rate,
                 "balanced_skip_connection": self.balanced_skip_connection,
+                "mode": self.mode,
             }
         )
         return config

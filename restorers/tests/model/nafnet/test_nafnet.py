@@ -8,6 +8,9 @@ from restorers.model.nafnet import (
     SimplifiedChannelAttention,
     NAFNet,
     PixelShuffle,
+    UpScale,
+    BlockStack,
+    ChannelAttention,
 )
 
 
@@ -20,12 +23,39 @@ class NAFBlockTest(unittest.TestCase):
         self.assertEqual(y.shape, x.shape)
 
 
+class BaselineBlockTest(unittest.TestCase):
+    def test_baselineblock(self) -> None:
+        input_shape = (1, 256, 256, 3)
+        x = tf.ones(input_shape)
+        baselineblock = NAFBlock(mode="baseline")
+        y = baselineblock(x)
+        self.assertEqual(y.shape, x.shape)
+
+
+class PlainBlockTest(unittest.TestCase):
+    def test_plainblock(self) -> None:
+        input_shape = (1, 256, 256, 3)
+        x = tf.ones(input_shape)
+        plainblock = NAFBlock(mode="plain")
+        y = plainblock(x)
+        self.assertEqual(y.shape, x.shape)
+
+
 class SimplifiedChannelAttentionTest(unittest.TestCase):
     def test_sca(self) -> None:
         input_shape = (1, 256, 256, 3)
         x = tf.ones(input_shape)
         sca = SimplifiedChannelAttention(input_shape[-1])
         y = sca(x)
+        self.assertEqual(y.shape, x.shape)
+
+
+class ChannelAttentionTest(unittest.TestCase):
+    def test_ca(self) -> None:
+        input_shape = (1, 256, 256, 3)
+        x = tf.ones(input_shape)
+        ca = ChannelAttention(input_shape[-1])
+        y = ca(x)
         self.assertEqual(y.shape, x.shape)
 
 
@@ -69,3 +99,36 @@ class PixelShuffleTest(unittest.TestCase):
             upscaled_input_shape[1] = input_shape[1] * factor
             upscaled_input_shape[2] = input_shape[2] * factor
             self.assertEqual(y.shape, upscaled_input_shape)
+
+
+class UpScaleTest(unittest.TestCase):
+    def setUp(self):
+        self.factors = [2, 3]
+
+    def test_upscale(self) -> None:
+        input_shape = (1, 256, 256, 3)
+        for factor in self.factors:
+            scaled_shape = list(input_shape)
+            scaled_shape[-1] = input_shape[-1] * factor * factor
+            x = tf.ones(scaled_shape)
+            us = UpScale(scaled_shape[-1], factor)
+            y = us(x)
+            upscaled_input_shape = list(input_shape)
+            upscaled_input_shape[1] = input_shape[1] * factor
+            upscaled_input_shape[2] = input_shape[2] * factor
+            self.assertEqual(y.shape, upscaled_input_shape)
+
+
+class BlockStackTest(unittest.TestCase):
+    def setUp(self):
+        self.block_class_mode = ["nafblock", "baseline", "plain"]
+        self.block_nums = [2, 3]
+
+    def test_blockstack(self) -> None:
+        input_shape = (1, 256, 256, 3)
+        x = tf.ones(input_shape)
+        for num_blocks in self.block_nums:
+            for mode in self.block_class_mode:
+                block_stack = BlockStack(NAFBlock, num_blocks, mode=mode)
+                y = block_stack(x)
+                self.assertEqual(y.shape, x.shape)

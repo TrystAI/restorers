@@ -3,7 +3,7 @@ from typing import Optional, Tuple, Type
 import tensorflow as tf
 from tensorflow import keras
 
-from .nafblock import NAFBlock
+from .plainnet import NAFBlock
 
 
 class PixelShuffle(keras.layers.Layer):

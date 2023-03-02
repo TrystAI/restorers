@@ -3,9 +3,10 @@ from typing import Optional
 import tensorflow as tf
 from tensorflow import keras
 
-NAFBLOCK = 'nafblock'
-PLAIN = 'plain'
-BASELINE = 'baseline'
+NAFBLOCK = "nafblock"
+PLAIN = "plain"
+BASELINE = "baseline"
+
 
 class SimpleGate(keras.layers.Layer):
     """
@@ -31,6 +32,7 @@ class SimpleGate(keras.layers.Layer):
         config = super().get_config()
         config.update({"factor": self.factor})
         return config
+
 
 class ChannelAttention(keras.layers.Layer):
     """
@@ -65,6 +67,7 @@ class ChannelAttention(keras.layers.Layer):
         config.update({"channels": self.channels})
         return config
 
+
 class SimplifiedChannelAttention(keras.layers.Layer):
     """
     Simplified Channel Attention layer
@@ -93,12 +96,10 @@ class SimplifiedChannelAttention(keras.layers.Layer):
         config.update({"channels": self.channels})
         return config
 
+
 class NAFBlock(keras.layers.Layer):
     """
-    PlainBlock Layer
-
-    This is the plain block proposed in NAFNet Paper.
-    This is inspired from the restormer's block, keeping the most common components.
+    NAFBlock (Nonlinear Activation Free Block)
 
     Parameters:
         input_channels: number of channels in the input (as NAFBlock retains the input size in the output)
@@ -107,6 +108,16 @@ class NAFBlock(keras.layers.Layer):
         drop_out_rate: dropout rate
         balanced_skip_connection: adds additional trainable parameters to the skip connections.
             The parameter denotes how much importance should be given to the sub block in the skip connection.
+        mode:
+            NAFBlock has 3 mode.
+            'plain' mode uses the PlainBlock. 
+                It is derived from the restormer block, keeping the most common components
+            'baseline' mode used the BaselineBlock
+                It is derived by adding layer normalization, channel attention to PlainBlock.
+                It also replaces ReLU activation with GeLU in PlainBlock.
+            'nafblock' mode uses the NAFBlock
+                It derived from BaselineBlock by removing all the non-linear activation.
+                Non-linear activations are replaced by equivalent matrix multiplication operations.
     """
 
     def __init__(
@@ -153,7 +164,9 @@ class NAFBlock(keras.layers.Layer):
     def get_ffn_channel(self, input_channels: int) -> int:
         return input_channels * self.factor
 
-    def get_attention_layer(self, input_shape: tf.TensorShape) -> Optional[keras.layers.Layer]:
+    def get_attention_layer(
+        self, input_shape: tf.TensorShape
+    ) -> Optional[keras.layers.Layer]:
         input_channels = input_shape[-1]
         if self.mode == NAFBLOCK:
             return SimplifiedChannelAttention(input_channels)
@@ -242,7 +255,7 @@ class NAFBlock(keras.layers.Layer):
                 "factor": self.factor,
                 "drop_out_rate": self.drop_out_rate,
                 "balanced_skip_connection": self.balanced_skip_connection,
-                "mode": self.mode
+                "mode": self.mode,
             }
         )
         return config

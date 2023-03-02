@@ -10,7 +10,7 @@ from restorers.model.nafnet import (
     PixelShuffle,
     UpScale,
     BlockStack,
-    ChannelAttention
+    ChannelAttention,
 )
 
 
@@ -27,7 +27,7 @@ class BaselineBlockTest(unittest.TestCase):
     def test_baselineblock(self) -> None:
         input_shape = (1, 256, 256, 3)
         x = tf.ones(input_shape)
-        baselineblock = NAFBlock(mode='baseline')
+        baselineblock = NAFBlock(mode="baseline")
         y = baselineblock(x)
         self.assertEqual(y.shape, x.shape)
 
@@ -36,7 +36,7 @@ class PlainBlockTest(unittest.TestCase):
     def test_plainblock(self) -> None:
         input_shape = (1, 256, 256, 3)
         x = tf.ones(input_shape)
-        plainblock = NAFBlock(mode='plain')
+        plainblock = NAFBlock(mode="plain")
         y = plainblock(x)
         self.assertEqual(y.shape, x.shape)
 
@@ -121,7 +121,7 @@ class UpScaleTest(unittest.TestCase):
 
 class BlockStackTest(unittest.TestCase):
     def setUp(self):
-        self.block_class_mode = ['nafblock', 'baseline', 'plain']
+        self.block_class_mode = ["nafblock", "baseline", "plain"]
         self.block_nums = [2, 3]
 
     def test_blockstack(self) -> None:

@@ -97,7 +97,7 @@ def main(_):
         )
 
         decay_steps = (
-            len(data_loader.train_low_light_images) // batch_size
+            len(data_loader.train_input_images) // batch_size
         ) * FLAGS.experiment_configs.training_configs.epochs
         lr_schedule_fn = tf.keras.optimizers.schedules.CosineDecay(
             initial_learning_rate=FLAGS.experiment_configs.training_configs.initial_learning_rate,
@@ -132,20 +132,6 @@ def main(_):
     ]
     if using_wandb:
         callbacks.append(WandbMetricsLogger(log_freq="batch"))
-        callbacks.append(
-            LowLightEvaluationCallback(
-                validation_data=val_dataset.take(FLAGS.num_batches_for_eval),
-                data_table_columns=["Input-Image", "Ground-Truth-Image"],
-                pred_table_columns=[
-                    "Epoch",
-                    "Input-Image",
-                    "Ground-Truth-Image",
-                    "Predicted-Image",
-                    "Peak-Signal-To-Noise-Ratio",
-                    "Structural-Similarity",
-                ],
-            )
-        )
 
     logging.info("Starting Training...")
     model.fit(

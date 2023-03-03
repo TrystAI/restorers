@@ -9,6 +9,28 @@ from .upsample import UpSampleBlock
 
 
 class MultiScaleResidualBlock(tf.keras.layers.Layer):
+    """Implementation of the Multi-scale Residual Block.
+
+    The Multi-scale Residual Block mechanism of collecting multiscale spatial information.
+    This block forms the core component of the recursive residual design of MIRNet-v2.
+    The key advantages of MRB are:
+
+    - It is capable of generating a spatially-precise output by maintaining high-resolution representations, while receiving rich contextual information from low-resolutions.
+
+    - It allows contextualized-information transfer from the low-resolution streams to consolidate the high-resolution features.
+
+    Reference:
+
+    1. [Learning Enriched Features for Fast Image Restoration and Enhancement](https://www.waqaszamir.com/publication/zamir-2022-mirnetv2/zamir-2022-mirnetv2.pdf)
+    2. [Official PyTorch implementation of MirNetv2](https://github.com/swz30/MIRNetv2/blob/main/basicsr/models/archs/mirnet_v2_arch.py#L189)
+
+    Args:
+        channels (int): number of channels in the feature map.
+        channel_factor (float): factor by which number of the number of output channels vary.
+        groups (int): number of groups in which the input is split along the
+            channel axis in the convolution layers.
+    """
+
     def __init__(
         self, channels: int, channel_factor: float, groups: int, *args, **kwargs
     ):

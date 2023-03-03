@@ -4,6 +4,17 @@ import tensorflow as tf
 
 
 class ContextBlock(tf.keras.layers.Layer):
+    """Submodule of the Residual Contextual Block.
+
+    Reference:
+
+    1. [Learning Enriched Features for Fast Image Restoration and Enhancement](https://www.waqaszamir.com/publication/zamir-2022-mirnetv2/zamir-2022-mirnetv2.pdf)
+    2. [Official PyTorch implementation of MirNetv2](https://github.com/swz30/MIRNetv2/blob/main/basicsr/models/archs/mirnet_v2_arch.py#L57)
+
+    Args:
+        channels (int): number of channels in the feature map.
+    """
+
     def __init__(self, channels: int, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
@@ -52,6 +63,36 @@ class ContextBlock(tf.keras.layers.Layer):
 
 
 class ResidualContextBlock(tf.keras.layers.Layer):
+    """Implementation of the Residual Contextual Block.
+
+    The Residual Contextual Block is used to extract features in the convolutional
+    streams and suppress less useful features. The overall process of RCB is
+    summarized as:
+
+    $$F_{RCB} = F_{a} + W(CM(F_{b}))$$
+
+    where...
+
+    - $F_{a}$ are the input feature maps.
+
+    - $F_{b}$ represents feature maps that are obtained by applying two 3x3 group
+        convolution layers to the input features.
+
+    - $CM$ respresents a **contextual modules**.
+
+    - $W$ denotes the last convolutional layer with filter size $1 \times 1$.
+
+    Reference:
+
+    1. [Learning Enriched Features for Fast Image Restoration and Enhancement](https://www.waqaszamir.com/publication/zamir-2022-mirnetv2/zamir-2022-mirnetv2.pdf)
+    2. [Official PyTorch implementation of MirNetv2](https://github.com/swz30/MIRNetv2/blob/main/basicsr/models/archs/mirnet_v2_arch.py#L105)
+
+    Args:
+        channels (int): number of channels in the feature map.
+        groups (int): number of groups in which the input is split along the
+            channel axis in the convolution layers.
+    """
+
     def __init__(self, channels: int, groups: int, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 

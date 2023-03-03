@@ -1,4 +1,4 @@
-from typing import Optional, Dict
+from typing import Dict
 
 import tensorflow as tf
 
@@ -6,6 +6,25 @@ from .mrb import MultiScaleResidualBlock
 
 
 class RecursiveResidualGroup(tf.keras.layers.Layer):
+    """Implementation of the Recursive Residual Group.
+
+    The Recursive Residual Group forms the basic building block on MirNetV2.
+    It progressively breaks down the input signal in order to simplify the overall
+    learning process, and allows the construction of very deep networks.
+
+    Reference:
+
+    1. [Learning Enriched Features for Fast Image Restoration and Enhancement](https://www.waqaszamir.com/publication/zamir-2022-mirnetv2/zamir-2022-mirnetv2.pdf)
+    2. [Official PyTorch implementation of MirNetv2](https://github.com/swz30/MIRNetv2/blob/main/basicsr/models/archs/mirnet_v2_arch.py#L242)
+
+    Args:
+        channels (int): number of channels in the feature map.
+        num_mrb_blocks (int): number of multi-scale residual blocks.
+        channel_factor (float): factor by which number of the number of output channels vary.
+        groups (int): number of groups in which the input is split along the
+            channel axis in the convolution layers.
+    """
+
     def __init__(
         self,
         channels: int,
@@ -47,6 +66,28 @@ class RecursiveResidualGroup(tf.keras.layers.Layer):
 
 
 class MirNetv2(tf.keras.Model):
+    """Implementation of the MirNetv2 model.
+
+    MirNetv2 is a fully convolutional architecture that learns enriched feature
+    representations for image restoration and enhancement. It is based on a
+    **recursive residual design** with the **multi-scale residual block** or **MRB**
+    at its core. The main branch of the MRB is dedicated to maintaining spatially-precise
+    high-resolution representations through the entire network and the complimentary set
+    of parallel branches provide better contextualized features.
+
+    Reference:
+
+    1. [Learning Enriched Features for Fast Image Restoration and Enhancement](https://www.waqaszamir.com/publication/zamir-2022-mirnetv2/zamir-2022-mirnetv2.pdf)
+    2. [Official PyTorch implementation of MirNetv2](https://github.com/swz30/MIRNetv2/blob/main/basicsr/models/archs/mirnet_v2_arch.py#L242)
+
+    Args:
+        channels (int): number of channels in the feature map.
+        channel_factor (float): factor by which number of the number of output channels vary.
+        num_mrb_blocks (int): number of multi-scale residual blocks.
+        add_residual_connection (bool): add a residual connection between the inputs and the
+            outputs or not.
+    """
+
     def __init__(
         self,
         channels: int,

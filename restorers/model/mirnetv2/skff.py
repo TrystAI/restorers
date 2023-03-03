@@ -19,7 +19,7 @@ class SelectiveKernelFeatureFusion(tf.keras.layers.Layer):
 
         self.channels = channels
         self.hidden_channels = max(int(self.channels / 8), 4)
-        self.average_pooling = tfa.layers.AdaptiveAveragePooling2D(output_size=1)
+        self.average_pooling = tf.keras.layers.GlobalAveragePooling2D(keepdims=True)
 
         self.conv_channel_downscale = tf.keras.layers.Conv2D(
             self.hidden_channels, kernel_size=1, padding="same"

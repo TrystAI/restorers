@@ -13,6 +13,10 @@ class MultiScaleResidualBlock(tf.keras.layers.Layer):
         self, channels: int, channel_factor: float, groups: int, *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
+        
+        self.channels = channels
+        self.channel_factor = channel_factor
+        self.groups = groups
 
         # Residual Context Blocks
         self.rcb_top = ResidualContextBlock(
@@ -98,3 +102,10 @@ class MultiScaleResidualBlock(tf.keras.layers.Layer):
         output = output + inputs
 
         return output
+    
+    def get_config(self) -> Dict:
+        return {
+            "channels": self.channels,
+            "channel_factor": self.channel_factor,
+            "groups": self.groups,
+        }

@@ -14,8 +14,14 @@ class RecursiveResidualGroup(tf.keras.layers.Layer):
         groups: int,
         *args,
         **kwargs
-    ):
+    ) -> None:
         super().__init__(*args, **kwargs)
+
+        self.channels = channels
+        self.num_mrb_blocks = num_mrb_blocks
+        self.channel_factor = channel_factor
+        self.groups = groups
+
         self.layers = [
             MultiScaleResidualBlock(channels, channel_factor, groups)
             for _ in range(num_mrb_blocks)
@@ -24,12 +30,20 @@ class RecursiveResidualGroup(tf.keras.layers.Layer):
             tf.keras.layers.Conv2D(channels, kernel_size=3, strides=1, padding="same")
         )
 
-    def call(self, inputs, *args, **kwargs):
+    def call(self, inputs: tf.Tensor, *args, **kwargs) -> tf.Tensor:
         residual = inputs
         for layer in self.layers:
             residual = layer(residual)
         residual = residual + inputs
         return residual
+
+    def get_config(self) -> Dict:
+        return {
+            "channels": self.channels,
+            "num_mrb_blocks": self.num_mrb_blocks,
+            "channel_factor": self.channel_factor,
+            "groups": self.groups,
+        }
 
 
 class MirNetv2(tf.keras.Model):
@@ -43,6 +57,11 @@ class MirNetv2(tf.keras.Model):
         **kwargs
     ):
         super().__init__(*args, **kwargs)
+
+        self.channels = channels
+        self.channel_factor = channel_factor
+        self.num_mrb_blocks = num_mrb_blocks
+        self.add_residual_connection = add_residual_connection
 
         self.add_residual_connection = add_residual_connection
 
@@ -63,7 +82,7 @@ class MirNetv2(tf.keras.Model):
 
         self.conv_out = tf.keras.layers.Conv2D(3, kernel_size=3, padding="same")
 
-    def call(self, inputs, training=None, mask=None):
+    def call(self, inputs: tf.Tensor, training=None, mask=None) -> tf.Tensor:
         shallow_features = self.conv_in(inputs)
         deep_features = self.rrg_block_1(shallow_features)
         deep_features = self.rrg_block_2(deep_features)
@@ -79,3 +98,11 @@ class MirNetv2(tf.keras.Model):
             inputs=input_tensor, outputs=self.call(input_tensor)
         )
         saved_model.save(filepath, *args, **kwargs)
+
+    def get_config(self) -> Dict:
+        return {
+            "channels": self.channels,
+            "num_mrb_blocks": self.num_mrb_blocks,
+            "channel_factor": self.channel_factor,
+            "add_residual_connection": self.add_residual_connection,
+        }

@@ -1,11 +1,13 @@
-from typing import Optional, Dict
+from typing import Dict
 
 import tensorflow as tf
 
 
 class ContextBlock(tf.keras.layers.Layer):
-    def __init__(self, channels: int, *args, **kwargs):
+    def __init__(self, channels: int, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        
+        self.channels = channels
 
         self.mask_conv = tf.keras.layers.Conv2D(1, kernel_size=1, padding="same")
 
@@ -19,8 +21,11 @@ class ContextBlock(tf.keras.layers.Layer):
         self.softmax = tf.keras.layers.Softmax(axis=1)
         self.leaky_relu = tf.keras.layers.LeakyReLU(alpha=0.2)
 
-    def modeling(self, inputs):
-        _, height, width, channels = shape_list(inputs)
+    def modeling(self, inputs: tf.Tensor) -> tf.Tensor:
+        _, height, width, channels = [
+            tf.shape(inputs)[_shape_idx] if _shape is None else _shape
+            for _shape_idx, _shape in enumerate(inputs.shape.as_list())
+        ]
         reshaped_inputs = tf.expand_dims(
             tf.reshape(inputs, (-1, channels, height * width)), axis=1
         )
@@ -35,17 +40,23 @@ class ContextBlock(tf.keras.layers.Layer):
         )
         return context
 
-    def call(self, inputs, *args, **kwargs):
+    def call(self, inputs: tf.Tensor, *args, **kwargs) -> tf.Tensor:
         context = self.modeling(inputs)
         channel_add_term = self.channel_add_conv_1(context)
         channel_add_term = self.leaky_relu(channel_add_term)
         channel_add_term = self.channel_add_conv_2(channel_add_term)
         return inputs + channel_add_term
+    
+    def get_config(self) -> Dict:
+        return {"channels": self.channels}
 
 
 class ResidualContextBlock(tf.keras.layers.Layer):
-    def __init__(self, channels: int, groups: int, *args, **kwargs):
+    def __init__(self, channels: int, groups: int, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        
+        self.channels = channels
+        self.groups = groups
 
         self.conv_1 = tf.keras.layers.Conv2D(
             channels, kernel_size=3, padding="same", groups=groups
@@ -57,7 +68,7 @@ class ResidualContextBlock(tf.keras.layers.Layer):
 
         self.context_block = ContextBlock(channels=channels)
 
-    def call(self, inputs):
+    def call(self, inputs: tf.Tensor) -> tf.Tensor:
         x = self.conv_1(inputs)
         x = self.leaky_relu(x)
         x = self.conv_2(x)
@@ -65,3 +76,6 @@ class ResidualContextBlock(tf.keras.layers.Layer):
         x = self.leaky_relu(x)
         x = x + inputs
         return x
+    
+    def get_config(self) -> Dict:
+        return {"channels": self.channels, "groups": self.groups}

@@ -72,3 +72,10 @@ class MirNetv2(tf.keras.Model):
         output = self.conv_out(deep_features)
         output = output + inputs if self.add_residual_connection else output
         return output
+
+    def save(self, filepath: str, *args, **kwargs) -> None:
+        input_tensor = tf.keras.Input(shape=[None, None, 3])
+        saved_model = tf.keras.Model(
+            inputs=input_tensor, outputs=self.call(input_tensor)
+        )
+        saved_model.save(filepath, *args, **kwargs)

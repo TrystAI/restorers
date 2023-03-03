@@ -13,7 +13,7 @@ class MultiScaleResidualBlock(tf.keras.layers.Layer):
         self, channels: int, channel_factor: float, groups: int, *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
-        
+
         self.channels = channels
         self.channel_factor = channel_factor
         self.groups = groups
@@ -102,7 +102,7 @@ class MultiScaleResidualBlock(tf.keras.layers.Layer):
         output = output + inputs
 
         return output
-    
+
     def get_config(self) -> Dict:
         return {
             "channels": self.channels,

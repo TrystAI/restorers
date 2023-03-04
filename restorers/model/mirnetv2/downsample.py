@@ -50,7 +50,7 @@ class DownSampleBlock(tf.keras.layers.Layer):
     """
 
     def __init__(
-        self, channels: int, scale_factor: float, channel_factor: float, *args, **kwargs
+        self, channels: int, scale_factor: int, channel_factor: float, *args, **kwargs
     ) -> None:
         super(DownSampleBlock, self).__init__(*args, **kwargs)
 

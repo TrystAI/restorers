@@ -45,7 +45,7 @@ class UpSampleBlock(tf.keras.layers.Layer):
 
     Args:
         channels (int): number of input channels.
-        scale_factor (float): number of downsample operations.
+        scale_factor (int): number of downsample operations.
         channel_factor (float): factor by which number of the number of output channels vary.
     """
 

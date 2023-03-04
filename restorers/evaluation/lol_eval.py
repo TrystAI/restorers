@@ -18,9 +18,8 @@ class LoLEvaluator(BaseEvaluator):
         input_size: Optional[List[int]] = None,
         dataset_artifact_address: str = None,
     ) -> None:
-        self.input_size = input_size
         self.dataset_artifact_address = dataset_artifact_address
-        super().__init__(metrics, model)
+        super().__init__(metrics, model, input_size)
 
     def preprocess(self, image: Image) -> Union[np.ndarray, tf.Tensor]:
         image = (

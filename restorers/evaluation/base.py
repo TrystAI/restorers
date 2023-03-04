@@ -8,7 +8,7 @@ from PIL import Image
 import tensorflow as tf
 from tqdm.auto import tqdm
 
-from ..utils import fetch_wandb_artifact
+from ..utils import fetch_wandb_artifact, count_params, calculate_gflops
 
 
 class BaseEvaluator(ABC):
@@ -16,10 +16,12 @@ class BaseEvaluator(ABC):
         self,
         metrics: List[tf.keras.metrics.Metric],
         model: Optional[tf.keras.Model] = None,
+        input_size: Optional[int] = None,
     ) -> None:
         super().__init__()
         self.metrics = metrics
         self.model = model
+        self.input_size = input_size
         self.image_paths = self.populate_image_paths()
         self.wandb_table = self.create_wandb_table() if wandb.run is not None else None
 
@@ -73,10 +75,6 @@ class BaseEvaluator(ABC):
             model_output = self.model.predict(preprocessed_input_image, verbose=0)
             inference_time = time() - start_time
             total_inference_time += inference_time
-            # metric_results = [
-            #     metric(preprocessed_ground_truth_image, model_output).numpy().item()
-            #     for metric in self.metrics
-            # ]
             metric_results = []
             for idx, metric in enumerate(self.metrics):
                 metric_value = (
@@ -108,6 +106,7 @@ class BaseEvaluator(ABC):
 
     def evaluate(self):
         log_dict = {}
+
         for split_name, (
             input_image_paths,
             ground_truth_image_paths,
@@ -117,5 +116,22 @@ class BaseEvaluator(ABC):
             )
             log_dict = {**log_dict, **metric_values}
         log_dict["Evaluation"] = self.wandb_table
+
+        trainable_parameters = (
+            count_params(self.model._collected_trainable_weights)
+            if hasattr(self.model, "_collected_trainable_weights")
+            else count_params(self.model.trainable_weights)
+        )
+        non_trainable_parameters = count_params(self.model.non_trainable_weights)
+
+        log_dict["Trainable Parameters"] = trainable_parameters
+        log_dict["Non-Trainable Parameters"] = non_trainable_parameters
+        log_dict["Total Parameters"] = trainable_parameters + non_trainable_parameters
+
+        if self.input_size is not None:
+            log_dict["GFLOPs"] = calculate_gflops(
+                model=self.model, input_shape=[self.input_size, self.input_size, 3]
+            )
+
         if wandb.run is not None:
             wandb.log(log_dict)

@@ -91,3 +91,5 @@ class BaseEvaluator(ABC):
             ground_truth_image_paths,
         ) in self.image_paths.items():
             self.evaluate_split(input_image_paths, ground_truth_image_paths, split_name)
+        if self.wandb_table is not None:
+            wandb.log({"Evaluation": self.wandb_table})

@@ -101,7 +101,7 @@ class MultiScaleResidualBlock(tf.keras.layers.Layer):
         # Convolution
         self.conv_out = tf.keras.layers.Conv2D(channels, kernel_size=1, padding="same")
 
-    def call(self, inputs, *args, **kwargs):
+    def call(self, inputs: tf.Tensor, *args, **kwargs) -> tf.Tensor:
         x_top = inputs
         x_middle = self.down_2(x_top)
         x_bottom = self.down_4_2(self.down_4_1(x_top))

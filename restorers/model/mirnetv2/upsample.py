@@ -17,15 +17,22 @@ class UpBlock(tf.keras.layers.Layer):
         channel_factor (float): factor by which number of the number of output channels vary.
     """
 
-    def __init__(self, channels: int, channel_factor: float, *args, **kwargs):
+    def __init__(self, channels: int, channel_factor: float, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+
+        self.channels = channels
+        self.channel_factor = channel_factor
+
         self.conv = tf.keras.layers.Conv2D(
             int(channels // channel_factor), kernel_size=1, strides=1, padding="same"
         )
         self.upsample = tf.keras.layers.UpSampling2D(size=2, interpolation="bilinear")
 
-    def call(self, inputs, *args, **kwargs):
+    def call(self, inputs: tf.Tensor, *args, **kwargs) -> tf.Tensor:
         return self.upsample(self.conv(inputs))
+
+    def get_config(self) -> Dict:
+        return {"channels": self.channels, "channel_factor": self.channel_factor}
 
 
 class UpSampleBlock(tf.keras.layers.Layer):
@@ -38,14 +45,19 @@ class UpSampleBlock(tf.keras.layers.Layer):
 
     Args:
         channels (int): number of input channels.
-        scale_factor (int): number of downsample operations.
+        scale_factor (float): number of downsample operations.
         channel_factor (float): factor by which number of the number of output channels vary.
     """
 
     def __init__(
         self, channels: int, scale_factor: int, channel_factor: float, *args, **kwargs
-    ):
+    ) -> None:
         super().__init__(*args, **kwargs)
+
+        self.channels = channels
+        self.scale_factor = scale_factor
+        self.channel_factor = channel_factor
+
         self.layers = []
         for _ in range(int(np.log2(scale_factor))):
             self.layers.append(UpBlock(channels, channel_factor))
@@ -55,3 +67,10 @@ class UpSampleBlock(tf.keras.layers.Layer):
         for layer in self.layers:
             x = layer(x)
         return x
+
+    def get_config(self) -> Dict:
+        return {
+            "channels": self.channels,
+            "scale_factor": self.scale_factor,
+            "channel_factor": self.channel_factor,
+        }

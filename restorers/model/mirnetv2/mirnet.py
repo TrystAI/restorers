@@ -96,14 +96,12 @@ class MirNetv2(tf.keras.Model):
         add_residual_connection: bool,
         *args,
         **kwargs
-    ):
+    ) -> None:
         super().__init__(*args, **kwargs)
 
         self.channels = channels
         self.channel_factor = channel_factor
         self.num_mrb_blocks = num_mrb_blocks
-        self.add_residual_connection = add_residual_connection
-
         self.add_residual_connection = add_residual_connection
 
         self.conv_in = tf.keras.layers.Conv2D(channels, kernel_size=3, padding="same")

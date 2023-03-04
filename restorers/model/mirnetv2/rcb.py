@@ -1,14 +1,18 @@
-from typing import Optional, Dict
+from typing import Dict
 
 import tensorflow as tf
 
 
 class ContextBlock(tf.keras.layers.Layer):
-    """
-    Context Block Layer.
+    """Submodule of the Residual Contextual Block.
 
-    Parameters:
-        channels (`int`): The channels of the feature map.
+    Reference:
+
+    1. [Learning Enriched Features for Fast Image Restoration and Enhancement](https://www.waqaszamir.com/publication/zamir-2022-mirnetv2/zamir-2022-mirnetv2.pdf)
+    2. [Official PyTorch implementation of MirNetv2](https://github.com/swz30/MIRNetv2/blob/main/basicsr/models/archs/mirnet_v2_arch.py#L57)
+
+    Args:
+        channels (int): number of channels in the feature map.
     """
 
     def __init__(self, channels: int, *args, **kwargs) -> None:
@@ -16,31 +20,42 @@ class ContextBlock(tf.keras.layers.Layer):
 
         self.channels = channels
 
-        self.reshape = tf.keras.layers.Reshape(target_shape=(1, -1, self.channels))
-        self.mask_conv = tf.keras.Sequential(
-            [
-                tf.keras.layers.Conv2D(1, kernel_size=1, padding="same"),
-                tf.keras.layers.Reshape(target_shape=(1, 1, -1)),
-                tf.keras.layers.Softmax(axis=1, dtype="float32"),
-            ]
+        self.mask_conv = tf.keras.layers.Conv2D(1, kernel_size=1, padding="same")
+
+        self.channel_add_conv_1 = tf.keras.layers.Conv2D(
+            channels, kernel_size=1, padding="same"
         )
-        self.transform = tf.keras.Sequential(
-            [
-                tf.keras.layers.Conv2D(self.channels, kernel_size=1, padding="same"),
-                tf.keras.layers.LeakyReLU(alpha=0.2),
-                tf.keras.layers.Conv2D(self.channels, kernel_size=1, padding="same"),
-            ]
+        self.channel_add_conv_2 = tf.keras.layers.Conv2D(
+            channels, kernel_size=1, padding="same"
         )
+
+        self.softmax = tf.keras.layers.Softmax(axis=1)
+        self.leaky_relu = tf.keras.layers.LeakyReLU(alpha=0.2)
 
     def modeling(self, inputs: tf.Tensor) -> tf.Tensor:
+        _, height, width, channels = [
+            tf.shape(inputs)[_shape_idx] if _shape is None else _shape
+            for _shape_idx, _shape in enumerate(inputs.shape.as_list())
+        ]
+        reshaped_inputs = tf.expand_dims(
+            tf.reshape(inputs, (-1, channels, height * width)), axis=1
+        )
+
         context_mask = self.mask_conv(inputs)
-        reshaped_features = self.reshape(inputs)
-        context = tf.matmul(context_mask, reshaped_features)
+        context_mask = tf.reshape(context_mask, (-1, height * width, 1))
+        context_mask = self.softmax(context_mask)
+        context_mask = tf.expand_dims(context_mask, axis=1)
+
+        context = tf.reshape(
+            tf.matmul(reshaped_inputs, context_mask), (-1, 1, 1, channels)
+        )
         return context
 
-    def call(self, inputs: tf.Tensor, training: Optional[bool] = None) -> tf.Tensor:
+    def call(self, inputs: tf.Tensor, *args, **kwargs) -> tf.Tensor:
         context = self.modeling(inputs)
-        channel_add_term = self.transform(context)
+        channel_add_term = self.channel_add_conv_1(context)
+        channel_add_term = self.leaky_relu(channel_add_term)
+        channel_add_term = self.channel_add_conv_2(channel_add_term)
         return inputs + channel_add_term
 
     def get_config(self) -> Dict:
@@ -48,13 +63,34 @@ class ContextBlock(tf.keras.layers.Layer):
 
 
 class ResidualContextBlock(tf.keras.layers.Layer):
-    """
-    Residual Context Block. This layer uses the context block and
-    applies residual connection on top of it.
+    """Implementation of the Residual Contextual Block.
 
-    Parameters:
-        channels (`int`): Number of channels of the feature map.
-        groups (`int`): Number of groups for the group conv layer.
+    The Residual Contextual Block is used to extract features in the convolutional
+    streams and suppress less useful features. The overall process of RCB is
+    summarized as:
+
+    $$F_{RCB} = F_{a} + W(CM(F_{b}))$$
+
+    where...
+
+    - $F_{a}$ are the input feature maps.
+
+    - $F_{b}$ represents feature maps that are obtained by applying two 3x3 group
+        convolution layers to the input features.
+
+    - $CM$ respresents a **contextual modules**.
+
+    - $W$ denotes the last convolutional layer with filter size $1 \times 1$.
+
+    Reference:
+
+    1. [Learning Enriched Features for Fast Image Restoration and Enhancement](https://www.waqaszamir.com/publication/zamir-2022-mirnetv2/zamir-2022-mirnetv2.pdf)
+    2. [Official PyTorch implementation of MirNetv2](https://github.com/swz30/MIRNetv2/blob/main/basicsr/models/archs/mirnet_v2_arch.py#L105)
+
+    Args:
+        channels (int): number of channels in the feature map.
+        groups (int): number of groups in which the input is split along the
+            channel axis in the convolution layers.
     """
 
     def __init__(self, channels: int, groups: int, *args, **kwargs) -> None:
@@ -63,22 +99,20 @@ class ResidualContextBlock(tf.keras.layers.Layer):
         self.channels = channels
         self.groups = groups
 
-        self.initial_conv = tf.keras.Sequential(
-            [
-                tf.keras.layers.Conv2D(
-                    self.channels, kernel_size=3, padding="same", groups=self.groups
-                ),
-                tf.keras.layers.LeakyReLU(alpha=0.2),
-                tf.keras.layers.Conv2D(
-                    self.channels, kernel_size=3, padding="same", groups=self.groups
-                ),
-            ]
+        self.conv_1 = tf.keras.layers.Conv2D(
+            channels, kernel_size=3, padding="same", groups=groups
+        )
+        self.conv_2 = tf.keras.layers.Conv2D(
+            channels, kernel_size=3, padding="same", groups=groups
         )
         self.leaky_relu = tf.keras.layers.LeakyReLU(alpha=0.2)
-        self.context_block = ContextBlock(channels=self.channels)
 
-    def call(self, inputs: tf.Tensor, training: Optional[bool] = None) -> tf.Tensor:
-        x = self.initial_conv(inputs)
+        self.context_block = ContextBlock(channels=channels)
+
+    def call(self, inputs: tf.Tensor) -> tf.Tensor:
+        x = self.conv_1(inputs)
+        x = self.leaky_relu(x)
+        x = self.conv_2(x)
         x = self.context_block(x)
         x = self.leaky_relu(x)
         x = x + inputs

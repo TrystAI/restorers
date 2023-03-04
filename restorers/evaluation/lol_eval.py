@@ -1,13 +1,13 @@
 import os
 from glob import glob
-from typing import List, Dict, Callable, Optional
+from typing import List, Dict, Optional, Union, Tuple
 
 import numpy as np
+from PIL import Image
 import tensorflow as tf
 
 from .base import BaseEvaluator
-from ..dataloader.base.commons import read_image
-from ..utils import scale_tensor, fetch_wandb_artifact
+from ..utils import fetch_wandb_artifact
 
 
 class LoLEvaluator(BaseEvaluator):
@@ -16,54 +16,49 @@ class LoLEvaluator(BaseEvaluator):
         metrics: List[tf.keras.metrics.Metric],
         model: Optional[tf.keras.Model] = None,
         input_size: Optional[List[int]] = None,
-        bit_depth: float = 8,
-        benchmark_against_input: bool = False,
-    ):
-        """Evaluator for the LoL dataset.
+        dataset_artifact_address: str = None,
+    ) -> None:
+        """Evaluator for LoL Dataset.
 
         Args:
-            metrics List[tf.keras.metrics.Metric]: A dictionary of metrics.
-            model (Optional[tf.keras.Model]): The `tf.keras.Model` to be evaluated.
-            input_size (Optional[List[int]]): input size for the model. This is an optional parameter which if
-                specified will enable GFLOPs calculation.
-            bit_depth (float): bit depth of the input and ground truth images.
-            benchmark_against_input (bool): If True, the model output will be evaluated against the input image.
+            metrics (List[tf.keras.metrics.Metric]): list of keras metrics.
+            model (Optional[tf.keras.Model]): model to be evaluated.
+            input_size (Optional[List[int]]): input size used for calculating GFLOPs.
+            dataset_artifact_address (str): address of WandB artifact hosting LoL dataset.
         """
-        self.normalization_factor = (2**bit_depth) - 1
-        self.dataset_artifact_address = "ml-colabs/dataset/LoL:v0"
-        self.benchmark_against_input = benchmark_against_input
+        self.dataset_artifact_address = dataset_artifact_address
         super().__init__(metrics, model, input_size)
 
-    def preprocess(self, image_path):
-        return tf.expand_dims(read_image(image_path, self.normalization_factor), axis=0)
+    def preprocess(self, image: Image) -> Union[np.ndarray, tf.Tensor]:
+        image = tf.keras.preprocessing.image.img_to_array(image)
+        image = image.astype("float32") / 255.0
+        return np.expand_dims(image, axis=0)
 
-    def postprocess(self, input_tensor):
-        return np.squeeze(scale_tensor(input_tensor))
+    def postprocess(self, model_output: np.ndarray) -> Image:
+        model_output = model_output * 255.0
+        model_output = model_output.clip(0, 255)
+        image = model_output[0].reshape(
+            (np.shape(model_output)[1], np.shape(model_output)[2], 3)
+        )
+        return Image.fromarray(np.uint8(image))
 
-    def populate_image_paths(self):
+    def populate_image_paths(self) -> Dict[str, Tuple[List[str], List[str]]]:
         dataset_path = fetch_wandb_artifact(
             self.dataset_artifact_address, artifact_type="dataset"
         )
         train_low_light_images = sorted(
             glob(os.path.join(dataset_path, "our485", "low", "*"))
         )
-        train_enhanced_images = sorted(
+        train_ground_truth_images = sorted(
             glob(os.path.join(dataset_path, "our485", "high", "*"))
         )
         test_low_light_images = sorted(
             glob(os.path.join(dataset_path, "eval15", "low", "*"))
         )
-        test_enhanced_images = sorted(
+        test_ground_truth_images = sorted(
             glob(os.path.join(dataset_path, "eval15", "high", "*"))
         )
-        return (
-            {
-                "train": (train_low_light_images, train_enhanced_images),
-                "eval15": (test_low_light_images, test_enhanced_images),
-            }
-            if not self.benchmark_against_input
-            else {
-                "train": (train_low_light_images, train_low_light_images),
-                "eval15": (test_low_light_images, test_low_light_images),
-            }
-        )
+        return {
+            "Train-Val": (train_low_light_images, train_ground_truth_images),
+            "Eval15": (test_low_light_images, test_ground_truth_images),
+        }

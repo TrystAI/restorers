@@ -5,12 +5,16 @@ import tensorflow as tf
 
 
 class UpBlock(tf.keras.layers.Layer):
-    """
-    Up Block.
+    """Submodule of `UpSampleBlock`.
 
-    Parameters:
-        channels (`int`): Number of channels in the feature map.
-        channel_factor (`float`): Ratio of channels.
+    Reference:
+
+    1. [Learning Enriched Features for Fast Image Restoration and Enhancement](https://www.waqaszamir.com/publication/zamir-2022-mirnetv2/zamir-2022-mirnetv2.pdf)
+    2. [Official PyTorch implementation of MirNetv2](https://github.com/swz30/MIRNetv2/blob/main/basicsr/models/archs/mirnet_v2_arch.py#L158)
+
+    Args:
+        channels (int): number of input channels.
+        channel_factor (float): factor by which number of the number of output channels vary.
     """
 
     def __init__(self, channels: int, channel_factor: float, *args, **kwargs) -> None:
@@ -19,48 +23,50 @@ class UpBlock(tf.keras.layers.Layer):
         self.channels = channels
         self.channel_factor = channel_factor
 
-        self.upsample = tf.keras.Sequential(
-            [
-                tf.keras.layers.Conv2D(
-                    int(self.channels // self.channel_factor),
-                    kernel_size=1,
-                    strides=1,
-                    padding="same",
-                ),
-                tf.keras.layers.UpSampling2D(size=2, interpolation="bilinear"),
-            ]
+        self.conv = tf.keras.layers.Conv2D(
+            int(channels // channel_factor), kernel_size=1, strides=1, padding="same"
         )
+        self.upsample = tf.keras.layers.UpSampling2D(size=2, interpolation="bilinear")
 
-    def call(self, inputs: tf.Tensor, training: Optional[bool] = None) -> tf.Tensor:
-        return self.upsample(inputs)
+    def call(self, inputs: tf.Tensor, *args, **kwargs) -> tf.Tensor:
+        return self.upsample(self.conv(inputs))
 
     def get_config(self) -> Dict:
         return {"channels": self.channels, "channel_factor": self.channel_factor}
 
 
 class UpSampleBlock(tf.keras.layers.Layer):
-    """
-    Up Sample Block.
+    """Layer for upsampling feature map for the Multi-scale Residual Block.
 
-    Parameters:
-        channels (`int`): Number of channels in the feature map.
-        scale_factor (`float`): Ratio of scale.
+    Reference:
+
+    1. [Learning Enriched Features for Fast Image Restoration and Enhancement](https://www.waqaszamir.com/publication/zamir-2022-mirnetv2/zamir-2022-mirnetv2.pdf)
+    2. [Official PyTorch implementation of MirNetv2](https://github.com/swz30/MIRNetv2/blob/main/basicsr/models/archs/mirnet_v2_arch.py#L170)
+
+    Args:
+        channels (int): number of input channels.
+        scale_factor (int): number of downsample operations.
+        channel_factor (float): factor by which number of the number of output channels vary.
     """
 
     def __init__(
-        self, channels: int, scale_factor: float, channel_factor: float, *args, **kwargs
+        self, channels: int, scale_factor: int, channel_factor: float, *args, **kwargs
     ) -> None:
         super().__init__(*args, **kwargs)
+
         self.channels = channels
         self.scale_factor = scale_factor
         self.channel_factor = channel_factor
-        self.layers = tf.keras.Sequential()
+
+        self.layers = []
         for _ in range(int(np.log2(scale_factor))):
-            self.layers.add(UpBlock(channels, channel_factor))
+            self.layers.append(UpBlock(channels, channel_factor))
             channels = int(channels // channel_factor)
 
-    def call(self, inputs: tf.Tensor, training: Optional[bool] = None) -> tf.Tensor:
-        return self.layers(inputs)
+    def call(self, x, *args, **kwargs):
+        for layer in self.layers:
+            x = layer(x)
+        return x
 
     def get_config(self) -> Dict:
         return {

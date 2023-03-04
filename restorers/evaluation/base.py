@@ -16,12 +16,10 @@ class BaseEvaluator(ABC):
         self,
         metrics: List[tf.keras.metrics.Metric],
         model: Optional[tf.keras.Model] = None,
-        input_size: Optional[List[int]] = None,
     ) -> None:
         super().__init__()
         self.metrics = metrics
         self.model = model
-        self.input_size = input_size
         self.image_paths = self.populate_image_paths()
         self.wandb_table = self.create_wandb_table() if wandb.run is not None else None
 

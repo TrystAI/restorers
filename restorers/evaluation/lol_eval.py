@@ -18,10 +18,16 @@ class LoLEvaluator(BaseEvaluator):
         input_size: Optional[List[int]] = None,
         dataset_artifact_address: str = None,
     ) -> None:
+        self.input_size = input_size
         self.dataset_artifact_address = dataset_artifact_address
-        super().__init__(metrics, model, input_size)
+        super().__init__(metrics, model)
 
     def preprocess(self, image: Image) -> Union[np.ndarray, tf.Tensor]:
+        image = (
+            image.resize((self.input_size, self.input_size))
+            if self.input_size is not None
+            else image
+        )
         image = tf.keras.preprocessing.image.img_to_array(image)
         image = image.astype("float32") / 255.0
         return np.expand_dims(image, axis=0)

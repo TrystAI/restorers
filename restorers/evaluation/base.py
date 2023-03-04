@@ -62,6 +62,8 @@ class BaseEvaluator(ABC):
             total=len(input_image_paths),
             desc=f"Evaluating {split_name} split",
         )
+        total_metric_values = [0.0] * len(self.metrics)
+        total_inference_time = 0
         for input_image_path, ground_truth_image_path in progress_bar:
             input_image = Image.open(input_image_path)
             ground_truth_image = Image.open(ground_truth_image_path)
@@ -70,10 +72,18 @@ class BaseEvaluator(ABC):
             start_time = time()
             model_output = self.model.predict(preprocessed_input_image, verbose=0)
             inference_time = time() - start_time
-            metric_results = [
-                metric(preprocessed_ground_truth_image, model_output).numpy().item()
-                for metric in self.metrics
-            ]
+            total_inference_time += inference_time
+            # metric_results = [
+            #     metric(preprocessed_ground_truth_image, model_output).numpy().item()
+            #     for metric in self.metrics
+            # ]
+            metric_results = []
+            for idx, metric in enumerate(self.metrics):
+                metric_value = (
+                    metric(preprocessed_ground_truth_image, model_output).numpy().item()
+                )
+                metric_results.append(metric_value)
+                total_metric_values[idx] += metric_value
             post_processed_image = self.postprocess(model_output)
             if self.wandb_table is not None:
                 table_row = [
@@ -84,12 +94,28 @@ class BaseEvaluator(ABC):
                     inference_time,
                 ] + metric_results
                 self.wandb_table.add_data(*table_row)
+        mean_metric_values = [
+            value / len(input_image_paths) for value in total_metric_values
+        ]
+        metric_values = {
+            split_name + "/" + type(self.metrics[idx]).__name__: metic_value
+            for idx, metic_value in enumerate(mean_metric_values)
+        }
+        metric_values[split_name + "/Inference-Time"] = total_inference_time / len(
+            input_image_paths
+        )
+        return metric_values
 
     def evaluate(self):
+        log_dict = {}
         for split_name, (
             input_image_paths,
             ground_truth_image_paths,
         ) in self.image_paths.items():
-            self.evaluate_split(input_image_paths, ground_truth_image_paths, split_name)
-        if self.wandb_table is not None:
-            wandb.log({"Evaluation": self.wandb_table})
+            metric_values = self.evaluate_split(
+                input_image_paths, ground_truth_image_paths, split_name
+            )
+            log_dict = {**log_dict, **metric_values}
+        log_dict["Evaluation"] = self.wandb_table
+        if wandb.run is not None:
+            wandb.log(log_dict)

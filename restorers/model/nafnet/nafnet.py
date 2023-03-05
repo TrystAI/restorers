@@ -231,6 +231,13 @@ class NAFNet(keras.models.Model):
 
         return x
 
+    def save(self, filepath: str, *args, **kwargs) -> None:
+        input_tensor = tf.keras.Input(shape=[None, None, 3])
+        saved_model = tf.keras.Model(
+            inputs=input_tensor, outputs=self.call(input_tensor)
+        )
+        saved_model.save(filepath, *args, **kwargs)
+
     def get_config(self) -> dict:
         """Add upscale factor to the config"""
         config = super().get_config()

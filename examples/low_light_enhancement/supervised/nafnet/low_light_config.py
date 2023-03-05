@@ -17,10 +17,10 @@ def get_dataloader_configs() -> ml_collections.ConfigDict:
 def get_model_configs() -> ml_collections.ConfigDict:
     config = ml_collections.ConfigDict()
 
-    config.channels = 80
-    config.num_mrb_blocks = 2
-    config.channel_factor = 1.5
-    config.add_residual_connection = True
+    config.filters = 16
+    config.middle_block_num = 1
+    config.encoder_block_nums = (1, 1, 1, 1)
+    config.decoder_block_nums = (1, 1, 1, 1)
 
     return config
 

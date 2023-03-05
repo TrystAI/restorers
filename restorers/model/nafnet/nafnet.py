@@ -35,50 +35,6 @@ class PixelShuffle(keras.layers.Layer):
         return config
 
 
-class BlockStack(keras.layers.Layer):
-    """
-    BlockStack Layer
-
-    Simple utility class to generate a sequential list of same layer
-    """
-
-    def __init__(
-        self,
-        block_class: Type[keras.layers.Layer],
-        num_blocks: int,
-        *args,
-        **kwargs,
-    ) -> None:
-        super().__init__()
-        self.block_class = block_class
-        self.num_blocks = num_blocks
-        self.block_list = []
-        self.args = args
-        self.kwargs = kwargs
-
-        for i in range(self.num_blocks):
-            self.block_list.append(self.block_class(*args, **kwargs))
-
-    def call(self, inputs: tf.Tensor, *args, **kwargs) -> tf.Tensor:
-        x = inputs
-        for block in self.block_list:
-            x = block(x)
-        return x
-
-    def get_config(self) -> dict:
-        "Get config for BlockStack"
-        config = super().get_config()
-        config.update(
-            {
-                "block_class": self.block_class,
-                "num_blocks": self.num_blocks,
-                "args": self.args,
-                "kwargs": self.kwargs,
-            }
-        )
-        return config
-
-
 class UpScale(keras.layers.Layer):
     """
     UpScale Layer
@@ -189,7 +145,9 @@ class NAFNet(keras.models.Model):
                 f" and {len(self.downs)} down blocks were created."
             )
 
-        self.middle_blocks = BlockStack(NAFBlock, middle_block_num)
+        self.middle_blocks = keras.models.Sequential(
+            [NAFBlock() for _ in range(middle_block_num)]
+        )
 
         self.create_decoder_and_up_blocks(channels, decoder_block_nums)
 
@@ -223,7 +181,9 @@ class NAFNet(keras.models.Model):
         """
 
         for num in encoder_block_nums:
-            self.encoders.append(BlockStack(NAFBlock, num))
+            self.encoders.append(
+                keras.models.Sequential([NAFBlock() for _ in range(num)])
+            )
             self.downs.append(
                 keras.layers.Conv2D(2 * channels, kernel_size=2, strides=2)
             )
@@ -241,7 +201,9 @@ class NAFNet(keras.models.Model):
         for num in decoder_block_nums:
             self.ups.append(UpScale(2 * channels, pixel_shuffle_factor=2))
             channels = channels // 2
-            self.decoders.append(BlockStack(NAFBlock, num))
+            self.decoders.append(
+                keras.models.Sequential([NAFBlock() for _ in range(num)])
+            )
         return channels
 
     def call(self, inputs: tf.Tensor, *args, **kwargs) -> tf.Tensor:

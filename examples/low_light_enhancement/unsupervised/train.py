@@ -18,6 +18,7 @@ import os
 from glob import glob
 
 import tensorflow as tf
+
 tf.get_logger().setLevel("ERROR")
 
 import wandb

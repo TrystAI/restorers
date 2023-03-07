@@ -18,6 +18,9 @@ import os
 from glob import glob
 
 import tensorflow as tf
+
+tf.get_logger().setLevel("ERROR")
+
 import wandb
 from absl import app, flags, logging
 from low_light_config import get_config

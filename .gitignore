@@ -136,4 +136,4 @@ artifacts/
 .gitpod.yml
 
 # Checkpoints
-examples/*/checkpoint/*
+**checkpoint/

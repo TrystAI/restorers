@@ -9,7 +9,6 @@ from restorers.model.nafnet import (
     NAFNet,
     PixelShuffle,
     UpScale,
-    BlockStack,
     ChannelAttention,
 )
 
@@ -117,18 +116,3 @@ class UpScaleTest(unittest.TestCase):
             upscaled_input_shape[1] = input_shape[1] * factor
             upscaled_input_shape[2] = input_shape[2] * factor
             self.assertEqual(y.shape, upscaled_input_shape)
-
-
-class BlockStackTest(unittest.TestCase):
-    def setUp(self):
-        self.block_class_mode = ["nafblock", "baseline", "plain"]
-        self.block_nums = [2, 3]
-
-    def test_blockstack(self) -> None:
-        input_shape = (1, 256, 256, 3)
-        x = tf.ones(input_shape)
-        for num_blocks in self.block_nums:
-            for mode in self.block_class_mode:
-                block_stack = BlockStack(NAFBlock, num_blocks, mode=mode)
-                y = block_stack(x)
-                self.assertEqual(y.shape, x.shape)

@@ -250,7 +250,6 @@ class NAFBlock(keras.layers.Layer):
         config = super().get_config()
         config.update(
             {
-                "channels": self.channels,
                 "factor": self.factor,
                 "drop_out_rate": self.drop_out_rate,
                 "balanced_skip_connection": self.balanced_skip_connection,

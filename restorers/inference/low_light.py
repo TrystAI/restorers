@@ -12,8 +12,9 @@ class LowLightInferer(BaseInferer):
         self,
         model: Optional[tf.keras.Model] = None,
         resize_factor: Optional[int] = 1,
+        model_alias: Optional[str] = None,
     ) -> None:
-        super().__init__(model, resize_factor)
+        super().__init__(model, resize_factor, model_alias)
 
     def preprocess(self, image: Image) -> Union[np.ndarray, tf.Tensor]:
         image = tf.keras.preprocessing.image.img_to_array(image)

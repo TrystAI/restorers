@@ -18,13 +18,13 @@ class BaseInferer(ABC):
         self,
         model: Optional[tf.keras.Model] = None,
         resize_factor: Optional[int] = 1,
+        model_alias: Optional[str] = None,
     ) -> None:
         super().__init__()
         self.model = model
         self.resize_factor = resize_factor
-        self.wandb_table = wandb.Table(
-            columns=["Input-Image", "Enhanced-Image", "Inference-Time"]
-        )
+        self.model_alias = model_alias
+        self.create_wandb_table()
 
     @abstractmethod
     def preprocess(self, image_path: Image) -> Union[np.ndarray, tf.Tensor]:
@@ -33,13 +33,18 @@ class BaseInferer(ABC):
     @abstractmethod
     def postprocess(self, model_output: np.ndarray) -> Image:
         raise NotImplementedError(f"{self.__class__.__name__ }.postprocess")
-    
+
     def initialize_model_from_wandb_artifact(self, artifact_address: str) -> None:
         self.model_path = fetch_wandb_artifact(artifact_address, artifact_type="model")
         self.model = tf.keras.models.load_model(self.model_path, compile=False)
 
+    def create_wandb_table(self):
+        columns = ["Input-Image", "Enhanced-Image", "Inference-Time"]
+        columns = columns + ["Model-Alias"] if self.model_alias is not None else columns
+        self.wandb_table = wandb.Table(columns=columns)
+
     def _infer_on_single_image(self, input_path: str, output_path: str):
-        input_image = Image.open(input_path).convert('RGB')
+        input_image = Image.open(input_path).convert("RGB")
         if self.resize_factor > 1:
             width, height = input_image.size
             width = (width // self.resize_factor) * self.resize_factor
@@ -52,9 +57,17 @@ class BaseInferer(ABC):
         post_processed_image = self.postprocess(model_output.numpy())
         if output_path is not None:
             post_processed_image.save(post_processed_image)
-        self.wandb_table.add_data(
-            wandb.Image(input_image), wandb.Image(post_processed_image), inference_time
+        table_data = [
+            wandb.Image(input_image),
+            wandb.Image(post_processed_image),
+            inference_time,
+        ]
+        table_data = (
+            table_data + [self.model_alias]
+            if self.model_alias is not None
+            else table_data
         )
+        self.wandb_table.add_data(*table_data)
 
     def infer(self, input_path: str, output_path: Optional[str] = None):
         if os.path.isdir(input_path):

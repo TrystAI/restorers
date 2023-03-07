@@ -17,6 +17,7 @@ class LoLEvaluator(BaseEvaluator):
         model: Optional[tf.keras.Model] = None,
         input_size: Optional[List[int]] = None,
         dataset_artifact_address: str = None,
+        resize_target: Optional[Tuple[int, int]] = None,
     ) -> None:
         """Evaluator for LoL Dataset.
 
@@ -27,7 +28,7 @@ class LoLEvaluator(BaseEvaluator):
             dataset_artifact_address (str): address of WandB artifact hosting LoL dataset.
         """
         self.dataset_artifact_address = dataset_artifact_address
-        super().__init__(metrics, model, input_size)
+        super().__init__(metrics, model, input_size, resize_target)
 
     def preprocess(self, image: Image) -> Union[np.ndarray, tf.Tensor]:
         image = tf.keras.preprocessing.image.img_to_array(image)

@@ -17,11 +17,13 @@ class BaseEvaluator(ABC):
         metrics: List[tf.keras.metrics.Metric],
         model: Optional[tf.keras.Model] = None,
         input_size: Optional[int] = None,
+        resize_target: Optional[Tuple[int, int]] = None,
     ) -> None:
         super().__init__()
         self.metrics = metrics
         self.model = model
         self.input_size = input_size
+        self.resize_target = resize_target
         self.image_paths = self.populate_image_paths()
         self.wandb_table = self.create_wandb_table() if wandb.run is not None else None
 
@@ -69,6 +71,9 @@ class BaseEvaluator(ABC):
         for input_image_path, ground_truth_image_path in progress_bar:
             input_image = Image.open(input_image_path)
             ground_truth_image = Image.open(ground_truth_image_path)
+            if self.resize_target:
+                input_image = input_image.resize(self.resize_target[::-1])
+                ground_truth_image = ground_truth_image.resize(self.resize_target[::-1])
             preprocessed_input_image = self.preprocess(input_image)
             preprocessed_ground_truth_image = self.preprocess(ground_truth_image)
             start_time = time()

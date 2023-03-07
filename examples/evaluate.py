@@ -14,6 +14,7 @@ def parse_args():
     parser.add_argument("--wandb_run_name", type=str, default=None)
     parser.add_argument("--wandb_job_type", type=str, default=None)
     parser.add_argument("--wandb_model_artifact", type=str)
+    parser.add_argument("--resize_target", nargs="+", type=int, default=None)
     parser.add_argument(
         "--wandb_dataset_artifact", type=str, default="ml-colabs/dataset/LoL:v0"
     )
@@ -33,6 +34,7 @@ if __name__ == "__main__":
             metrics=[PSNRMetric(max_val=1.0), SSIMMetric(max_val=1.0)],
             dataset_artifact_address=args.wandb_dataset_artifact,
             input_size=256,
+            resize_target=tuple(args.resize_target),
         )
         evaluator.initialize_model_from_wandb_artifact(args.wandb_model_artifact)
         evaluator.evaluate()

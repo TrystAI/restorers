@@ -1,9 +1,13 @@
 from time import time
-from typing import Optional, Tuple
+from PIL import Image
 from abc import ABC, abstractmethod
+from typing import Optional, Tuple, Union
 
 import wandb
+import numpy as np
 import tensorflow as tf
+
+from ..utils import fetch_wandb_artifact
 
 
 class BaseInferer(ABC):
@@ -32,7 +36,7 @@ class BaseInferer(ABC):
         model_path = fetch_wandb_artifact(artifact_address, artifact_type="model")
         self.model = tf.keras.models.load_model(model_path, compile=False)
 
-    def infer(self, image_file: str, output_path: Optional[str] = None):
+    def infer(self, input_image_path: str, output_path: Optional[str] = None):
         input_image = Image.open(input_image_path)
         input_image = (
             input_image.resize(self.resize_target[::-1])

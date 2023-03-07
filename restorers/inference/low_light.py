@@ -1,3 +1,5 @@
+from typing import Optional, Tuple, Union
+
 import numpy as np
 from PIL import Image
 import tensorflow as tf

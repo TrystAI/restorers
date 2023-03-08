@@ -16,6 +16,7 @@ class LoLEvaluator(BaseEvaluator):
         metrics: List[tf.keras.metrics.Metric],
         model: Optional[tf.keras.Model] = None,
         input_size: Optional[List[int]] = None,
+        resize_target: Optional[Tuple[int, int]] = None,
         dataset_artifact_address: str = None,
     ) -> None:
         """Evaluator for LoL Dataset.
@@ -24,10 +25,11 @@ class LoLEvaluator(BaseEvaluator):
             metrics (List[tf.keras.metrics.Metric]): list of keras metrics.
             model (Optional[tf.keras.Model]): model to be evaluated.
             input_size (Optional[List[int]]): input size used for calculating GFLOPs.
+            resize_target: (Optional[Tuple[int, int]]): resize to this size for inference.
             dataset_artifact_address (str): address of WandB artifact hosting LoL dataset.
         """
         self.dataset_artifact_address = dataset_artifact_address
-        super().__init__(metrics, model, input_size)
+        super().__init__(metrics, model, input_size, resize_target)
 
     def preprocess(self, image: Image) -> Union[np.ndarray, tf.Tensor]:
         image = tf.keras.preprocessing.image.img_to_array(image)

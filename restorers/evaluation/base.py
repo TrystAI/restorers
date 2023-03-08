@@ -17,11 +17,13 @@ class BaseEvaluator(ABC):
         metrics: List[tf.keras.metrics.Metric],
         model: Optional[tf.keras.Model] = None,
         input_size: Optional[int] = None,
+        resize_target: Optional[Tuple[int, int]] = None,
     ) -> None:
         super().__init__()
         self.metrics = metrics
         self.model = model
         self.input_size = input_size
+        self.resize_target = resize_target
         self.image_paths = self.populate_image_paths()
         self.wandb_table = self.create_wandb_table() if wandb.run is not None else None
 
@@ -50,8 +52,8 @@ class BaseEvaluator(ABC):
         return wandb.Table(columns=columns)
 
     def initialize_model_from_wandb_artifact(self, artifact_address: str) -> None:
-        model_path = fetch_wandb_artifact(artifact_address, artifact_type="model")
-        self.model = tf.keras.models.load_model(model_path, compile=False)
+        self.model_path = fetch_wandb_artifact(artifact_address, artifact_type="model")
+        self.model = tf.keras.models.load_model(self.model_path, compile=False)
 
     def evaluate_split(
         self,
@@ -69,12 +71,16 @@ class BaseEvaluator(ABC):
         for input_image_path, ground_truth_image_path in progress_bar:
             input_image = Image.open(input_image_path)
             ground_truth_image = Image.open(ground_truth_image_path)
+            if self.resize_target is not None:
+                input_image = input_image.resize(self.resize_target[::-1])
+                ground_truth_image = ground_truth_image.resize(self.resize_target[::-1])
             preprocessed_input_image = self.preprocess(input_image)
             preprocessed_ground_truth_image = self.preprocess(ground_truth_image)
             start_time = time()
-            model_output = self.model.predict(preprocessed_input_image, verbose=0)
+            model_output = self.model(preprocessed_input_image)
             inference_time = time() - start_time
             total_inference_time += inference_time
+            model_output = model_output.numpy()
             metric_results = []
             for idx, metric in enumerate(self.metrics):
                 metric_value = (
@@ -129,9 +135,12 @@ class BaseEvaluator(ABC):
         log_dict["Total Parameters"] = trainable_parameters + non_trainable_parameters
 
         if self.input_size is not None:
-            log_dict["GFLOPs"] = calculate_gflops(
-                model=self.model, input_shape=[self.input_size, self.input_size, 3]
-            )
+            try:
+                log_dict["GFLOPs"] = calculate_gflops(
+                    model=self.model, input_shape=[self.input_size, self.input_size, 3]
+                )
+            except:
+                pass
 
         if wandb.run is not None:
             wandb.log(log_dict)

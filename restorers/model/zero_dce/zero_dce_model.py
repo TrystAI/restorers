@@ -100,7 +100,7 @@ class ZeroDCE(tf.keras.Model):
             "filters": self.filters,
             "num_iterations": self.num_iterations,
         }
-    
+
     def save(self, filepath: str, *args, **kwargs) -> None:
         input_tensor = tf.keras.Input(shape=[None, None, 3])
         saved_model = tf.keras.Model(

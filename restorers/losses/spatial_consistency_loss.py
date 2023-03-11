@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 
-class SpatialConsistencyLoss(losses.Loss):
+class SpatialConsistencyLoss(tf.keras.losses.Loss):
     def __init__(self, **kwargs):
         super(SpatialConsistencyLoss, self).__init__(reduction="none")
 

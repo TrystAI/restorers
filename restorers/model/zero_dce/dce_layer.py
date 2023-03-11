@@ -1,3 +1,5 @@
+from typing import Dict, Any
+
 import tensorflow as tf
 
 
@@ -44,10 +46,10 @@ class DeepCurveEstimationLayer(tf.keras.layers.Layer):
         conv4_out = self.convolution_4(conv3_out)
         conv5_out = self.convolution_5(tf.concat([conv4_out, conv3_out], axis=-1))
         conv6_out = self.convolution_6(tf.concat([conv5_out, conv2_out], axis=-1))
-        alphas_stacked = self.convolution_out(
+        curve_parameter_maps = self.convolution_out(
             tf.concat([conv6_out, conv1_out], axis=-1)
         )
-        return alphas_stacked
+        return curve_parameter_maps
 
-    def get_config(self):
+    def get_config(self) -> Dict[str, Any]:
         return {"filters": self.filters, "num_iterations": self.num_iterations}

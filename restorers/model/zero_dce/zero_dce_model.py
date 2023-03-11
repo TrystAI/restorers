@@ -83,16 +83,16 @@ class ZeroDCE(tf.keras.Model):
 
     def train_step(self, data):
         with tf.GradientTape() as tape:
-            output = self.dce_model(data)
+            output = self.dce_layer(data)
             losses = self.compute_losses(data, output)
         gradients = tape.gradient(
-            losses["total_loss"], self.dce_model.trainable_weights
+            losses["total_loss"], self.dce_layer.trainable_weights
         )
-        self.optimizer.apply_gradients(zip(gradients, self.dce_model.trainable_weights))
+        self.optimizer.apply_gradients(zip(gradients, self.dce_layer.trainable_weights))
         return losses
 
     def test_step(self, data):
-        output = self.dce_model(data)
+        output = self.dce_layer(data)
         return self.compute_losses(data, output)
 
     def get_config(self) -> Dict[str, Any]:

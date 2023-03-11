@@ -19,7 +19,6 @@ class SpatialConsistencyLoss(tf.keras.losses.Loss):
         )
 
     def call(self, y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
-
         original_mean = tf.reduce_mean(y_true, 3, keepdims=True)
         enhanced_mean = tf.reduce_mean(y_pred, 3, keepdims=True)
         original_pool = tf.nn.avg_pool2d(

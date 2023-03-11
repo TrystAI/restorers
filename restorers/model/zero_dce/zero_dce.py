@@ -34,6 +34,7 @@ class ZeroDCE(tf.keras.Model):
         self.weight_color_constancy_loss = weight_color_constancy_loss
         self.weight_exposure_loss = weight_exposure_loss
         self.weight_illumination_smoothness_loss = weight_illumination_smoothness_loss
+        self.spatial_constancy_loss = SpatialConsistencyLoss()
 
     def get_enhanced_image(self, data, curve_parameter_maps):
         enhanced_image = data
@@ -93,7 +94,7 @@ class ZeroDCE(tf.keras.Model):
     def test_step(self, data):
         output = self.dce_model(data)
         return self.compute_losses(data, output)
-    
+
     def get_config(self) -> Dict[str, Any]:
         return {
             "filters": self.filters,

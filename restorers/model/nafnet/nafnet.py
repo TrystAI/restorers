@@ -212,7 +212,6 @@ class NAFNet(keras.models.Model):
         return channels
 
     def call(self, inputs: tf.Tensor, *args, **kwargs) -> tf.Tensor:
-
         _, H, W, _ = inputs.shape
 
         # Scale the image to the next nearest multiple of self.expected_image_scale

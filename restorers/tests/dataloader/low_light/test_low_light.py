@@ -66,7 +66,7 @@ class LowLightDataLoaderTester(unittest.TestCase):
             (1, self.image_size, self.image_size, 3),
         )
         self.assertEqual(x.shape, (1, self.image_size, self.image_size, 3))
-        x, y = next(iter(val_dataset))
+        x = next(iter(val_dataset))
         self.assertEqual(
             tuple(val_dataset.element_spec.shape),
             (1, self.image_size, self.image_size, 3),

@@ -243,7 +243,7 @@ class NAFNet(keras.models.Model):
         # Crop back to the original size
         return x[:, :H, :W, :]
 
-    def fix_input_shape(self, inputs):
+    def fix_input_shape(self, inputs: tf.Tensor) -> tf.Tensor:
         """
         Fixes input shape for NAFNet
         This is because NAFNet can only work with images whose shape is

@@ -62,6 +62,7 @@ class UnsupervisedLOLDataLoader(LOLDataLoader):
         dataset_url: Union[str, None] = None,
         train_on_all_images: bool = False,
     ):
+        self.train_on_all_images = train_on_all_images
         super().__init__(
             image_size,
             bit_depth,
@@ -70,7 +71,6 @@ class UnsupervisedLOLDataLoader(LOLDataLoader):
             dataset_artifact_address,
             dataset_url,
         )
-        self.train_on_all_images = train_on_all_images
 
     def define_dataset_structure(self, dataset_path, val_split):
         super().define_dataset_structure(dataset_path, val_split)

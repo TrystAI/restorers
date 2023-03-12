@@ -60,6 +60,7 @@ class UnsupervisedLOLDataLoader(LOLDataLoader):
         visualize_on_wandb: bool,
         dataset_artifact_address: Union[str, None] = None,
         dataset_url: Union[str, None] = None,
+        train_on_all_images: bool = False,
     ):
         super().__init__(
             image_size,
@@ -69,6 +70,15 @@ class UnsupervisedLOLDataLoader(LOLDataLoader):
             dataset_artifact_address,
             dataset_url,
         )
+        self.train_on_all_images = train_on_all_images
+
+    def define_dataset_structure(self, dataset_path, val_split):
+        super().define_dataset_structure(dataset_path, val_split)
+        if self.train_on_all_images:
+            self.train_input_images = (
+                self.train_input_images + self.train_enhanced_images
+            )
+            self.val_input_images = self.val_input_images + self.val_enhanced_images
 
     def random_crop(self, input_image: tf.Tensor) -> Tuple[tf.Tensor]:
         # Check whether the image size is smaller than the original image

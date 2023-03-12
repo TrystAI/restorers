@@ -165,6 +165,11 @@ class NAFNet(keras.models.Model):
                 f"In `create_decoder_and_up_blocks` {len(self.decoders)} decoder blocks were created."
             )
 
+        # The height and width of the image should be a
+        #  multiple of self.expected_image_scale
+        # If that is not the case, it will be fixed in the call(...) method.
+        self.expected_image_scale = 2 ** len(self.encoders)
+
     def build(self, input_shape: tf.TensorShape) -> None:
         input_channels = input_shape[-1]
         self.ending = keras.layers.Conv2DTranspose(
@@ -207,6 +212,12 @@ class NAFNet(keras.models.Model):
         return channels
 
     def call(self, inputs: tf.Tensor, *args, **kwargs) -> tf.Tensor:
+
+        _, H, W, _ = inputs.shape
+
+        # Scale the image to the next nearest multiple of self.expected_image_scale
+        inputs = self.fix_input_shape(inputs)
+
         x = self.intro(inputs)
 
         encoder_outputs = []
@@ -229,7 +240,30 @@ class NAFNet(keras.models.Model):
         # Residual connection of inputs with output
         x = x + inputs
 
-        return x
+        # Crop back to the original size
+        return x[:, :H, :W, :]
+
+    def fix_input_shape(self, inputs):
+        """
+        Fixes input shape for NAFNet
+        This is because NAFNet can only work with images whose shape is
+         multiple of 2**(no. of encoder blocks)
+        Hence the image is padded to match that shape
+        """
+
+        _, H, W, _ = inputs.shape
+
+        # Calculating how much padding is required
+        height_padding, width_padding = 0, 0
+        if H % self.expected_image_scale != 0:
+            height_padding = self.expected_image_scale - H % self.expected_image_scale
+        if W % self.expected_image_scale != 0:
+            width_padding = self.expected_image_scale - W % self.expected_image_scale
+
+        paddings = tf.constant(
+            [[0, 0], [0, height_padding], [0, width_padding], [0, 0]]
+        )
+        return tf.pad(inputs, paddings)
 
     def save(self, filepath: str, *args, **kwargs) -> None:
         input_tensor = tf.keras.Input(shape=[None, None, 3])

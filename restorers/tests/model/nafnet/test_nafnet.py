@@ -74,12 +74,47 @@ class SimpleGateTest(unittest.TestCase):
 
 
 class NAFNetTest(unittest.TestCase):
+    def setUp(self):
+        self.input_shapes = [
+            (1, 254, 254, 3),
+            (1, 255, 255, 3),
+            (1, 257, 257, 3),
+            (1, 258, 258, 3),
+            (1, 400, 600, 3),
+        ]
+
+        self.reshaped_shapes = [
+            (1, 256, 256, 3),
+            (1, 256, 256, 3),
+            (1, 272, 272, 3),
+            (1, 272, 272, 3),
+            (1, 400, 608, 3),
+        ]
+
     def test_nafnet(self) -> None:
         input_shape = (1, 256, 256, 3)
         x = tf.ones(input_shape)
         nafnet = NAFNet()
         y = nafnet(x)
         self.assertEqual(y.shape, x.shape)
+
+    def test_varying_input_shape(self) -> None:
+        for input_shape in self.input_shapes:
+            x = tf.ones(input_shape)
+            nafnet = NAFNet()
+            y = nafnet(x)
+            self.assertEqual(y.shape, x.shape)
+
+    def test_input_reshaping(self) -> None:
+        for input_shape, reshaped_shapes in zip(
+            self.input_shapes, self.reshaped_shapes
+        ):
+            x = tf.ones(input_shape)
+            nafnet = NAFNet(
+                encoder_block_nums=[1, 1, 1, 1], decoder_block_nums=[1, 1, 1, 1]
+            )
+            y = nafnet.fix_input_shape(x)
+            self.assertEqual(y.shape, reshaped_shapes)
 
 
 class PixelShuffleTest(unittest.TestCase):

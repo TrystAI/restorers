@@ -178,7 +178,7 @@ class NAFNet(keras.models.Model):
             filters=input_channels, kernel_size=3, padding="same"
         )
 
-    def get_block(self, **kwargs) -> keras.layers.Layer:
+    def get_block(self) -> keras.layers.Layer:
         """
         Returns the block to be used in NAFNet
         Can be overriden to use custom blocks in NAFNet

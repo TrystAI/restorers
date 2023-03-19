@@ -4,6 +4,7 @@ import tensorflow as tf
 from tensorflow import keras
 
 from .nafblock import NAFBlock
+from .nafblock import PLAIN, BASELINE, NAFBLOCK
 
 
 class PixelShuffle(keras.layers.Layer):
@@ -91,12 +92,12 @@ class NAFNet(keras.models.Model):
     And finally the filters will be mapped back to the initial input size.
 
     Overwrite create_encoder_and_down_blocks, create_decoder_and_up_blocks, create_middle_blocks
-    to add your own implementation for these blocks. But make sure to follow the restrictions on
-    these methods.
+    to add your own implementation for these blocks. Overwrite get_blocks to use your custom block
+    in NAFNet. But make sure to follow the restrictions on these methods and blocks.
 
     Parameters:
         filters: denotes the starting filter size.
-        middle_block_num: denotes the number of middle blocks.
+        middle_block_num: (int) denotes the number of middle blocks.
             Each middle block is a single NAFBlock unit.
         encoder_block_nums: (tuple) the tuple size denotes the number of encoder blocks.
             Each tuple entry denotes the number of NAFBlocks in the corresponding encoder block.
@@ -104,6 +105,7 @@ class NAFNet(keras.models.Model):
         decoder_block_nums: (tuple) the tuple size denotes the number of decoder blocks.
             Each tuple entry denotes the number of NAFBlocks in the corresponding decoder block.
             len(decoder_block_nums) should be the same as the len(encoder_block_nums)
+        block_type: (str) denotes what block to use in NAFNet
     """
 
     def __init__(
@@ -112,6 +114,7 @@ class NAFNet(keras.models.Model):
         middle_block_num: Optional[int] = 1,
         encoder_block_nums: Optional[Tuple[int]] = (1, 1, 1, 1),
         decoder_block_nums: Optional[Tuple[int]] = (1, 1, 1, 1),
+        block_type: Optional[str] = NAFBLOCK,
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
@@ -120,6 +123,7 @@ class NAFNet(keras.models.Model):
         self.middle_block_num = middle_block_num
         self.encoder_block_nums = encoder_block_nums
         self.decoder_block_nums = decoder_block_nums
+        self.block_type = block_type
 
         self.intro = keras.layers.Conv2D(filters=filters, kernel_size=3, padding="same")
 
@@ -145,9 +149,7 @@ class NAFNet(keras.models.Model):
                 f" and {len(self.downs)} down blocks were created."
             )
 
-        self.middle_blocks = keras.models.Sequential(
-            [NAFBlock() for _ in range(middle_block_num)]
-        )
+        self.create_middle_blocks(middle_block_num)
 
         self.create_decoder_and_up_blocks(channels, decoder_block_nums)
 
@@ -176,6 +178,13 @@ class NAFNet(keras.models.Model):
             filters=input_channels, kernel_size=3, padding="same"
         )
 
+    def get_block(self, **kwargs) -> keras.layers.Layer:
+        """
+        Returns the block to be used in NAFNet
+        Can be overriden to use custom blocks in NAFNet
+        """
+        return NAFBlock(mode=self.block_type)
+
     def create_encoder_and_down_blocks(
         self,
         channels: int,
@@ -187,13 +196,21 @@ class NAFNet(keras.models.Model):
 
         for num in encoder_block_nums:
             self.encoders.append(
-                keras.models.Sequential([NAFBlock() for _ in range(num)])
+                keras.models.Sequential([self.get_block() for _ in range(num)])
             )
             self.downs.append(
                 keras.layers.Conv2D(2 * channels, kernel_size=2, strides=2)
             )
             channels *= 2
         return channels
+
+    def create_middle_blocks(self, middle_block_num: int) -> None:
+        """
+        Creates middle blocks in NAFNet
+        """
+        self.middle_blocks = keras.models.Sequential(
+            [self.get_block() for _ in range(middle_block_num)]
+        )
 
     def create_decoder_and_up_blocks(
         self,
@@ -207,7 +224,7 @@ class NAFNet(keras.models.Model):
             self.ups.append(UpScale(2 * channels, pixel_shuffle_factor=2))
             channels = channels // 2
             self.decoders.append(
-                keras.models.Sequential([NAFBlock() for _ in range(num)])
+                keras.models.Sequential([self.get_block() for _ in range(num)])
             )
         return channels
 
@@ -280,6 +297,7 @@ class NAFNet(keras.models.Model):
                 "middle_block_num": self.middle_block_num,
                 "encoder_block_nums": self.encoder_block_nums,
                 "decoder_block_nums": self.decoder_block_nums,
+                "block_type": self.block_type,
             }
         )
         return config

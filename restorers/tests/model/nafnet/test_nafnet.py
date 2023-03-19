@@ -91,12 +91,15 @@ class NAFNetTest(unittest.TestCase):
             (1, 400, 608, 3),
         ]
 
+        self.block_types = ["plain", "baseline", "nafblock"]
+
     def test_nafnet(self) -> None:
-        input_shape = (1, 256, 256, 3)
-        x = tf.ones(input_shape)
-        nafnet = NAFNet()
-        y = nafnet(x)
-        self.assertEqual(y.shape, x.shape)
+        for block_type in self.block_types:
+            input_shape = (1, 256, 256, 3)
+            x = tf.ones(input_shape)
+            nafnet = NAFNet(block_type=block_type)
+            y = nafnet(x)
+            self.assertEqual(y.shape, x.shape)
 
     def test_varying_input_shape(self) -> None:
         for input_shape in self.input_shapes:

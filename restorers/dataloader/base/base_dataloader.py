@@ -170,7 +170,7 @@ class DatasetFactory(ABC):
 
     def get_datasets(self, batch_size: int) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
         """
-        Function to retrieve a dataset.
+        Function to retrieve the train and val dataset.
 
         Args:
             batch_size (`int`): Number of images in a single batch.

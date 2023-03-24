@@ -1,10 +1,10 @@
 import random
-from typing import Sequence
+from typing import Tuple
 
 import tensorflow as tf
 
 
-def random_horiontal_flip(low_image, enhanced_image) -> Sequence[tf.Tensor]:
+def random_horiontal_flip(low_image, enhanced_image) -> Tuple[tf.Tensor, tf.Tensor]:
     seed = random.randint(0, 1000)
     low_image = tf.image.random_flip_left_right(low_image, seed=seed)
     enhanced_image = tf.image.random_flip_left_right(low_image, seed=seed)
@@ -17,7 +17,7 @@ def random_unpaired_horiontal_flip(low_image) -> tf.Tensor:
     return low_image
 
 
-def random_vertical_flip(low_image, enhanced_image) -> Sequence[tf.Tensor]:
+def random_vertical_flip(low_image, enhanced_image) -> Tuple[tf.Tensor, tf.Tensor]:
     seed = random.randint(0, 1000)
     low_image = tf.image.random_flip_up_down(low_image, seed=seed)
     enhanced_image = tf.image.random_flip_up_down(low_image, seed=seed)

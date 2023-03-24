@@ -7,6 +7,12 @@ plugins:
   - mkdocstrings
 
 nav:
-  - index.md
-  - models.md
-  - dataloader.md
+  - Home: 'index.md'
+  - 'Models':
+    - 'MirNetV2' : 'models/mirnetv2.md'
+    - 'NAFNet': 'models/nafnet.md'
+    - 'Zero-DCE': 'models/zero_dce_model.md'
+  - 'Dataloader':
+    - 'Base': 'dataloader/base.md'
+    # - 'LOL': 'dataloader/lol_dataloader.md'
+    # - 'MIT Adobe 5K': 'dataloader/mit_adobe_5k_dataloader.md'

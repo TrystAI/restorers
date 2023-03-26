@@ -12,6 +12,10 @@ class SimpleGate(keras.layers.Layer):
     """
     Simple Gate
     It splits the input of size (b,h,w,c) into tensors of size (b,h,w,c//factor) and returns their Hadamard product
+
+    Reference: NAFNet Paper (Simple Baselines for Image Restoration)
+    https://www.ecva.net/papers/eccv_2022/papers_ECCV/papers/136670017.pdf
+
     Parameters:
         factor: the amount by which the channels are scaled down
     """
@@ -37,6 +41,17 @@ class SimpleGate(keras.layers.Layer):
 class ChannelAttention(keras.layers.Layer):
     """
     Channel Attention layer
+
+    The block is named Squeeze-and-Excitation block (SE Block) in the original paper.
+    First the input is 'squeezed' across the spatial dimension to generate
+        a channel-wise descriptor.
+    Following that the inter channel dependency is learnt by applying
+        two convolution layers.
+    Then finally, the input is rescaled by a channel-wise multiplication with the
+        output of the excitation operation.
+
+    Reference: Squeeze-and-Excitation Networks, Hu et al.
+    https://ieeexplore.ieee.org/document/8578843
 
     Parameters:
         channels: number of channels in input
@@ -72,6 +87,17 @@ class SimplifiedChannelAttention(keras.layers.Layer):
     """
     Simplified Channel Attention layer
     It is a modification of channel attention without any non-linear activations.
+
+    The Squeeze and final rescaling step is identical to the ChannelAttention Layer.
+    But following the philosophy of NAFNet paper, the excitation operation with
+        two conv layers with respective activations are replaced with a single conv
+        block. So the inter channel dependency is learnt but any gate or activation
+        is not used.
+        (Check the paper/doc string of NAFBlock for more details)
+
+    Reference: NAFNet Paper (Simple Baselines for Image Restoration)
+    https://www.ecva.net/papers/eccv_2022/papers_ECCV/papers/136670017.pdf
+
     Parameters:
         channels: number of channels in input
     """
@@ -100,6 +126,26 @@ class SimplifiedChannelAttention(keras.layers.Layer):
 class NAFBlock(keras.layers.Layer):
     """
     NAFBlock (Nonlinear Activation Free Block)
+
+    The authors first define a plain block by retaining the most used operations
+        from the restormer block.
+    In the plain block layer normalization and channel attention is added to make
+        the baseline block.
+    NAFBlock is constructed by removing all the non-linear activations from
+        the baseline block.
+
+    The authors have the idea that any operations of the form,
+    .. math::
+        f(X) \dot \sigma(g(Y))
+    (where f and g are feature maps and \sigma is activation function)
+    can be simplified to the form
+    .. math::
+        X \dot g(Y)
+    Using this idea, all the nonlinear activations are replaced by
+        a series of Hadamard produces
+
+    Reference: NAFNet Paper (Simple Baselines for Image Restoration)
+    https://www.ecva.net/papers/eccv_2022/papers_ECCV/papers/136670017.pdf
 
     Parameters:
         input_channels: number of channels in the input (as NAFBlock retains the input size in the output)

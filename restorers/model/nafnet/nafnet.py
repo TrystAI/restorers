@@ -20,6 +20,10 @@ class PixelShuffle(keras.layers.Layer):
     )
 
     Wrapper Class for tf.nn.depth_to_space
+    Reference: https://www.tensorflow.org/api_docs/python/tf/nn/depth_to_space
+
+    Parameters:
+        upscale_factor: the factor by which the input's spatial dimensions will be scaled.
     """
 
     def __init__(self, upscale_factor: int, **kwargs) -> None:
@@ -48,6 +52,10 @@ class UpScale(keras.layers.Layer):
         channels//(pixel_shuffle_factor**2)
     )
     While giving input, make sure that (pixel_shuffle_factor**2) divides channels
+
+    Parameters:
+        channels: number of channels in the input.
+        pixel_shuffle_factor: the factor by which the input's spatial dimensions will be scaled.
     """
 
     def __init__(self, channels: int, pixel_shuffle_factor: int, **kwargs) -> None:
@@ -94,6 +102,9 @@ class NAFNet(keras.models.Model):
     Overwrite create_encoder_and_down_blocks, create_decoder_and_up_blocks, create_middle_blocks
     to add your own implementation for these blocks. Overwrite get_blocks to use your custom block
     in NAFNet. But make sure to follow the restrictions on these methods and blocks.
+
+    Reference: NAFNet Paper (Simple Baselines for Image Restoration)
+    https://www.ecva.net/papers/eccv_2022/papers_ECCV/papers/136670017.pdf
 
     Parameters:
         filters: denotes the starting filter size.

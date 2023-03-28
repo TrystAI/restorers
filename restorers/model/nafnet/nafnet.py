@@ -23,7 +23,7 @@ class PixelShuffle(keras.layers.Layer):
     Reference: https://www.tensorflow.org/api_docs/python/tf/nn/depth_to_space
 
     Parameters:
-        upscale_factor: the factor by which the input's spatial dimensions will be scaled.
+        upscale_factor (int): the factor by which the input's spatial dimensions will be scaled.
     """
 
     def __init__(self, upscale_factor: int, **kwargs) -> None:
@@ -54,8 +54,8 @@ class UpScale(keras.layers.Layer):
     While giving input, make sure that (pixel_shuffle_factor**2) divides channels
 
     Parameters:
-        channels: number of channels in the input.
-        pixel_shuffle_factor: the factor by which the input's spatial dimensions will be scaled.
+        channels (int): number of channels in the input.
+        pixel_shuffle_factor (int): the factor by which the input's spatial dimensions will be scaled.
     """
 
     def __init__(self, channels: int, pixel_shuffle_factor: int, **kwargs) -> None:
@@ -103,12 +103,13 @@ class NAFNet(keras.models.Model):
     to add your own implementation for these blocks. Overwrite get_blocks to use your custom block
     in NAFNet. But make sure to follow the restrictions on these methods and blocks.
 
-    Reference: NAFNet Paper (Simple Baselines for Image Restoration)
-    https://www.ecva.net/papers/eccv_2022/papers_ECCV/papers/136670017.pdf
+    Reference:
+    
+    1. [Simple Baselines for Image Restoration](https://arxiv.org/abs/2204.04676)
 
     Parameters:
-        filters: denotes the starting filter size.
-        middle_block_num: (int) denotes the number of middle blocks.
+        filters (Optional[int]): denotes the starting filter size.
+        middle_block_num: (Optional[int]) denotes the number of middle blocks.
             Each middle block is a single NAFBlock unit.
         encoder_block_nums: (tuple) the tuple size denotes the number of encoder blocks.
             Each tuple entry denotes the number of NAFBlocks in the corresponding encoder block.

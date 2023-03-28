@@ -13,11 +13,12 @@ class SimpleGate(keras.layers.Layer):
     Simple Gate
     It splits the input of size (b,h,w,c) into tensors of size (b,h,w,c//factor) and returns their Hadamard product
 
-    Reference: NAFNet Paper (Simple Baselines for Image Restoration)
-    https://www.ecva.net/papers/eccv_2022/papers_ECCV/papers/136670017.pdf
+    Reference:
+    
+    1. [Simple Baselines for Image Restoration](https://arxiv.org/abs/2204.04676)
 
     Parameters:
-        factor: the amount by which the channels are scaled down
+        factor (Optional[int]): the amount by which the channels are scaled down
     """
 
     def __init__(self, factor: Optional[int] = 2, **kwargs) -> None:
@@ -43,15 +44,16 @@ class ChannelAttention(keras.layers.Layer):
     Channel Attention layer
 
     The block is named Squeeze-and-Excitation block (SE Block) in the original paper.
-    First the input is 'squeezed' across the spatial dimension to generate
-        a channel-wise descriptor.
-    Following that the inter channel dependency is learnt by applying
+    1. First the input is 'squeezed' across the spatial dimension to generate a
+        channel-wise descriptor.
+    2. Following that the inter channel dependency is learnt by applying
         two convolution layers.
-    Then finally, the input is rescaled by a channel-wise multiplication with the
+    3. Finally, the input is rescaled by a channel-wise multiplication with the
         output of the excitation operation.
 
-    Reference: Squeeze-and-Excitation Networks, Hu et al.
-    https://ieeexplore.ieee.org/document/8578843
+    Reference:
+    
+    1. [Squeeze-and-Excitation Networks](https://arxiv.org/abs/1709.01507)
 
     Parameters:
         channels: number of channels in input
@@ -95,8 +97,9 @@ class SimplifiedChannelAttention(keras.layers.Layer):
         is not used.
         (Check the paper/doc string of NAFBlock for more details)
 
-    Reference: NAFNet Paper (Simple Baselines for Image Restoration)
-    https://www.ecva.net/papers/eccv_2022/papers_ECCV/papers/136670017.pdf
+    Reference:
+    
+    1. [Simple Baselines for Image Restoration](https://arxiv.org/abs/2204.04676)
 
     Parameters:
         channels: number of channels in input
@@ -144,12 +147,13 @@ class NAFBlock(keras.layers.Layer):
     Using this idea, all the nonlinear activations are replaced by
         a series of Hadamard produces
 
-    Reference: NAFNet Paper (Simple Baselines for Image Restoration)
-    https://www.ecva.net/papers/eccv_2022/papers_ECCV/papers/136670017.pdf
+    Reference:
+    
+    1. [Simple Baselines for Image Restoration](https://arxiv.org/abs/2204.04676)
 
     Parameters:
-        input_channels: number of channels in the input (as NAFBlock retains the input size in the output)
-        factor: factor by which the channels must be increased before being reduced by simple gate.
+        input_channels (Optional[int]): number of channels in the input (as NAFBlock retains the input size in the output)
+        factor (Optional[float]): factor by which the channels must be increased before being reduced by simple gate.
             (Higher factor denotes higher order polynomial in multiplication. Default factor is 2)
         drop_out_rate: dropout rate
         balanced_skip_connection: adds additional trainable parameters to the skip connections.

@@ -1,5 +1,3 @@
-from typing import Optional
-
 import tensorflow as tf
 from tensorflow import keras
 
@@ -17,10 +15,11 @@ class SimpleGate(keras.layers.Layer):
     https://www.ecva.net/papers/eccv_2022/papers_ECCV/papers/136670017.pdf
 
     Parameters:
-        factor: the amount by which the channels are scaled down
+        factor (Optional[int]): the amount by which the channels are scaled down
+            Default factor is 2.
     """
 
-    def __init__(self, factor: Optional[int] = 2, **kwargs) -> None:
+    def __init__(self, factor: int = 2, **kwargs) -> None:
         super().__init__(**kwargs)
         self.factor = factor
 
@@ -148,13 +147,14 @@ class NAFBlock(keras.layers.Layer):
     https://www.ecva.net/papers/eccv_2022/papers_ECCV/papers/136670017.pdf
 
     Parameters:
-        input_channels: number of channels in the input (as NAFBlock retains the input size in the output)
-        factor: factor by which the channels must be increased before being reduced by simple gate.
+        factor (Optional[float]): factor by which the channels must be increased before being reduced by simple gate.
             (Higher factor denotes higher order polynomial in multiplication. Default factor is 2)
-        drop_out_rate: dropout rate
-        balanced_skip_connection: adds additional trainable parameters to the skip connections.
+        drop_out_rate (Optional[float]): dropout rate
+            Default value is 0.0
+        balanced_skip_connection (Optional[bool]): adds additional trainable parameters to the skip connections.
             The parameter denotes how much importance should be given to the sub block in the skip connection.
-        mode: NAFBlock has 3 mode.
+            Default value is False
+        mode (Optional[str]): NAFBlock has 3 mode.
             'plain' mode uses the PlainBlock.
                 It is derived from the restormer block, keeping the most common components
             'baseline' mode used the BaselineBlock
@@ -163,14 +163,15 @@ class NAFBlock(keras.layers.Layer):
             'nafblock' mode uses the NAFBlock
                 It derived from BaselineBlock by removing all the non-linear activation.
                 Non-linear activations are replaced by equivalent matrix multiplication operations.
+            Default mode is 'nafblock'
     """
 
     def __init__(
         self,
-        factor: Optional[int] = 2,
-        drop_out_rate: Optional[float] = 0.0,
-        balanced_skip_connection: Optional[bool] = False,
-        mode: Optional[str] = NAFBLOCK,
+        factor: int = 2,
+        drop_out_rate: float = 0.0,
+        balanced_skip_connection: bool = False,
+        mode: str = NAFBLOCK,
         **kwargs
     ) -> None:
         super().__init__(**kwargs)

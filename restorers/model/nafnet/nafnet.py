@@ -1,4 +1,4 @@
-from typing import Optional, Tuple, Type
+from typing import Tuple, Type
 
 import tensorflow as tf
 from tensorflow import keras
@@ -107,25 +107,29 @@ class NAFNet(keras.models.Model):
     https://www.ecva.net/papers/eccv_2022/papers_ECCV/papers/136670017.pdf
 
     Parameters:
-        filters: denotes the starting filter size.
-        middle_block_num: (int) denotes the number of middle blocks.
-            Each middle block is a single NAFBlock unit.
-        encoder_block_nums: (tuple) the tuple size denotes the number of encoder blocks.
+        filters (Optional[int]): denotes the starting filter size.
+            Default filters' size is 16 .
+        middle_block_num (Optional[int]): denotes the number of middle blocks.
+            Each middle block is a single NAFBlock unit. Default value is 1.
+        encoder_block_nums (tuple): the tuple size denotes the number of encoder blocks.
             Each tuple entry denotes the number of NAFBlocks in the corresponding encoder block.
             len(encoder_block_nums) should be the same as the len(decoder_block_nums)
-        decoder_block_nums: (tuple) the tuple size denotes the number of decoder blocks.
+            Default value is (1,1,1,1).
+        decoder_block_nums (tuple): the tuple size denotes the number of decoder blocks.
             Each tuple entry denotes the number of NAFBlocks in the corresponding decoder block.
             len(decoder_block_nums) should be the same as the len(encoder_block_nums)
-        block_type: (str) denotes what block to use in NAFNet
+            Default value is (1,1,1,1).
+        block_type (str): denotes what block to use in NAFNet
+            Default block is 'nafblock'
     """
 
     def __init__(
         self,
-        filters: Optional[int] = 16,
-        middle_block_num: Optional[int] = 1,
-        encoder_block_nums: Optional[Tuple[int]] = (1, 1, 1, 1),
-        decoder_block_nums: Optional[Tuple[int]] = (1, 1, 1, 1),
-        block_type: Optional[str] = NAFBLOCK,
+        filters: int = 16,
+        middle_block_num: int = 1,
+        encoder_block_nums: Tuple[int] = (1, 1, 1, 1),
+        decoder_block_nums: Tuple[int] = (1, 1, 1, 1),
+        block_type: str = NAFBLOCK,
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
@@ -199,7 +203,7 @@ class NAFNet(keras.models.Model):
     def create_encoder_and_down_blocks(
         self,
         channels: int,
-        encoder_block_nums: Optional[Tuple[int]],
+        encoder_block_nums: Tuple[int],
     ) -> int:
         """
         Creates equal number of encoder blocks and down blocks.
@@ -226,7 +230,7 @@ class NAFNet(keras.models.Model):
     def create_decoder_and_up_blocks(
         self,
         channels: int,
-        decoder_block_nums: Optional[Tuple[int]],
+        decoder_block_nums: Tuple[int],
     ) -> int:
         """
         Creates equal number of decoder blocks and up blocks.

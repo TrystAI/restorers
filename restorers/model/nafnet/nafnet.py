@@ -104,7 +104,7 @@ class NAFNet(keras.models.Model):
     in NAFNet. But make sure to follow the restrictions on these methods and blocks.
 
     Reference:
-    
+
     1. [Simple Baselines for Image Restoration](https://arxiv.org/abs/2204.04676)
 
     Parameters:

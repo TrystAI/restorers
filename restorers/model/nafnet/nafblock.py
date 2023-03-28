@@ -17,10 +17,7 @@ class SimpleGate(keras.layers.Layer):
 
     Parameters:
         factor (Optional[int]): the amount by which the channels are scaled down
-<<<<<<< HEAD
             Default factor is 2.
-=======
->>>>>>> ea3089f6eb211c37a2a28eb183312fd8a0c1d106
     """
 
     def __init__(self, factor: int = 2, **kwargs) -> None:

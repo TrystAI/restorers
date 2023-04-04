@@ -129,51 +129,43 @@ class SimplifiedChannelAttention(keras.layers.Layer):
 
 class NAFBlock(keras.layers.Layer):
     """
-        NAFBlock (Nonlinear Activation Free Block)
+    NAFBlock (Nonlinear Activation Free Block)
 
-        The authors first define a plain block by retaining the most used operations
-            from the restormer block.
-        In the plain block layer normalization and channel attention is added to make
-            the baseline block.
-        NAFBlock is constructed by removing all the non-linear activations from
-            the baseline block.
+    - The authors first define a plain block by retaining the most used operations from the restormer block.
+    - In the plain block layer normalization and channel attention is added to make the baseline block.
+    - NAFBlock is constructed by removing all the non-linear activations from the baseline block.
 
-        The authors have the idea that any operations of the form,
-        .. math::
-            f(X) \dot \sigma(g(Y))
-        (where f and g are feature maps and \sigma is activation function)
-        can be simplified to the form
-        .. math::
-            X \dot g(Y)
-        Using this idea, all the nonlinear activations are replaced by
-            a series of Hadamard produces
+    The authors have the idea that any operations of the form,
+    $$f(X) \dot \sigma(g(Y))$$
+    (where f and g are feature maps and \sigma is activation function)
+    can be simplified to the form
+    $$X \dot g(Y)$$
+    Using this idea, all the nonlinear activations are replaced by
+        a series of Hadamard produces
 
-        Reference:
+    Reference:
 
-        1. [Simple Baselines for Image Restoration](https://arxiv.org/abs/2204.04676)
+    1. [Simple Baselines for Image Restoration](https://arxiv.org/abs/2204.04676)
 
-        Parameters:
-    <<<<<<< HEAD
-    =======
-            input_channels (Optional[int]): number of channels in the input (as NAFBlock retains the input size in the output)
-    >>>>>>> ea3089f6eb211c37a2a28eb183312fd8a0c1d106
-            factor (Optional[float]): factor by which the channels must be increased before being reduced by simple gate.
-                (Higher factor denotes higher order polynomial in multiplication. Default factor is 2)
-            drop_out_rate (Optional[float]): dropout rate
-                Default value is 0.0
-            balanced_skip_connection (Optional[bool]): adds additional trainable parameters to the skip connections.
-                The parameter denotes how much importance should be given to the sub block in the skip connection.
-                Default value is False
-            mode (Optional[str]): NAFBlock has 3 mode.
-                'plain' mode uses the PlainBlock.
-                    It is derived from the restormer block, keeping the most common components
-                'baseline' mode used the BaselineBlock
-                    It is derived by adding layer normalization, channel attention to PlainBlock.
-                    It also replaces ReLU activation with GeLU in PlainBlock.
-                'nafblock' mode uses the NAFBlock
-                    It derived from BaselineBlock by removing all the non-linear activation.
-                    Non-linear activations are replaced by equivalent matrix multiplication operations.
-                Default mode is 'nafblock'
+    Args:
+        input_channels (int): number of channels in the input (as NAFBlock retains the input size in the output)
+        factor (Optional[float]): factor by which the channels must be increased before being reduced by simple gate.
+            (Higher factor denotes higher order polynomial in multiplication. Default factor is 2)
+        drop_out_rate (Optional[float]): dropout rate
+            Default value is 0.0
+        balanced_skip_connection (Optional[bool]): adds additional trainable parameters to the skip connections.
+            The parameter denotes how much importance should be given to the sub block in the skip connection.
+            Default value is False
+        mode (Optional[str]): NAFBlock has 3 mode.
+            'plain' mode uses the PlainBlock.
+                It is derived from the restormer block, keeping the most common components
+            'baseline' mode used the BaselineBlock
+                It is derived by adding layer normalization, channel attention to PlainBlock.
+                It also replaces ReLU activation with GeLU in PlainBlock.
+            'nafblock' mode uses the NAFBlock
+                It derived from BaselineBlock by removing all the non-linear activation.
+                Non-linear activations are replaced by equivalent matrix multiplication operations.
+            Default mode is 'nafblock'
     """
 
     def __init__(

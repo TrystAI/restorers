@@ -6,6 +6,9 @@ theme:
 
 plugins:
   - mkdocstrings
+  - search
+  - minify
+
 
 markdown_extensions:
   - pymdownx.arithmatex:

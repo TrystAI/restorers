@@ -32,7 +32,8 @@ test=[
 docs=[
     "mkdocs",
     "mkdocstrings[python]",
-    "mkdocs-material>=9.1.5"
+    "mkdocs-material>=9.1.5",
+    "mkdocs-minify-plugin"
 ]
 
 [project.urls]

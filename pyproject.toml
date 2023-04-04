@@ -31,7 +31,7 @@ test=[
 ]
 docs=[
     "mkdocs",
-    "mkdocstrings[python]"
+    "mkdocstrings[python]",
     "mkdocs-material>=9.1.5"
 ]
 

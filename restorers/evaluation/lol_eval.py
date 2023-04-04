@@ -12,7 +12,7 @@ from ..utils import fetch_wandb_artifact
 
 class LoLEvaluator(BaseEvaluator):
     """Evaluator for [LoL Dataset](https://www.kaggle.com/datasets/soumikrakshit/lol-dataset).
-    
+
     Usage:
     ```python
     evaluator = LoLEvaluator(
@@ -23,7 +23,7 @@ class LoLEvaluator(BaseEvaluator):
     evaluator.initialize_model_from_wandb_artifact("ml-colabs/low-light-enhancement/run_p1m9ovjo_model:v99")
     evaluator.evaluate()
     ```
-    
+
     Args:
         metrics (List[tf.keras.metrics.Metric]): A list of metrics to be evaluated for.
         model (Optional[tf.keras.Model]): The model that is to be evaluated. Note that passing
@@ -34,6 +34,7 @@ class LoLEvaluator(BaseEvaluator):
             ground truth image should be resized to for inference and evaluation.
         dataset_artifact_address (str): Address of the WandB artifact hosting the LoL dataset.
     """
+
     def __init__(
         self,
         metrics: List[tf.keras.metrics.Metric],
@@ -81,7 +82,7 @@ class LoLEvaluator(BaseEvaluator):
         Returns:
             (Dict[str, Tuple[List[str], List[str]]]): A dictionary of Image splits mapped to list
                 of paths of input and corresponding ground-truth images. The dictionary in this case would be
-                
+
         ```python
         {
             "Train-Val": (train_low_light_images, train_ground_truth_images),

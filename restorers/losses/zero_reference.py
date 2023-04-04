@@ -19,6 +19,9 @@ def color_constancy(x: tf.Tensor) -> tf.Tensor:
 
     Args:
         x (tf.Tensor): image.
+    
+    Returns:
+        (tf.Tensor): color constancy loss.
     """
     mean_rgb = tf.reduce_mean(x, axis=(1, 2), keepdims=True)
     mean_red, mean_green, mean_blue = tf.split(mean_rgb, 3, axis=3)
@@ -54,6 +57,9 @@ def exposure_control_loss(
         x (tf.Tensor): image.
         window_size (int): The size of the window for each dimension of the input tensor for average pooling.
         mean_val (int): The average intensity value of a local region to the well-exposedness level.
+    
+    Returns:
+        (tf.Tensor): exposure control loss.
     """
     x = tf.reduce_mean(x, axis=-1, keepdims=True)
     mean = tf.nn.avg_pool2d(x, ksize=window_size, strides=window_size, padding="VALID")
@@ -78,6 +84,9 @@ def illumination_smoothness_loss(x: tf.Tensor) -> tf.Tensor:
 
     Args:
         x (tf.Tensor): image.
+    
+    Returns:
+        (tf.Tensor): illumination smoothness loss.
     """
     batch_size = tf.shape(x)[0]
     h_x = tf.shape(x)[1]

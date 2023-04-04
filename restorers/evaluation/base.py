@@ -36,13 +36,13 @@ class BaseEvaluator(ABC):
             For example, for a dataset with train, validation and test sets, the function
             could return the following dictionary:
 
-            ```python
-            {
-                "Train": (train_low_light_images, train_ground_truth_images),
-                "Validation": (val_low_light_images, val_ground_truth_images),
-                "Test": (test_low_light_images, test_ground_truth_images),
-            }
-            ```
+    ```python
+    {
+        "Train": (train_low_light_images, train_ground_truth_images),
+        "Validation": (val_low_light_images, val_ground_truth_images),
+        "Test": (test_low_light_images, test_ground_truth_images),
+    }
+    ```
     
     Args:
         metrics (List[tf.keras.metrics.Metric]): A list of metrics to be evaluated for.

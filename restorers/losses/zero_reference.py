@@ -19,7 +19,7 @@ def color_constancy(x: tf.Tensor) -> tf.Tensor:
 
     Args:
         x (tf.Tensor): image.
-    
+
     Returns:
         (tf.Tensor): color constancy loss.
     """
@@ -57,7 +57,7 @@ def exposure_control_loss(
         x (tf.Tensor): image.
         window_size (int): The size of the window for each dimension of the input tensor for average pooling.
         mean_val (int): The average intensity value of a local region to the well-exposedness level.
-    
+
     Returns:
         (tf.Tensor): exposure control loss.
     """
@@ -72,7 +72,9 @@ def illumination_smoothness_loss(x: tf.Tensor) -> tf.Tensor:
     The purpose of the illumination smoothness loss is to preserve the monotonicity relations between
     neighboring pixels and it is applied to each curve parameter map. It is given by
     
-    $$L_{t v_{\mathcal{A}}}=\frac{1}{N} \sum_{n=1}^N \sum_{c \in \xi}\left(\left|\nabla_x \mathcal{A}_n^c\right|+\nabla_y \mathcal{A}_n^c \mid\right)^2, \xi=\{R, G, B\}$$
+    $$
+    L_{t v_{\mathcal{A}}}=\frac{1}{N} \sum_{n=1}^N \sum_{c \in \xi}\left(\left|\nabla_x \mathcal{A}_n^c\right|+\nabla_y \mathcal{A}_n^c \mid\right)^2, \xi=\{R, G, B\}
+    $$
 
     Reference:
 
@@ -84,7 +86,7 @@ def illumination_smoothness_loss(x: tf.Tensor) -> tf.Tensor:
 
     Args:
         x (tf.Tensor): image.
-    
+
     Returns:
         (tf.Tensor): illumination smoothness loss.
     """

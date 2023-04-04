@@ -1,7 +1,8 @@
 # mkdocs.yml
 site_name: Restorers
 
-theme: readthedocs
+theme:
+  name: material
 
 plugins:
   - mkdocstrings
@@ -14,5 +15,6 @@ nav:
     - 'Zero-DCE': 'models/zero_dce_model.md'
   - 'Dataloader':
     - 'Base': 'dataloader/base.md'
-    # - 'LOL': 'dataloader/lol_dataloader.md'
-    # - 'MIT Adobe 5K': 'dataloader/mit_adobe_5k_dataloader.md'
+  - 'Evaluation':
+    - 'Base': 'evaluation/base.md'
+    - 'LoLEvaluator': 'evaluation/lol_eval.md'

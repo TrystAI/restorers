@@ -14,9 +14,6 @@ classifiers = [
 ]
 
 dependencies = [
-    "isort==5.10.1",
-    "black==22.6.0",
-    "pytest==7.1.2",
     "matplotlib>=3.5.3",
     "ml-collections==0.1.1",
     "pillow",
@@ -24,8 +21,20 @@ dependencies = [
     "wandb>=0.13.6"
 ]
 
+[project.optional-dependencies]
+dev=[
+    "isort>=5.10.1",
+    "black>=22.6.0"
+]
+test=[
+    "pytest==7.1.2"
+]
+docs=[
+    "mkdocs",
+    "mkdocstrings[python]",
+    "mkdocs-material>=9.1.5"
+]
+
 [project.urls]
 homepage = "https://github.com/soumik12345/restorers"
 repository = "https://github.com/soumik12345/restorers"
-
-

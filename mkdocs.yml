@@ -1,7 +1,8 @@
 # mkdocs.yml
 site_name: Restorers
 
-theme: readthedocs
+theme:
+  name: material
 
 plugins:
   - mkdocstrings
@@ -16,3 +17,4 @@ nav:
     - 'Base': 'dataloader/base.md'
   - 'Evaluation':
     - 'Base': 'evaluation/base.md'
+    - 'LoLEvaluator': 'evaluation/lol_eval.md'

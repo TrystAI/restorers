@@ -11,6 +11,29 @@ from ..utils import fetch_wandb_artifact
 
 
 class LoLEvaluator(BaseEvaluator):
+    """Evaluator for [LoL Dataset](https://www.kaggle.com/datasets/soumikrakshit/lol-dataset).
+    
+    Usage:
+    ```python
+    evaluator = LoLEvaluator(
+        metrics=[PSNRMetric(max_val=1.0), SSIMMetric(max_val=1.0)],
+        dataset_artifact_address="ml-colabs/dataset/LoL:v0",
+        input_size=256,
+    )
+    evaluator.initialize_model_from_wandb_artifact("ml-colabs/low-light-enhancement/run_p1m9ovjo_model:v99")
+    evaluator.evaluate()
+    ```
+    
+    Args:
+        metrics (List[tf.keras.metrics.Metric]): A list of metrics to be evaluated for.
+        model (Optional[tf.keras.Model]): The model that is to be evaluated. Note that passing
+            the model during initializing the evaluator is not compulsory. The model can also
+            be set using the function `initialize_model_from_wandb_artifact`.
+        input_size (Optional[int]): The input size for computing GFLOPs.
+        resize_target (Optional[Tuple[int, int]]): The size that the input and the corresponding
+            ground truth image should be resized to for inference and evaluation.
+        dataset_artifact_address (str): Address of the WandB artifact hosting the LoL dataset.
+    """
     def __init__(
         self,
         metrics: List[tf.keras.metrics.Metric],
@@ -19,24 +42,32 @@ class LoLEvaluator(BaseEvaluator):
         resize_target: Optional[Tuple[int, int]] = None,
         dataset_artifact_address: str = None,
     ) -> None:
-        """Evaluator for LoL Dataset.
-
-        Args:
-            metrics (List[tf.keras.metrics.Metric]): list of keras metrics.
-            model (Optional[tf.keras.Model]): model to be evaluated.
-            input_size (Optional[List[int]]): input size used for calculating GFLOPs.
-            resize_target: (Optional[Tuple[int, int]]): resize to this size for inference.
-            dataset_artifact_address (str): address of WandB artifact hosting LoL dataset.
-        """
         self.dataset_artifact_address = dataset_artifact_address
         super().__init__(metrics, model, input_size, resize_target)
 
     def preprocess(self, image: Image) -> Union[np.ndarray, tf.Tensor]:
+        """Preprocessing logic for preprocessing a `PIL.Image` and add a batch dimension.
+
+        Args:
+            image (PIL.Image): A PIL Image.
+
+        Returns:
+            (Union[np.ndarray, tf.Tensor]): A numpy or Tensorflow tensor that would be fed to
+                the model.
+        """
         image = tf.keras.preprocessing.image.img_to_array(image)
         image = image.astype("float32") / 255.0
         return np.expand_dims(image, axis=0)
 
     def postprocess(self, model_output: np.ndarray) -> Image:
+        """Postprocessing logic for converting the output of the model to a `PIL.Image`.
+
+        Args:
+            model_output (np.ndarray): Output of the model.
+
+        Returns:
+            (PIL.Image): The model output postprocessed to a PIL Image.
+        """
         model_output = model_output * 255.0
         model_output = model_output.clip(0, 255)
         image = model_output[0].reshape(
@@ -45,6 +76,19 @@ class LoLEvaluator(BaseEvaluator):
         return Image.fromarray(np.uint8(image))
 
     def populate_image_paths(self) -> Dict[str, Tuple[List[str], List[str]]]:
+        """Populate the split-wise image paths necessary for the evaluation.
+
+        Returns:
+            (Dict[str, Tuple[List[str], List[str]]]): A dictionary of Image splits mapped to list
+                of paths of input and corresponding ground-truth images. The dictionary in this case would be
+                
+        ```python
+        {
+            "Train-Val": (train_low_light_images, train_ground_truth_images),
+            "Eval15": (test_low_light_images, test_ground_truth_images),
+        }
+        ```
+        """
         dataset_path = fetch_wandb_artifact(
             self.dataset_artifact_address, artifact_type="dataset"
         )

@@ -12,11 +12,17 @@ class SimpleGate(keras.layers.Layer):
     """
     Simple Gate
     It splits the input of size (b,h,w,c) into tensors of size (b,h,w,c//factor) and returns their Hadamard product
+
+    Reference:
+
+    1. [Simple Baselines for Image Restoration](https://arxiv.org/abs/2204.04676)
+
     Parameters:
-        factor: the amount by which the channels are scaled down
+        factor (Optional[int]): the amount by which the channels are scaled down
+            Default factor is 2.
     """
 
-    def __init__(self, factor: Optional[int] = 2, **kwargs) -> None:
+    def __init__(self, factor: int = 2, **kwargs) -> None:
         super().__init__(**kwargs)
         self.factor = factor
 
@@ -37,6 +43,18 @@ class SimpleGate(keras.layers.Layer):
 class ChannelAttention(keras.layers.Layer):
     """
     Channel Attention layer
+
+    The block is named Squeeze-and-Excitation block (SE Block) in the original paper.
+    1. First the input is 'squeezed' across the spatial dimension to generate a
+        channel-wise descriptor.
+    2. Following that the inter channel dependency is learnt by applying
+        two convolution layers.
+    3. Finally, the input is rescaled by a channel-wise multiplication with the
+        output of the excitation operation.
+
+    Reference:
+
+    1. [Squeeze-and-Excitation Networks](https://arxiv.org/abs/1709.01507)
 
     Parameters:
         channels: number of channels in input
@@ -72,6 +90,18 @@ class SimplifiedChannelAttention(keras.layers.Layer):
     """
     Simplified Channel Attention layer
     It is a modification of channel attention without any non-linear activations.
+
+    The Squeeze and final rescaling step is identical to the ChannelAttention Layer.
+    But following the philosophy of NAFNet paper, the excitation operation with
+        two conv layers with respective activations are replaced with a single conv
+        block. So the inter channel dependency is learnt but any gate or activation
+        is not used.
+        (Check the paper/doc string of NAFBlock for more details)
+
+    Reference:
+
+    1. [Simple Baselines for Image Restoration](https://arxiv.org/abs/2204.04676)
+
     Parameters:
         channels: number of channels in input
     """
@@ -99,32 +129,59 @@ class SimplifiedChannelAttention(keras.layers.Layer):
 
 class NAFBlock(keras.layers.Layer):
     """
-    NAFBlock (Nonlinear Activation Free Block)
+        NAFBlock (Nonlinear Activation Free Block)
 
-    Parameters:
-        input_channels: number of channels in the input (as NAFBlock retains the input size in the output)
-        factor: factor by which the channels must be increased before being reduced by simple gate.
-            (Higher factor denotes higher order polynomial in multiplication. Default factor is 2)
-        drop_out_rate: dropout rate
-        balanced_skip_connection: adds additional trainable parameters to the skip connections.
-            The parameter denotes how much importance should be given to the sub block in the skip connection.
-        mode: NAFBlock has 3 mode.
-            'plain' mode uses the PlainBlock.
-                It is derived from the restormer block, keeping the most common components
-            'baseline' mode used the BaselineBlock
-                It is derived by adding layer normalization, channel attention to PlainBlock.
-                It also replaces ReLU activation with GeLU in PlainBlock.
-            'nafblock' mode uses the NAFBlock
-                It derived from BaselineBlock by removing all the non-linear activation.
-                Non-linear activations are replaced by equivalent matrix multiplication operations.
+        The authors first define a plain block by retaining the most used operations
+            from the restormer block.
+        In the plain block layer normalization and channel attention is added to make
+            the baseline block.
+        NAFBlock is constructed by removing all the non-linear activations from
+            the baseline block.
+
+        The authors have the idea that any operations of the form,
+        .. math::
+            f(X) \dot \sigma(g(Y))
+        (where f and g are feature maps and \sigma is activation function)
+        can be simplified to the form
+        .. math::
+            X \dot g(Y)
+        Using this idea, all the nonlinear activations are replaced by
+            a series of Hadamard produces
+
+        Reference:
+
+        1. [Simple Baselines for Image Restoration](https://arxiv.org/abs/2204.04676)
+
+        Parameters:
+    <<<<<<< HEAD
+    =======
+            input_channels (Optional[int]): number of channels in the input (as NAFBlock retains the input size in the output)
+    >>>>>>> ea3089f6eb211c37a2a28eb183312fd8a0c1d106
+            factor (Optional[float]): factor by which the channels must be increased before being reduced by simple gate.
+                (Higher factor denotes higher order polynomial in multiplication. Default factor is 2)
+            drop_out_rate (Optional[float]): dropout rate
+                Default value is 0.0
+            balanced_skip_connection (Optional[bool]): adds additional trainable parameters to the skip connections.
+                The parameter denotes how much importance should be given to the sub block in the skip connection.
+                Default value is False
+            mode (Optional[str]): NAFBlock has 3 mode.
+                'plain' mode uses the PlainBlock.
+                    It is derived from the restormer block, keeping the most common components
+                'baseline' mode used the BaselineBlock
+                    It is derived by adding layer normalization, channel attention to PlainBlock.
+                    It also replaces ReLU activation with GeLU in PlainBlock.
+                'nafblock' mode uses the NAFBlock
+                    It derived from BaselineBlock by removing all the non-linear activation.
+                    Non-linear activations are replaced by equivalent matrix multiplication operations.
+                Default mode is 'nafblock'
     """
 
     def __init__(
         self,
-        factor: Optional[int] = 2,
-        drop_out_rate: Optional[float] = 0.0,
-        balanced_skip_connection: Optional[bool] = False,
-        mode: Optional[str] = NAFBLOCK,
+        factor: int = 2,
+        drop_out_rate: float = 0.0,
+        balanced_skip_connection: bool = False,
+        mode: str = NAFBLOCK,
         **kwargs
     ) -> None:
         super().__init__(**kwargs)

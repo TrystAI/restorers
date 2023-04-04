@@ -7,6 +7,15 @@ theme:
 plugins:
   - mkdocstrings
 
+markdown_extensions:
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
 nav:
   - Home: 'index.md'
   - 'Models':
@@ -15,6 +24,11 @@ nav:
     - 'Zero-DCE': 'models/zero_dce_model.md'
   - 'Dataloader':
     - 'Base': 'dataloader/base.md'
+  - 'Losses':
+    - 'Charbonnier Loss': 'losses/charbonnier_loss.md'
+    - 'PSNR Loss': 'losses/psnr_loss.md'
+    - 'Spatial Consistency Loss': 'losses/spatial_consistency_loss.md'
+    - 'Zero Reference Losses': 'losses/zero_reference.md'
   - 'Evaluation':
     - 'Base': 'evaluation/base.md'
     - 'LoLEvaluator': 'evaluation/lol_eval.md'

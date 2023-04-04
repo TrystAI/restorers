@@ -70,7 +70,9 @@ def illumination_smoothness_loss(x: tf.Tensor) -> tf.Tensor:
     """An implementation of the Illumination Smoothness Loss.
 
     The purpose of the illumination smoothness loss is to preserve the monotonicity relations between
-    neighboring pixels and it is applied to each curve parameter map.
+    neighboring pixels and it is applied to each curve parameter map. It is given by
+
+    $$L_{t v_{\mathcal{A}}}=\frac{1}{N} \sum_{n=1}^N \sum_{c \in \gamma}\left(\left|\nabla_x \mathcal{A}_n^c\right|+\nabla_y \mathcal{A}_n^c \mid\right)^2, \gamma=\{R, G, B\}$$
 
     Reference:
 

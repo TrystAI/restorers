@@ -13,7 +13,7 @@ from ..utils import fetch_wandb_artifact, count_params, calculate_gflops
 
 class BaseEvaluator(ABC):
     """Abstract base class for building Evaluators for different datasets/benchmarks.
-    
+
     - An evaluator not only evaluates a model on a dataset/benchmark, but also evaluates
         its performance with respect to the specified metrics on individual images in that
         dataset/benchmark as well.
@@ -21,10 +21,10 @@ class BaseEvaluator(ABC):
         and the GFLOPs of the model on a specified input shape.
     - Moreover, it logs the holistic as well as individual performances to Weights & Biases
         which enables not only easy analysis and comparison quantitativelu, but also in a
-        qualitative manner. 
-    
+        qualitative manner.
+
     Abstract functions to be overriden are:
-    
+
     - `preprocess(self, image_path: Image) -> Union[np.ndarray, tf.Tensor]`
         - Add preprocessing logic that would preprocess a `PIL.Image` and add a batch
             dimension.
@@ -43,7 +43,7 @@ class BaseEvaluator(ABC):
         "Test": (test_low_light_images, test_ground_truth_images),
     }
     ```
-    
+
     Args:
         metrics (List[tf.keras.metrics.Metric]): A list of metrics to be evaluated for.
         model (Optional[tf.keras.Model]): The model that is to be evaluated. Note that passing
@@ -53,6 +53,7 @@ class BaseEvaluator(ABC):
         resize_target (Optional[Tuple[int, int]]): The size that the input and the corresponding
             ground truth image should be resized to for inference and evaluation.
     """
+
     def __init__(
         self,
         metrics: List[tf.keras.metrics.Metric],
@@ -75,7 +76,7 @@ class BaseEvaluator(ABC):
 
         Args:
             image (PIL.Image): A PIL Image.
-        
+
         Returns:
             (Union[np.ndarray, tf.Tensor]): A numpy or Tensorflow tensor that would be fed to
                 the model.
@@ -89,7 +90,7 @@ class BaseEvaluator(ABC):
 
         Args:
             model_output (np.ndarray): Output of the model.
-        
+
         Returns:
             (PIL.Image): The model output postprocessed to a PIL Image.
         """
@@ -108,7 +109,7 @@ class BaseEvaluator(ABC):
             "Test": (test_low_light_images, test_ground_truth_images),
         }
         ```
-        
+
         Returns:
             (Dict[str, Tuple[List[str], List[str]]]): A dictionary of Image splits mapped to list
                 of paths of input and corresponding ground-truth images.

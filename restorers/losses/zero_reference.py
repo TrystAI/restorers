@@ -11,7 +11,7 @@ def color_constancy(x: tf.Tensor) -> tf.Tensor:
 
     Reference:
 
-    1. [Zero-DCE: Zero-reference Deep Curve Estimation for Low-light Image Enhancement](https://openaccess.thecvf.com/content_CVPR_2020/papers/Guo_Zero-Reference_Deep_Curve_Estimation_for_Low-Light_Image_Enhancement_CVPR_2020_paper.pdf)
+    1. [Zero-DCE: Zero-reference Deep Curve Estimation for Low-light Image Enhancement](https://arxiv.org/abs/2001.06826)
     2. [Zero-Reference Learning for Low-Light Image Enhancement (Supplementary Material)](https://openaccess.thecvf.com/content_CVPR_2020/supplemental/Guo_Zero-Reference_Deep_Curve_CVPR_2020_supplemental.pdf)
     3. [Official PyTorch implementation of Zero-DCE](https://github.com/Li-Chongyi/Zero-DCE/blob/master/Zero-DCE_code/Myloss.py#L9)
     4. [Tensorflow implementation of Zero-DCE](https://github.com/tuvovan/Zero_DCE_TF/blob/master/src/loss.py#L10)
@@ -44,7 +44,7 @@ def exposure_control_loss(
 
     Reference:
 
-    1. [Zero-DCE: Zero-reference Deep Curve Estimation for Low-light Image Enhancement](https://openaccess.thecvf.com/content_CVPR_2020/papers/Guo_Zero-Reference_Deep_Curve_Estimation_for_Low-Light_Image_Enhancement_CVPR_2020_paper.pdf)
+    1. [Zero-DCE: Zero-reference Deep Curve Estimation for Low-light Image Enhancement](https://arxiv.org/abs/2001.06826)
     2. [Zero-Reference Learning for Low-Light Image Enhancement (Supplementary Material)](https://openaccess.thecvf.com/content_CVPR_2020/supplemental/Guo_Zero-Reference_Deep_Curve_CVPR_2020_supplemental.pdf)
     3. [Official PyTorch implementation of Zero-DCE](https://github.com/Li-Chongyi/Zero-DCE/blob/master/Zero-DCE_code/Myloss.py#L74)
     4. [Tensorflow implementation of Zero-DCE](https://github.com/tuvovan/Zero_DCE_TF/blob/master/src/loss.py#L21)
@@ -64,11 +64,13 @@ def illumination_smoothness_loss(x: tf.Tensor) -> tf.Tensor:
     """An implementation of the Illumination Smoothness Loss.
 
     The purpose of the illumination smoothness loss is to preserve the monotonicity relations between
-    neighboring pixels and it is applied to each curve parameter map.
+    neighboring pixels and it is applied to each curve parameter map. It is given by
+    
+    $$L_{t v_{\mathcal{A}}}=\frac{1}{N} \sum_{n=1}^N \sum_{c \in \xi}\left(\left|\nabla_x \mathcal{A}_n^c\right|+\nabla_y \mathcal{A}_n^c \mid\right)^2, \xi=\{R, G, B\}$$
 
     Reference:
 
-    1. [Zero-DCE: Zero-reference Deep Curve Estimation for Low-light Image Enhancement](https://openaccess.thecvf.com/content_CVPR_2020/papers/Guo_Zero-Reference_Deep_Curve_Estimation_for_Low-Light_Image_Enhancement_CVPR_2020_paper.pdf)
+    1. [Zero-DCE: Zero-reference Deep Curve Estimation for Low-light Image Enhancement](https://arxiv.org/abs/2001.06826)
     2. [Zero-Reference Learning for Low-Light Image Enhancement (Supplementary Material)](https://openaccess.thecvf.com/content_CVPR_2020/supplemental/Guo_Zero-Reference_Deep_Curve_CVPR_2020_supplemental.pdf)
     3. [Official PyTorch implementation of Zero-DCE](https://github.com/Li-Chongyi/Zero-DCE/blob/master/Zero-DCE_code/Myloss.py#L90)
     4. [Tensorflow implementation of Zero-DCE](https://github.com/tuvovan/Zero_DCE_TF/blob/master/src/loss.py#L28)

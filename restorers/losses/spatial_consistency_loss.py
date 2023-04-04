@@ -18,7 +18,7 @@ class SpatialConsistencyLoss(tf.keras.losses.Loss):
 
     Reference:
 
-    1. [Zero-DCE: Zero-reference Deep Curve Estimation for Low-light Image Enhancement](https://openaccess.thecvf.com/content_CVPR_2020/papers/Guo_Zero-Reference_Deep_Curve_Estimation_for_Low-Light_Image_Enhancement_CVPR_2020_paper.pdf)
+    1. [Zero-DCE: Zero-reference Deep Curve Estimation for Low-light Image Enhancement](https://arxiv.org/abs/2001.06826)
     2. [Zero-Reference Learning for Low-Light Image Enhancement (Supplementary Material)](https://openaccess.thecvf.com/content_CVPR_2020/supplemental/Guo_Zero-Reference_Deep_Curve_CVPR_2020_supplemental.pdf)
     3. [Official PyTorch implementation of Zero-DCE](https://github.com/Li-Chongyi/Zero-DCE/blob/master/Zero-DCE_code/Myloss.py#L29)
     4. [Unofficial PyTorch implementation of Zero-DCE](https://github.com/bsun0802/Zero-DCE/blob/master/code/utils.py#L79-L109)

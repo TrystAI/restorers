@@ -12,6 +12,47 @@ from ..utils import fetch_wandb_artifact, count_params, calculate_gflops
 
 
 class BaseEvaluator(ABC):
+    """Abstract base class for building Evaluators for different datasets/benchmarks.
+    
+    - An evaluator not only evaluates a model on a dataset/benchmark, but also evaluates
+        its performance with respect to the specified metrics on individual images in that
+        dataset/benchmark as well.
+    - The evaluator also logs the number of parameters (both trainable and not-trainable)
+        and the GFLOPs of the model on a specified input shape.
+    - Moreover, it logs the holistic as well as individual performances to Weights & Biases
+        which enables not only easy analysis and comparison quantitativelu, but also in a
+        qualitative manner. 
+    
+    Abstract functions to be overriden are:
+    
+    - `preprocess(self, image_path: Image) -> Union[np.ndarray, tf.Tensor]`
+        - Add preprocessing logic that would preprocess a `PIL.Image` and add a batch
+            dimension.
+    - `postprocess(self, model_output: np.ndarray) -> PIL.Image`
+        - Add postprocessing logic that would convert the output of the model to a
+            `PIL.Image`.
+    - `populate_image_paths(self) -> Dict[str, Tuple[List[str], List[str]]]`
+        - Add logic to populate the split-wise image paths necessary for the evaluation.
+            For example, for a dataset with train, validation and test sets, the function
+            could return the following dictionary:
+
+            ```python
+            {
+                "Train": (train_low_light_images, train_ground_truth_images),
+                "Validation": (val_low_light_images, val_ground_truth_images),
+                "Test": (test_low_light_images, test_ground_truth_images),
+            }
+            ```
+    
+    Args:
+        metrics (List[tf.keras.metrics.Metric]): A list of metrics to be evaluated for.
+        model (Optional[tf.keras.Model]): The model that is to be evaluated. Note that passing
+            the model during initializing the evaluator is not compulsory. The model can also
+            be set using the function `initialize_model_from_wandb_artifact`.
+        input_size (Optional[int]): The input size for computing GFLOPs.
+        resize_target (Optional[Tuple[int, int]]): The size that the input and the corresponding
+            ground truth image should be resized to for inference and evaluation.
+    """
     def __init__(
         self,
         metrics: List[tf.keras.metrics.Metric],
@@ -28,15 +69,50 @@ class BaseEvaluator(ABC):
         self.wandb_table = self.create_wandb_table() if wandb.run is not None else None
 
     @abstractmethod
-    def preprocess(self, image_path: Image) -> Union[np.ndarray, tf.Tensor]:
+    def preprocess(self, image: Image) -> Union[np.ndarray, tf.Tensor]:
+        """This is an abstract method that would hold the custom preprocessing logic that would
+        preprocess a `PIL.Image` and add a batch dimension.
+
+        Args:
+            image (PIL.Image): A PIL Image.
+        
+        Returns:
+            (Union[np.ndarray, tf.Tensor]): A numpy or Tensorflow tensor that would be fed to
+                the model.
+        """
         raise NotImplementedError(f"{self.__class__.__name__ }.preprocess")
 
     @abstractmethod
     def postprocess(self, model_output: np.ndarray) -> Image:
+        """This is an abstract method that would hold the custom postprocessing logic that
+        would convert the output of the model to a `PIL.Image`.
+
+        Args:
+            model_output (np.ndarray): Output of the model.
+        
+        Returns:
+            (PIL.Image): The model output postprocessed to a PIL Image.
+        """
         raise NotImplementedError(f"{self.__class__.__name__ }.postprocess")
 
     @abstractmethod
     def populate_image_paths(self) -> Dict[str, Tuple[List[str], List[str]]]:
+        """This is an abstract method that would hold the custom logic to populate the
+        split-wise image paths necessary for the evaluation. For example, for a dataset with
+        train, validation and test sets, the function could return the following dictionary:
+
+        ```python
+        {
+            "Train": (train_low_light_images, train_ground_truth_images),
+            "Validation": (val_low_light_images, val_ground_truth_images),
+            "Test": (test_low_light_images, test_ground_truth_images),
+        }
+        ```
+        
+        Returns:
+            (Dict[str, Tuple[List[str], List[str]]]): A dictionary of Image splits mapped to list
+                of paths of input and corresponding ground-truth images.
+        """
         raise NotImplementedError(f"{self.__class__.__name__ }.populate_image_paths")
 
     def create_wandb_table(self) -> wandb.Table:
@@ -52,6 +128,13 @@ class BaseEvaluator(ABC):
         return wandb.Table(columns=columns)
 
     def initialize_model_from_wandb_artifact(self, artifact_address: str) -> None:
+        """Initialize a `tf.keras.Model` that is to be evaluated from a
+        [Weights & Biases artifact](https://docs.wandb.ai/guides/artifacts).
+
+        Args:
+            artifact_address (str): Address to the Weights & Biases artifact hosting the model to be
+                evaluated.
+        """
         self.model_path = fetch_wandb_artifact(artifact_address, artifact_type="model")
         self.model = tf.keras.models.load_model(self.model_path, compile=False)
 
@@ -111,6 +194,7 @@ class BaseEvaluator(ABC):
         return metric_values
 
     def evaluate(self):
+        """Function to perform evaluation."""
         log_dict = {}
 
         for split_name, (

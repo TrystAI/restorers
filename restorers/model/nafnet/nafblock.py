@@ -136,10 +136,18 @@ class NAFBlock(keras.layers.Layer):
     - NAFBlock is constructed by removing all the non-linear activations from the baseline block.
 
     The authors have the idea that any operations of the form,
-    $$f(X) \dot \sigma(g(Y))$$
-    (where f and g are feature maps and \sigma is activation function)
+
+    \[
+        f(X) \\dot \\sigma(g(Y))
+    \]
+
+    (where f and g are feature maps and $\\sigma$ is activation function)
     can be simplified to the form
-    $$X \dot g(Y)$$
+
+    \[
+        X \\dot g(Y)
+    \]
+
     Using this idea, all the nonlinear activations are replaced by
         a series of Hadamard produces
 

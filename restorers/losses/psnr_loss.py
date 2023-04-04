@@ -2,9 +2,14 @@ import tensorflow as tf
 
 
 class PSNRLoss(tf.keras.losses.Loss):
-    """Implementation of Negative PSNR Loss defined as follows:
+    """Implementation of Negative Peak Signal-to-Noise Ratio Loss defined as follows:
 
-    $$\text { Loss }=-\sum_{i=1}^2 \operatorname{PSNR}\left(\left(R_i+X_i\right), Y\right)$$
+    $$\\text { Loss }=-\\sum_{i=1}^2 \\operatorname{PSNR}\\left(\\left(R_i+X_i\\right), Y\\right)$$
+
+    where...
+
+    * $X_i \\in \\mathbb{R}^{N \\times H \\times W \\times C}$ is the input image
+    * $X_i \\in \\mathbb{R}^{N \\times H \\times W \\times C}$ is the prediction
 
     References:
 

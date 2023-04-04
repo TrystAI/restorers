@@ -7,7 +7,7 @@ def color_constancy(x: tf.Tensor) -> tf.Tensor:
     The purpose of the Color Constancy Loss is to correct the potential color deviations in the
     enhanced image and also build the relations among the three adjusted channels. It is given by
 
-    $$L_{c o l}=\sum_{\forall(p, q) \in \varepsilon}\left(J^p-J^q\right)^2, \varepsilon=\{(R, G),(R, B),(G, B)\}$$
+    $$L_{c o l}=\\sum_{\\forall(p, q) \\in \\varepsilon}\\left(J^p-J^q\\right)^2, \\varepsilon=\\{(R, G),(R, B),(G, B)\\}$$
 
     Reference:
 
@@ -43,7 +43,7 @@ def exposure_control_loss(
     The exposure control loss measures the distance between the average intensity value of a local
     region to the well-exposedness level E which is set within [0.4, 0.7]. It is given by
 
-    $$L_{e x p}=\frac{1}{M} \sum_{k=1}^M\left|Y_k-E\right|$$
+    $$L_{e x p}=\\frac{1}{M} \\sum_{k=1}^M\\left|Y_k-E\\right|$$
 
     Reference:
 
@@ -72,7 +72,7 @@ def illumination_smoothness_loss(x: tf.Tensor) -> tf.Tensor:
     The purpose of the illumination smoothness loss is to preserve the monotonicity relations between
     neighboring pixels and it is applied to each curve parameter map. It is given by
 
-    $$L_{t v_{\mathcal{A}}}=\frac{1}{N} \sum_{n=1}^N \sum_{c \in \gamma}\left(\left|\nabla_x \mathcal{A}_n^c\right|+\nabla_y \mathcal{A}_n^c \mid\right)^2, \gamma=\{R, G, B\}$$
+    $$L_{t v_{\\mathcal{A}}}=\\frac{1}{N} \\sum_{n=1}^N \\sum_{c \\in \\xi}\\left(\\left|\\nabla_x \\mathcal{A}_n^c\\right|+\\nabla_y \\mathcal{A}_n^c \\mid\\right)^2, \\xi=\\{R, G, B\\}$$
 
     Reference:
 

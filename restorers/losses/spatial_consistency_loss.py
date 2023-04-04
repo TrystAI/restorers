@@ -8,7 +8,7 @@ class SpatialConsistencyLoss(tf.keras.losses.Loss):
     preserving the difference of neighboring regions between the input image and its enhanced
     version. It is given by
 
-    $$L_{s p a}=\\frac{1}{K} \\sum_{i=1}^K \\sum_{j \\in \\Omega(i)}\\left(\\left|\\left(Y_i-Y_j\\right)\\right|-\\left|\left(I_i-I_j\\right)\\right|\\right)^2$$
+    $$L_{s p a}=\\frac{1}{K} \\sum_{i=1}^K \\sum_{j \\in \\Omega(i)}\\left(\\left|\\left(Y_i-Y_j\\right)\\right|-\\left|\\left(I_i-I_j\\right)\\right|\\right)^2$$
 
     where...
 

@@ -4,7 +4,7 @@ import tensorflow as tf
 
 from restorers.model import MirNetv2
 from restorers.model.mirnetv2.downsample import DownBlock, DownSampleBlock
-from restorers.model.mirnetv2.mirnet import RecursiveResidualGroup
+from restorers.model.mirnetv2.recursive_residual_group import RecursiveResidualGroup
 from restorers.model.mirnetv2.mrb import MultiScaleResidualBlock
 from restorers.model.mirnetv2.rcb import ContextBlock, ResidualContextBlock
 from restorers.model.mirnetv2.skff import SelectiveKernelFeatureFusion

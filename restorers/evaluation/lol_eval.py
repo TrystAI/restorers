@@ -23,7 +23,7 @@ class LoLEvaluator(BaseEvaluator):
     evaluator.initialize_model_from_wandb_artifact("ml-colabs/low-light-enhancement/run_p1m9ovjo_model:v99")
     evaluator.evaluate()
     ```
-    
+
     Refer to this notebook for a detailed example:
     [![](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/wandb/examples/blob/master/colabs/keras/restorers/Evaluation_low_light.ipynb)
 

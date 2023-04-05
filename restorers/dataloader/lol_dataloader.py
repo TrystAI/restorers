@@ -19,9 +19,9 @@ class LOLDataLoader(LowLightDatasetFactory):
     """DataLoader for the [LOL dataset](https://www.kaggle.com/datasets/soumikrakshit/lol-dataset). This
     dataloader can be used to build datasets for training supervised low-light image enhancement models
     using the LOL Dataset.
-    
+
     Usage:
-    
+
     ```py
     # define dataloader for the LoL dataset
     data_loader = LOLDataLoader(
@@ -40,11 +40,11 @@ class LOLDataLoader(LowLightDatasetFactory):
     )
 
     # call `get_datasets` on the `data_loader` to get
-    # the TensorFlow datasets corresponding to the 
+    # the TensorFlow datasets corresponding to the
     # training and validation splits
     datasets = data_loader.get_datasets(batch_size=2)
     ```
-    
+
     Args:
         image_size (int): The image resolution.
         bit_depth (int): Bit depth of the images for normalization.
@@ -55,6 +55,7 @@ class LOLDataLoader(LowLightDatasetFactory):
         dataset_url (Union[str, None]): The URL of the dataset hosted on the web. This is not necessary
             in case `dataset_artifact_address` has been specified.
     """
+
     def __init__(
         self,
         image_size: int,
@@ -94,9 +95,9 @@ class UnsupervisedLOLDataLoader(LOLDataLoader):
     """Unsupervised dataLoader for the [LOL dataset](https://www.kaggle.com/datasets/soumikrakshit/lol-dataset).
     This dataloader can be used to build datasets for training unsupervised low-light image enhancement models
     using the LOL Dataset.
-    
+
     Usage:
-    
+
     ```py
     # define unsupervised dataloader for the LoL dataset
     data_loader = UnsupervisedLOLDataLoader(
@@ -117,11 +118,12 @@ class UnsupervisedLOLDataLoader(LOLDataLoader):
     )
 
     # call `get_datasets` on the `data_loader` to get
-    # the TensorFlow datasets corresponding to the 
+    # the TensorFlow datasets corresponding to the
     # training and validation splits
     datasets = data_loader.get_datasets(batch_size=2)
     ```
     """
+
     def __init__(
         self,
         image_size: int,

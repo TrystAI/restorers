@@ -11,6 +11,7 @@ plugins:
   - mkdocstrings
   - search
   - minify
+  - glightbox
 
 
 markdown_extensions:
@@ -23,6 +24,8 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - attr_list
+  - md_in_html
 
 extra_javascript:
   - javascripts/mathjax.js

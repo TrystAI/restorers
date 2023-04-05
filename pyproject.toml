@@ -33,7 +33,8 @@ docs=[
     "mkdocs",
     "mkdocstrings[python]",
     "mkdocs-material>=9.1.5",
-    "mkdocs-minify-plugin"
+    "mkdocs-minify-plugin",
+    "mkdocs-glightbox"
 ]
 
 [project.urls]

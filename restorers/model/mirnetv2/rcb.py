@@ -81,6 +81,8 @@ class ResidualContextBlock(tf.keras.layers.Layer):
     - $CM$ respresents a **contextual modules**.
 
     - $W$ denotes the last convolutional layer with filter size $1 \times 1$.
+    
+    ![Residual Context Block](https://i.imgur.com/WM1s4IV.png){ loading=lazy }
 
     Reference:
 

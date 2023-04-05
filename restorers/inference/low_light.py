@@ -8,6 +8,35 @@ from .base import BaseInferer
 
 
 class LowLightInferer(BaseInferer):
+    """Inferer for low-light enhancement models.
+
+    Usage:
+
+    ```py
+    # initialize the inferer
+    inferer = LowLightInferer(resize_factor=1, model_alias="Zero-DCE")
+    # intialize the model from wandb artifacts
+    inferer.initialize_model_from_wandb_artifact("ml-colabs/low-light-enhancement/run_oaa25znm_model:v99")
+    # infer on a directory of images
+    # inferer.infer("./dark_images")
+    # or infer on a single image
+    inferer.infer(sample_image)
+    ```
+
+    Refer to this notebook for a detailed example:
+    [![](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/wandb/examples/blob/master/colabs/keras/restorers/Inference_low_light.ipynb)
+
+    Args:
+        model (Optional[tf.keras.Model]): The model that is to be evaluated. Note that passing
+            the model during initializing the evaluator is not compulsory. The model can also
+            be set using the function `initialize_model_from_wandb_artifact`.
+        resize_factor (Optional[int]): The factor by which the input image should be resized
+            for inference.
+        model_alias (Optional[str]): The alias of the model that is to be logged to
+            Weights & Biases. This is useful for qualitative comparison of results of multiple
+            models.
+    """
+
     def __init__(
         self,
         model: Optional[tf.keras.Model] = None,
@@ -17,11 +46,28 @@ class LowLightInferer(BaseInferer):
         super().__init__(model, resize_factor, model_alias)
 
     def preprocess(self, image: Image) -> Union[np.ndarray, tf.Tensor]:
+        """Preprocessing logic for preprocessing a `PIL.Image` and adding a batch dimension.
+
+        Args:
+            image (PIL.Image): A PIL Image.
+
+        Returns:
+            (Union[np.ndarray, tf.Tensor]): A numpy or Tensorflow tensor that would be fed to
+                the model.
+        """
         image = tf.keras.preprocessing.image.img_to_array(image)
         image = image.astype("float32") / 255.0
         return np.expand_dims(image, axis=0)
 
     def postprocess(self, model_output: np.ndarray) -> Image:
+        """Postprocessing logic for converting the output of the model to a `PIL.Image`.
+
+        Args:
+            model_output (np.ndarray): Output of the model.
+
+        Returns:
+            (PIL.Image): The model output postprocessed to a PIL Image.
+        """
         model_output = model_output * 255.0
         model_output = model_output.clip(0, 255)
         image = model_output[0].reshape(

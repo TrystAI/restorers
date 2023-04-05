@@ -3,6 +3,8 @@ site_name: Restorers
 
 theme:
   name: material
+  features:
+    - content.code.copy
 
 plugins:
   - mkdocstrings
@@ -13,6 +15,13 @@ plugins:
 markdown_extensions:
   - pymdownx.arithmatex:
       generic: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
 
 extra_javascript:
   - javascripts/mathjax.js
@@ -35,3 +44,6 @@ nav:
   - 'Evaluation':
     - 'Base': 'evaluation/base.md'
     - 'LoLEvaluator': 'evaluation/lol_eval.md'
+  - 'Inference':
+    - 'Base': 'inference/base.md'
+    - 'Low Light Inferer': 'inference/low_light.md'

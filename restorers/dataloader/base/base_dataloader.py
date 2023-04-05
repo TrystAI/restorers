@@ -1,6 +1,6 @@
-from abc import ABC, abstractmethod
 from functools import partial
 from typing import List, Tuple
+from abc import ABC, abstractmethod
 
 import tensorflow as tf
 
@@ -11,13 +11,22 @@ _AUTOTUNE = tf.data.AUTOTUNE
 
 class DatasetFactory(ABC):
     """
-    The parent factory class for all dataset related operations.
+    Abstract base class for building dataset factories or dataloaders.
 
-    Parameters:
-        image_size (`int`): The image resolution.
-        bit_depth (`int`): Bit depth for normalization.
-        val_split (`float`): The percentage of validation split.
-        visualize_on_wandb (`bool`): Flag to visualize the dataset on wandb.
+    Abstract functions to be overriden are:
+
+    - `fetch_dataset(self, val_split: float, visualize_on_wandb: bool) -> None`
+        - Function to fetch the dataset from a hosted artifact on the web.
+
+    - `sanity_tests(self) -> None`
+        - Function to perform sanity tests on the dataset. This could include logic
+            to visualize or perrform exploratory analysis on the dataset.
+
+    Args:
+        image_size (int): The image resolution.
+        bit_depth (int): Bit depth of the images for normalization.
+        val_split (float): The percentage of validation split.
+        visualize_on_wandb (bool): Flag to visualize the dataset on wandb.
     """
 
     def __init__(
@@ -32,16 +41,16 @@ class DatasetFactory(ABC):
         self.fetch_dataset(val_split, visualize_on_wandb)
 
     @abstractmethod
-    def fetch_dataset(self, val_split: float, visualize_on_wandb: bool):
+    def fetch_dataset(self, val_split: float, visualize_on_wandb: bool) -> None:
         raise NotImplementedError(f"{self.__class__.__name__ }.fetch_dataset")
 
     @abstractmethod
-    def sanity_tests(self):
+    def sanity_tests(self) -> None:
         raise NotImplementedError(f"{self.__class__.__name__ }.sanity_tests")
 
     def random_crop(
         self, input_image: tf.Tensor, enhanced_image: tf.Tensor
-    ) -> Tuple[tf.Tensor]:
+    ) -> Tuple[tf.Tensor, tf.Tensor]:
         """
         Function to apply random cropping.
 
@@ -50,7 +59,7 @@ class DatasetFactory(ABC):
             enhanced_image (`tf.Tensor`): Enhanced image.
 
         Returns:
-            A tuple of random cropped image.
+            (Tuple[tf.Tensor, tf.Tensor]): A tuple of random cropped image.
         """
         # Check whether the image size is smaller than the original image
         image_size = tf.minimum(self.image_size, tf.shape(input_image)[0])
@@ -74,7 +83,7 @@ class DatasetFactory(ABC):
 
     def resize(
         self, input_image: tf.Tensor, enhanced_image: tf.Tensor
-    ) -> Tuple[tf.Tensor]:
+    ) -> Tuple[tf.Tensor, tf.Tensor]:
         """
         Function to resize images.
 
@@ -83,7 +92,7 @@ class DatasetFactory(ABC):
             enhanced_image (`tf.Tensor`): Enhanced image.
 
         Returns:
-            A tuple of tf.Tensor resized images.
+            (Tuple[tf.Tensor, tf.Tensor]): A tuple of tf.Tensor resized images.
         """
         # Check whether the image size is smaller than the original image
         image_size = tf.minimum(self.image_size, tf.shape(input_image)[0])
@@ -105,15 +114,19 @@ class DatasetFactory(ABC):
 
     def load_image(
         self, input_image_path: str, enhanced_image_path: str, apply_crop: bool
-    ):
+    ) -> Tuple[tf.Tensor, tf.Tensor]:
         """
         Mapping function for `tf.data.Dataset`. Loads the image from file path,
         applies `random_crop` based on a boolean flag.
 
         Args:
-            input_image_path (`str`): The file path for low light image.
-            enhanced_image_path (`str`): The file path for enhanced image.
-            apply_crop (`bool`): Boolean flag to condition random cropping.
+            input_image_path (str): The file path for low light image.
+            enhanced_image_path (str): The file path for enhanced image.
+            apply_crop (bool): Boolean flag to condition random cropping.
+
+        Returns:
+            (Tuple[tf.Tensor, tf.Tensor]): A tuple of preprocessed image tensors corresponding
+                to the input and ground-truth images.
         """
         # Read the image off the file path.
         input_image = read_image(input_image_path, self.normalization_factor)
@@ -136,14 +149,14 @@ class DatasetFactory(ABC):
         apply_augmentations: bool,
     ) -> tf.data.Dataset:
         """
-        Function to build the dataset.
+        Function to build a prefetched `tf.data.Dataset``.
 
         Args:
-            input_images (`List[str]`): A list of image filenames.
-            enhanced_images (`List[str]`): A list of image filenames.
-            batch_size (`int`): Number of images in a single batch.
-            apply_crop (`bool`): Boolean flag to condition cropping.
-            apply_augmentations (`bool`): Boolean flag to condition augmentations.
+            input_images (List[str]): A list of image filenames.
+            enhanced_images (List[str]): A list of image filenames.
+            batch_size (int): Number of images in a single batch.
+            apply_crop (bool): Boolean flag to condition cropping.
+            apply_augmentations (bool): Boolean flag to condition augmentations.
         """
         # Build a `tf.data.Dataset` from the filenames.
         dataset = tf.data.Dataset.from_tensor_slices((input_images, enhanced_images))
@@ -173,10 +186,11 @@ class DatasetFactory(ABC):
         Function to retrieve the train and val dataset.
 
         Args:
-            batch_size (`int`): Number of images in a single batch.
+            batch_size (int): Number of images in a single batch.
 
         Returns:
-            A tuple of `tf.data.Dataset` for training and validation.
+            (Tuple[tf.data.Dataset, tf.data.Dataset]): A tuple of `tf.data.Dataset` for
+                training and validation.
         """
         train_dataset = self.build_dataset(
             input_images=self.train_input_images,

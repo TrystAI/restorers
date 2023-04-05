@@ -12,6 +12,25 @@ from restorers.utils import fetch_wandb_artifact
 
 
 class LowLightDatasetFactory(DatasetFactory):
+    """Abstract base class for building dataset factories or dataloaders for
+    supervised low-light enhancement.
+
+    Abstract functions to be overriden are:
+
+    - `define_dataset_structure(self, dataset_path: str, val_split: float) -> None`
+        - Function to define the structure of the dataset.
+
+    Args:
+        image_size (int): The image resolution.
+        bit_depth (int): Bit depth of the images for normalization.
+        val_split (float): The percentage of validation split.
+        visualize_on_wandb (bool): Flag to visualize the dataset on wandb.
+        dataset_artifact_address (Union[str, None]): The address of the dataset artifact on
+            Weights & Biases.
+        dataset_url (Union[str, None]): The URL of the dataset hosted on the web. This is not necessary
+            in case `dataset_artifact_address` has been specified.
+    """
+
     def __init__(
         self,
         image_size: int,
@@ -30,7 +49,8 @@ class LowLightDatasetFactory(DatasetFactory):
         super().__init__(image_size, bit_depth, val_split, visualize_on_wandb)
 
     @abstractmethod
-    def define_dataset_structure(self, dataset_path, val_split):
+    def define_dataset_structure(self, dataset_path: str, val_split: float) -> None:
+        """Abstract function to define the structure of the dataset."""
         raise NotImplementedError(
             f"{self.__class__.__name__ }.define_dataset_structure"
         )
@@ -51,6 +71,9 @@ class LowLightDatasetFactory(DatasetFactory):
             )
 
     def sanity_tests(self):
+        """This function is used to visualize the dataset on Weights & Biases and enable
+        interactive exploratory analysis.
+        """
         try:
             self._create_data_table(
                 self.train_input_images, self.train_enhanced_images, split="Train"
@@ -75,6 +98,9 @@ class LowLightDatasetFactory(DatasetFactory):
         wandb.log({f"Lol-Dataset": self.table})
 
     def fetch_dataset(self, val_split, visualize_on_wandb: bool):
+        """Function to fetch the dataset from a URL or a Weights & Biases dataset artifact.
+        This function also executes the sanity tests.
+        """
         if self.dataset_url is not None:
             dataset_path = tf.keras.utils.get_file(
                 fname="lol_dataset.zip",

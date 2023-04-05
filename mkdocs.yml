@@ -36,7 +36,8 @@ nav:
     - 'NAFNet': 'models/nafnet.md'
     - 'Zero-DCE': 'models/zero_dce_model.md'
   - 'Dataloader':
-    - 'Base': 'dataloader/base.md'
+    - 'Base Dataset Factory': 'dataloader/base.md'
+    - 'LOL Dataloader': 'dataloader/lol_dataloader.md'
   - 'Losses':
     - 'Charbonnier Loss': 'losses/charbonnier_loss.md'
     - 'PSNR Loss': 'losses/psnr_loss.md'

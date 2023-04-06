@@ -7,11 +7,10 @@ class PixelShuffle(tf.keras.layers.Layer):
 
     Given input of size (H,W,C), it will generate an output
     of size
-    (
-        H*pixel_shuffle_factor,
-        W*pixel_shuffle_factor,
-        channels//(pixel_shuffle_factor**2)
-    )
+
+    $$(H \cdot f, W \cdot f, \left \lfloor{\\frac{c}{f^2}}\\right \\rfloor)$$
+    
+    Where $c$ is channels and $f$ is pixel_shuffle_factor
 
     Wrapper Class for tf.nn.depth_to_space
     Reference: https://www.tensorflow.org/api_docs/python/tf/nn/depth_to_space
@@ -39,12 +38,11 @@ class UpScale(tf.keras.layers.Layer):
 
     Given channels and pixel_shuffle_factor as input, it will generate an output
     of size
-    (
-        H*pixel_shuffle_factor,
-        W*pixel_shuffle_factor,
-        channels//(pixel_shuffle_factor**2)
-    )
-    While giving input, make sure that (pixel_shuffle_factor**2) divides channels
+    $$(H \cdot f, W \cdot f, \left \lfloor{\\frac{c}{f^2}}\\right \\rfloor)$$
+    
+    Where $c$ is channels and $f$ is pixel_shuffle_factor
+
+    While giving input, make sure that $f^2$ divides $c$.
 
     Args:
         channels (int): number of channels in the input.

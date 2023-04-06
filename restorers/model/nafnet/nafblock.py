@@ -44,10 +44,13 @@ class ChannelAttention(keras.layers.Layer):
     Channel Attention layer
 
     The block is named Squeeze-and-Excitation block (SE Block) in the original paper.
+    
     1. First the input is 'squeezed' across the spatial dimension to generate a
         channel-wise descriptor.
+
     2. Following that the inter channel dependency is learnt by applying
         two convolution layers.
+
     3. Finally, the input is rescaled by a channel-wise multiplication with the
         output of the excitation operation.
 
@@ -134,12 +137,12 @@ class NAFBlock(keras.layers.Layer):
 
     The authors have the idea that any operations of the form,
 
-    $$f(X) \\dot \\sigma(g(Y))$$
+    $$f(X) \cdot \sigma(g(Y))$$
 
     (where f and g are feature maps and $\\sigma$ is activation function)
     can be simplified to the form
 
-    $$X \\dot g(Y)$$
+    $$X \cdot g(Y)$$
 
     Using this idea, all the nonlinear activations are replaced by
         a series of Hadamard produces

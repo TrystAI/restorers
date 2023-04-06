@@ -3,10 +3,10 @@ import unittest
 import tensorflow as tf
 
 from restorers.model.zero_dce import (
-    DeepCurveEstimationLayer,
-    FastDeepCurveEstimationLayer,
     ZeroDCE,
     FastZeroDce,
+    DeepCurveEstimationLayer,
+    FastDeepCurveEstimationLayer,
 )
 from restorers.model.zero_dce.dw_conv import DepthwiseSeparableConvolution
 

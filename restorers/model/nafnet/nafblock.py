@@ -17,7 +17,7 @@ class SimpleGate(keras.layers.Layer):
 
     1. [Simple Baselines for Image Restoration](https://arxiv.org/abs/2204.04676)
 
-    Parameters:
+    Args:
         factor (Optional[int]): the amount by which the channels are scaled down
             Default factor is 2.
     """
@@ -34,7 +34,6 @@ class SimpleGate(keras.layers.Layer):
         )
 
     def get_config(self) -> dict:
-        """Add factor to the config"""
         config = super().get_config()
         config.update({"factor": self.factor})
         return config
@@ -56,7 +55,7 @@ class ChannelAttention(keras.layers.Layer):
 
     1. [Squeeze-and-Excitation Networks](https://arxiv.org/abs/1709.01507)
 
-    Parameters:
+    Args:
         channels: number of channels in input
     """
 
@@ -80,7 +79,6 @@ class ChannelAttention(keras.layers.Layer):
         return inputs * self.conv2(x)
 
     def get_config(self) -> dict:
-        """Add channels to the config"""
         config = super().get_config()
         config.update({"channels": self.channels})
         return config
@@ -102,7 +100,7 @@ class SimplifiedChannelAttention(keras.layers.Layer):
 
     1. [Simple Baselines for Image Restoration](https://arxiv.org/abs/2204.04676)
 
-    Parameters:
+    Args:
         channels: number of channels in input
     """
 
@@ -121,7 +119,6 @@ class SimplifiedChannelAttention(keras.layers.Layer):
         return inputs * features
 
     def get_config(self) -> dict:
-        """Add channels to the config"""
         config = super().get_config()
         config.update({"channels": self.channels})
         return config
@@ -152,7 +149,6 @@ class NAFBlock(keras.layers.Layer):
     1. [Simple Baselines for Image Restoration](https://arxiv.org/abs/2204.04676)
 
     Args:
-        input_channels (int): number of channels in the input (as NAFBlock retains the input size in the output)
         factor (Optional[float]): factor by which the channels must be increased before being reduced by simple gate.
             (Higher factor denotes higher order polynomial in multiplication. Default factor is 2)
         drop_out_rate (Optional[float]): dropout rate
@@ -299,7 +295,6 @@ class NAFBlock(keras.layers.Layer):
         return y
 
     def get_config(self) -> dict:
-        """Add constructor arguments to the config"""
         config = super().get_config()
         config.update(
             {

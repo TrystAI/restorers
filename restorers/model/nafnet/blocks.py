@@ -16,7 +16,7 @@ class PixelShuffle(tf.keras.layers.Layer):
     Wrapper Class for tf.nn.depth_to_space
     Reference: https://www.tensorflow.org/api_docs/python/tf/nn/depth_to_space
 
-    Parameters:
+    Args:
         upscale_factor (int): the factor by which the input's spatial dimensions will be scaled.
     """
 
@@ -28,7 +28,6 @@ class PixelShuffle(tf.keras.layers.Layer):
         return tf.nn.depth_to_space(inputs, self.upscale_factor)
 
     def get_config(self) -> dict:
-        """Add upscale factor to the config"""
         config = super().get_config()
         config.update({"upscale_factor": self.upscale_factor})
         return config
@@ -47,7 +46,7 @@ class UpScale(tf.keras.layers.Layer):
     )
     While giving input, make sure that (pixel_shuffle_factor**2) divides channels
 
-    Parameters:
+    Args:
         channels (int): number of channels in the input.
         pixel_shuffle_factor (int): the factor by which the input's spatial dimensions will be scaled.
     """
@@ -73,7 +72,6 @@ class UpScale(tf.keras.layers.Layer):
         return self.pixel_shuffle(self.conv(inputs))
 
     def get_config(self) -> dict:
-        """Add channels and pixel_shuffle_factor to the config"""
         config = super().get_config()
         config.update(
             {

@@ -64,7 +64,7 @@ class UpScale(tf.keras.layers.Layer):
                 f"{pixel_shuffle_factor} pixel_shuffle_factor was passed"
             )
 
-        self.conv = keras.layers.Conv2D(
+        self.conv = tf.keras.layers.Conv2D(
             channels, kernel_size=1, strides=1, use_bias=False
         )
         self.pixel_shuffle = PixelShuffle(pixel_shuffle_factor)

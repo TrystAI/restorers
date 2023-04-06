@@ -19,7 +19,7 @@ class FastZeroDce(ZeroDCE):
     Reference:
 
     1. [Learning to Enhance Low-Light Image via Zero-Reference Deep Curve Estimation](https://li-chongyi.github.io/Proj_Zero-DCE++.html)
-    2. https://github.com/Li-Chongyi/Zero-DCE_extension
+    2. [Official PyTorch implementation of Zero-DCE++](https://github.com/Li-Chongyi/Zero-DCE_extension)
 
     Args:
         num_intermediate_filters (int): number of filters in the intermediate convolutional layers.

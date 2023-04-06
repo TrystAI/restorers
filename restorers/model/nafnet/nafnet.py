@@ -27,6 +27,7 @@ class NAFNet(keras.models.Model):
     Reference:
 
     1. [Simple Baselines for Image Restoration](https://arxiv.org/abs/2204.04676)
+    2. [Official PyTorch implementation of NAFNet](https://github.com/megvii-research/NAFNet)
 
     Args:
         filters (Optional[int]): denotes the starting filter size.

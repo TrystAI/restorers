@@ -9,7 +9,7 @@ class PixelShuffle(tf.keras.layers.Layer):
     of size
 
     $$(H \cdot f, W \cdot f, \\frac{c}{f^2})$$
-    
+
     Where $c$ is channels and $f$ is pixel_shuffle_factor
 
     While giving input, make sure that $f^2$ divides $c$.
@@ -42,7 +42,7 @@ class UpScale(tf.keras.layers.Layer):
     of size
 
     $$(H \cdot f, W \cdot f, \\frac{c}{f^2})$$
-    
+
     Where $c$ is channels and $f$ is pixel_shuffle_factor
 
     While giving input, make sure that $f^2$ divides $c$.

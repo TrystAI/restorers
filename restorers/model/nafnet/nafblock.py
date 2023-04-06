@@ -44,7 +44,7 @@ class ChannelAttention(keras.layers.Layer):
     Channel Attention layer
 
     The block is named Squeeze-and-Excitation block (SE Block) in the original paper.
-    
+
     1. First the input is 'squeezed' across the spatial dimension to generate a
         channel-wise descriptor.
 

@@ -24,7 +24,7 @@ class ZeroDCE(tf.keras.Model):
     low-light image to enhance its visibility. This approach allows for real-time enhancement of
     low-light images without the need for a reference image, making it useful in situations where a
     reference image is not available or impractical to obtain.
-    
+
     ![](https://li-chongyi.github.io/Zero-DCE_files/framework.png){ loading=lazy }
 
     Reference:

@@ -14,7 +14,7 @@ class MirNetv2(tf.keras.Model):
     at its core. The main branch of the MRB is dedicated to maintaining spatially-precise
     high-resolution representations through the entire network and the complimentary set
     of parallel branches provide better contextualized features.
-    
+
     ![The MirNetv2 Architecture](https://i.imgur.com/oCIo69j.png){ loading=lazy }
 
     Reference:

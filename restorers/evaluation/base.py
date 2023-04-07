@@ -27,10 +27,13 @@ class BaseEvaluator(ABC):
 
     - `preprocess(self, image_path: Image) -> Union[np.ndarray, tf.Tensor]`
         - Add preprocessing logic that would preprocess a `PIL.Image` and add a batch
-            dimension.
+            dimension. This function should return a `np.ndarray` or a `tf.Tensor`
+            that would be consumed by the model.
+
     - `postprocess(self, model_output: np.ndarray) -> PIL.Image`
         - Add postprocessing logic that would convert the output of the model to a
             `PIL.Image`.
+
     - `populate_image_paths(self) -> Dict[str, Tuple[List[str], List[str]]]`
         - Add logic to populate the split-wise image paths necessary for the evaluation.
             For example, for a dataset with train, validation and test sets, the function

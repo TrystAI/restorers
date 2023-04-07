@@ -11,7 +11,7 @@ class DepthwiseSeparableConvolution(tf.keras.layers.Layer):
     1. [Official PyTorch implementation of Zero-DCE++](https://github.com/Li-Chongyi/Zero-DCE_extension/blob/main/Zero-DCE%2B%2B/model.py#L8)
 
     Args:
-        input_channels (int): number of input channels.
+        intermediate_channels (int): number of input channels.
         output_channels (int): number of output channels.
     """
 

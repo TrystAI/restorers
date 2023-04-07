@@ -17,7 +17,7 @@ class SimpleGate(keras.layers.Layer):
 
     1. [Simple Baselines for Image Restoration](https://arxiv.org/abs/2204.04676)
 
-    Parameters:
+    Args:
         factor (Optional[int]): the amount by which the channels are scaled down
             Default factor is 2.
     """
@@ -34,7 +34,6 @@ class SimpleGate(keras.layers.Layer):
         )
 
     def get_config(self) -> dict:
-        """Add factor to the config"""
         config = super().get_config()
         config.update({"factor": self.factor})
         return config
@@ -45,10 +44,13 @@ class ChannelAttention(keras.layers.Layer):
     Channel Attention layer
 
     The block is named Squeeze-and-Excitation block (SE Block) in the original paper.
+
     1. First the input is 'squeezed' across the spatial dimension to generate a
         channel-wise descriptor.
+
     2. Following that the inter channel dependency is learnt by applying
         two convolution layers.
+
     3. Finally, the input is rescaled by a channel-wise multiplication with the
         output of the excitation operation.
 
@@ -56,7 +58,7 @@ class ChannelAttention(keras.layers.Layer):
 
     1. [Squeeze-and-Excitation Networks](https://arxiv.org/abs/1709.01507)
 
-    Parameters:
+    Args:
         channels: number of channels in input
     """
 
@@ -80,7 +82,6 @@ class ChannelAttention(keras.layers.Layer):
         return inputs * self.conv2(x)
 
     def get_config(self) -> dict:
-        """Add channels to the config"""
         config = super().get_config()
         config.update({"channels": self.channels})
         return config
@@ -102,7 +103,7 @@ class SimplifiedChannelAttention(keras.layers.Layer):
 
     1. [Simple Baselines for Image Restoration](https://arxiv.org/abs/2204.04676)
 
-    Parameters:
+    Args:
         channels: number of channels in input
     """
 
@@ -121,7 +122,6 @@ class SimplifiedChannelAttention(keras.layers.Layer):
         return inputs * features
 
     def get_config(self) -> dict:
-        """Add channels to the config"""
         config = super().get_config()
         config.update({"channels": self.channels})
         return config
@@ -129,51 +129,46 @@ class SimplifiedChannelAttention(keras.layers.Layer):
 
 class NAFBlock(keras.layers.Layer):
     """
-        NAFBlock (Nonlinear Activation Free Block)
+    NAFBlock (Nonlinear Activation Free Block)
 
-        The authors first define a plain block by retaining the most used operations
-            from the restormer block.
-        In the plain block layer normalization and channel attention is added to make
-            the baseline block.
-        NAFBlock is constructed by removing all the non-linear activations from
-            the baseline block.
+    - The authors first define a plain block by retaining the most used operations from the restormer block.
+    - In the plain block layer normalization and channel attention is added to make the baseline block.
+    - NAFBlock is constructed by removing all the non-linear activations from the baseline block.
 
-        The authors have the idea that any operations of the form,
-        .. math::
-            f(X) \dot \sigma(g(Y))
-        (where f and g are feature maps and \sigma is activation function)
-        can be simplified to the form
-        .. math::
-            X \dot g(Y)
-        Using this idea, all the nonlinear activations are replaced by
-            a series of Hadamard produces
+    The authors have the idea that any operations of the form,
 
-        Reference:
+    $$f(X) \cdot \sigma(g(Y))$$
 
-        1. [Simple Baselines for Image Restoration](https://arxiv.org/abs/2204.04676)
+    (where f and g are feature maps and $\\sigma$ is activation function)
+    can be simplified to the form
 
-        Parameters:
-    <<<<<<< HEAD
-    =======
-            input_channels (Optional[int]): number of channels in the input (as NAFBlock retains the input size in the output)
-    >>>>>>> ea3089f6eb211c37a2a28eb183312fd8a0c1d106
-            factor (Optional[float]): factor by which the channels must be increased before being reduced by simple gate.
-                (Higher factor denotes higher order polynomial in multiplication. Default factor is 2)
-            drop_out_rate (Optional[float]): dropout rate
-                Default value is 0.0
-            balanced_skip_connection (Optional[bool]): adds additional trainable parameters to the skip connections.
-                The parameter denotes how much importance should be given to the sub block in the skip connection.
-                Default value is False
-            mode (Optional[str]): NAFBlock has 3 mode.
-                'plain' mode uses the PlainBlock.
-                    It is derived from the restormer block, keeping the most common components
-                'baseline' mode used the BaselineBlock
-                    It is derived by adding layer normalization, channel attention to PlainBlock.
-                    It also replaces ReLU activation with GeLU in PlainBlock.
-                'nafblock' mode uses the NAFBlock
-                    It derived from BaselineBlock by removing all the non-linear activation.
-                    Non-linear activations are replaced by equivalent matrix multiplication operations.
-                Default mode is 'nafblock'
+    $$X \cdot g(Y)$$
+
+    Using this idea, all the nonlinear activations are replaced by
+        a series of Hadamard produces
+
+    Reference:
+
+    1. [Simple Baselines for Image Restoration](https://arxiv.org/abs/2204.04676)
+
+    Args:
+        factor (Optional[float]): factor by which the channels must be increased before being reduced by simple gate.
+            (Higher factor denotes higher order polynomial in multiplication. Default factor is 2)
+        drop_out_rate (Optional[float]): dropout rate
+            Default value is 0.0
+        balanced_skip_connection (Optional[bool]): adds additional trainable parameters to the skip connections.
+            The parameter denotes how much importance should be given to the sub block in the skip connection.
+            Default value is False
+        mode (Optional[str]): NAFBlock has 3 mode.
+            'plain' mode uses the PlainBlock.
+                It is derived from the restormer block, keeping the most common components
+            'baseline' mode used the BaselineBlock
+                It is derived by adding layer normalization, channel attention to PlainBlock.
+                It also replaces ReLU activation with GeLU in PlainBlock.
+            'nafblock' mode uses the NAFBlock
+                It derived from BaselineBlock by removing all the non-linear activation.
+                Non-linear activations are replaced by equivalent matrix multiplication operations.
+            Default mode is 'nafblock'
     """
 
     def __init__(
@@ -303,7 +298,6 @@ class NAFBlock(keras.layers.Layer):
         return y
 
     def get_config(self) -> dict:
-        """Add constructor arguments to the config"""
         config = super().get_config()
         config.update(
             {

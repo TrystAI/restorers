@@ -8,7 +8,7 @@ class CharbonnierLoss(tf.keras.losses.Loss):
     image processing and computer vision tasks to balance the trade-off between the Mean Squared
     Error (MSE) and the Mean Absolute Error (MAE). It is defined as
 
-    $$L=\sqrt{\left(\left(x^{\wedge} 2+\varepsilon^{\wedge} 2\right)\right)}$$
+    $$L=\\sqrt{\\left(\\left(x^{\\wedge} 2+\\varepsilon^{\\wedge} 2\\right)\\right)}$$
 
     where x is the error and ε is a small positive constant (typically on the order of 0.001). It
     is less sensitive to outliers than the mean squared error and less computationally expensive

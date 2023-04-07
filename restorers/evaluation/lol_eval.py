@@ -14,7 +14,7 @@ class LoLEvaluator(BaseEvaluator):
     """Evaluator for [LoL Dataset](https://www.kaggle.com/datasets/soumikrakshit/lol-dataset).
 
     Usage:
-    ```python
+    ```py
     evaluator = LoLEvaluator(
         metrics=[PSNRMetric(max_val=1.0), SSIMMetric(max_val=1.0)],
         dataset_artifact_address="ml-colabs/dataset/LoL:v0",
@@ -23,6 +23,9 @@ class LoLEvaluator(BaseEvaluator):
     evaluator.initialize_model_from_wandb_artifact("ml-colabs/low-light-enhancement/run_p1m9ovjo_model:v99")
     evaluator.evaluate()
     ```
+
+    Refer to this notebook for a detailed example:
+    [![](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/wandb/examples/blob/master/colabs/keras/restorers/Evaluation_low_light.ipynb)
 
     Args:
         metrics (List[tf.keras.metrics.Metric]): A list of metrics to be evaluated for.

@@ -16,6 +16,46 @@ _AUTOTUNE = tf.data.AUTOTUNE
 
 
 class LOLDataLoader(LowLightDatasetFactory):
+    """DataLoader for the [LOL dataset](https://www.kaggle.com/datasets/soumikrakshit/lol-dataset). This
+    dataloader can be used to build datasets for training supervised low-light image enhancement models
+    using the LOL Dataset.
+
+    Usage:
+
+    ```py
+    # define dataloader for the LoL dataset
+    data_loader = LOLDataLoader(
+        # size of image crops on which we will train
+        image_size=128,
+        # bit depth of the images
+        bit_depth=8,
+        # fraction of images for validation
+        val_split=0.2,
+        # visualize the dataset on WandB or not
+        visualize_on_wandb=True,
+        # the wandb artifact address of the dataset,
+        # this can be found from the `Usage` tab of
+        # the aforemenioned weave panel
+        dataset_artifact_address="ml-colabs/dataset/LoL:v0",
+    )
+
+    # call `get_datasets` on the `data_loader` to get
+    # the TensorFlow datasets corresponding to the
+    # training and validation splits
+    datasets = data_loader.get_datasets(batch_size=2)
+    ```
+
+    Args:
+        image_size (int): The image resolution.
+        bit_depth (int): Bit depth of the images for normalization.
+        val_split (float): The percentage of validation split.
+        visualize_on_wandb (bool): Flag to visualize the dataset on wandb.
+        dataset_artifact_address (Union[str, None]): The address of the dataset artifact on
+            Weights & Biases.
+        dataset_url (Union[str, None]): The URL of the dataset hosted on the web. This is not necessary
+            in case `dataset_artifact_address` has been specified.
+    """
+
     def __init__(
         self,
         image_size: int,
@@ -52,6 +92,38 @@ class LOLDataLoader(LowLightDatasetFactory):
 
 
 class UnsupervisedLOLDataLoader(LOLDataLoader):
+    """Unsupervised dataLoader for the [LOL dataset](https://www.kaggle.com/datasets/soumikrakshit/lol-dataset).
+    This dataloader can be used to build datasets for training unsupervised low-light image enhancement models
+    using the LOL Dataset.
+
+    Usage:
+
+    ```py
+    # define unsupervised dataloader for the LoL dataset
+    data_loader = UnsupervisedLOLDataLoader(
+        # size of image crops on which we will train
+        image_size=128,
+        # bit depth of the images
+        bit_depth=8,
+        # fraction of images for validation
+        val_split=0.2,
+        # visualize the dataset on WandB or not
+        visualize_on_wandb=True,
+        # the wandb artifact address of the dataset,
+        # this can be found from the `Usage` tab of
+        # the aforemenioned weave panel
+        dataset_artifact_address="ml-colabs/dataset/LoL:v0",
+        # train on all images including low-light and ground-truth or not
+        train_on_all_images=True,
+    )
+
+    # call `get_datasets` on the `data_loader` to get
+    # the TensorFlow datasets corresponding to the
+    # training and validation splits
+    datasets = data_loader.get_datasets(batch_size=2)
+    ```
+    """
+
     def __init__(
         self,
         image_size: int,

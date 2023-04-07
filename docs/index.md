@@ -1,3 +1,3 @@
 # Restorers
 
-Tensorflow implementation of [Learning Enriched Features for Fast Image Restoration and Enhancement](https://www.waqaszamir.com/publication/zamir-2022-mirnetv2/zamir-2022-mirnetv2.pdf).
+Restorers provide out-of-the-box TensorFlow implementations of SoTA image and video restoration models for tasks such as low-light enhancement, denoising, deblurring, super-resolution, etc.

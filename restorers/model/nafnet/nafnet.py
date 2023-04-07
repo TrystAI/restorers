@@ -5,89 +5,7 @@ from tensorflow import keras
 
 from .nafblock import NAFBlock
 from .nafblock import PLAIN, BASELINE, NAFBLOCK
-
-
-class PixelShuffle(keras.layers.Layer):
-    """
-    PixelShuffle Layer
-
-    Given input of size (H,W,C), it will generate an output
-    of size
-    (
-        H*pixel_shuffle_factor,
-        W*pixel_shuffle_factor,
-        channels//(pixel_shuffle_factor**2)
-    )
-
-    Wrapper Class for tf.nn.depth_to_space
-    Reference: https://www.tensorflow.org/api_docs/python/tf/nn/depth_to_space
-
-    Parameters:
-        upscale_factor (int): the factor by which the input's spatial dimensions will be scaled.
-    """
-
-    def __init__(self, upscale_factor: int, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.upscale_factor = upscale_factor
-
-    def call(self, inputs: tf.Tensor, *args, **kwargs) -> tf.Tensor:
-        return tf.nn.depth_to_space(inputs, self.upscale_factor)
-
-    def get_config(self) -> dict:
-        """Add upscale factor to the config"""
-        config = super().get_config()
-        config.update({"upscale_factor": self.upscale_factor})
-        return config
-
-
-class UpScale(keras.layers.Layer):
-    """
-    UpScale Layer
-
-    Given channels and pixel_shuffle_factor as input, it will generate an output
-    of size
-    (
-        H*pixel_shuffle_factor,
-        W*pixel_shuffle_factor,
-        channels//(pixel_shuffle_factor**2)
-    )
-    While giving input, make sure that (pixel_shuffle_factor**2) divides channels
-
-    Parameters:
-        channels (int): number of channels in the input.
-        pixel_shuffle_factor (int): the factor by which the input's spatial dimensions will be scaled.
-    """
-
-    def __init__(self, channels: int, pixel_shuffle_factor: int, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.channels = channels
-        self.pixel_shuffle_factor = pixel_shuffle_factor
-
-        if channels % (pixel_shuffle_factor**2) != 0:
-            raise ValueError(
-                f"Number of channels must divide square of pixel_shuffle_factor"
-                f"In the constructor {channels} channels and "
-                f"{pixel_shuffle_factor} pixel_shuffle_factor was passed"
-            )
-
-        self.conv = keras.layers.Conv2D(
-            channels, kernel_size=1, strides=1, use_bias=False
-        )
-        self.pixel_shuffle = PixelShuffle(pixel_shuffle_factor)
-
-    def call(self, inputs: tf.Tensor, *args, **kwargs) -> tf.Tensor:
-        return self.pixel_shuffle(self.conv(inputs))
-
-    def get_config(self) -> dict:
-        """Add channels and pixel_shuffle_factor to the config"""
-        config = super().get_config()
-        config.update(
-            {
-                "channels": self.channels,
-                "pixel_shuffle_factor": self.pixel_shuffle_factor,
-            }
-        )
-        return config
+from .blocks import PixelShuffle, UpScale
 
 
 class NAFNet(keras.models.Model):
@@ -99,15 +17,19 @@ class NAFNet(keras.models.Model):
     After each up block, the number of filters will decrease by a factor of 2.
     And finally the filters will be mapped back to the initial input size.
 
-    Overwrite create_encoder_and_down_blocks, create_decoder_and_up_blocks, create_middle_blocks
-    to add your own implementation for these blocks. Overwrite get_blocks to use your custom block
-    in NAFNet. But make sure to follow the restrictions on these methods and blocks.
+    Overwrite `create_encoder_and_down_blocks`, `create_decoder_and_up_blocks`,
+    and `create_middle_blocks` to add your own implementation for these blocks.
+    Overwrite get_blocks to use your custom block in NAFNet. But make sure to follow
+    the restrictions on these methods and blocks.
+
+    ![](https://i.imgur.com/Ll017JJ.png)
 
     Reference:
 
     1. [Simple Baselines for Image Restoration](https://arxiv.org/abs/2204.04676)
+    2. [Official PyTorch implementation of NAFNet](https://github.com/megvii-research/NAFNet)
 
-    Parameters:
+    Args:
         filters (Optional[int]): denotes the starting filter size.
             Default filters' size is 16 .
         middle_block_num (Optional[int]): denotes the number of middle blocks.
@@ -195,9 +117,8 @@ class NAFNet(keras.models.Model):
         )
 
     def get_block(self) -> keras.layers.Layer:
-        """
-        Returns the block to be used in NAFNet
-        Can be overriden to use custom blocks in NAFNet
+        """Returns the block to be used in NAFNet. This function can be overriden to use custom blocks
+        in NAFNet.
         """
         return NAFBlock(mode=self.block_type)
 
@@ -206,10 +127,7 @@ class NAFNet(keras.models.Model):
         channels: int,
         encoder_block_nums: Tuple[int],
     ) -> int:
-        """
-        Creates equal number of encoder blocks and down blocks.
-        """
-
+        """Creates equal number of encoder blocks and down blocks."""
         for num in encoder_block_nums:
             self.encoders.append(
                 keras.models.Sequential([self.get_block() for _ in range(num)])
@@ -221,9 +139,7 @@ class NAFNet(keras.models.Model):
         return channels
 
     def create_middle_blocks(self, middle_block_num: int) -> None:
-        """
-        Creates middle blocks in NAFNet
-        """
+        """Creates middle blocks in NAFNet"""
         self.middle_blocks = keras.models.Sequential(
             [self.get_block() for _ in range(middle_block_num)]
         )
@@ -233,9 +149,7 @@ class NAFNet(keras.models.Model):
         channels: int,
         decoder_block_nums: Tuple[int],
     ) -> int:
-        """
-        Creates equal number of decoder blocks and up blocks.
-        """
+        """Creates equal number of decoder blocks and up blocks."""
         for num in decoder_block_nums:
             self.ups.append(UpScale(2 * channels, pixel_shuffle_factor=2))
             channels = channels // 2
@@ -276,13 +190,10 @@ class NAFNet(keras.models.Model):
         return x[:, :H, :W, :]
 
     def fix_input_shape(self, inputs: tf.Tensor) -> tf.Tensor:
+        """Fixes input shape for NAFNet.
+        This is because NAFNet can only work with images whose shape is multiple of
+        2**(no. of encoder blocks). Hence the image is padded to match that shape.
         """
-        Fixes input shape for NAFNet
-        This is because NAFNet can only work with images whose shape is
-         multiple of 2**(no. of encoder blocks)
-        Hence the image is padded to match that shape
-        """
-
         _, H, W, _ = inputs.shape
 
         # Calculating how much padding is required
@@ -305,7 +216,6 @@ class NAFNet(keras.models.Model):
         saved_model.save(filepath, *args, **kwargs)
 
     def get_config(self) -> dict:
-        """Add upscale factor to the config"""
         config = super().get_config()
         config.update(
             {

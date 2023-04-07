@@ -2,11 +2,18 @@ import tensorflow as tf
 
 
 class PSNRLoss(tf.keras.losses.Loss):
-    """Implementation of Negative PSNR Loss
+    """Implementation of Negative Peak Signal-to-Noise Ratio Loss defined as follows:
+
+    $$\\text { Loss }=-\\sum_{i=1}^2 \\operatorname{PSNR}\\left(\\left(R_i+X_i\\right), Y\\right)$$
+
+    where...
+
+    * $X_i \\in \\mathbb{R}^{N \\times H \\times W \\times C}$ is the input image
+    * $X_i \\in \\mathbb{R}^{N \\times H \\times W \\times C}$ is the prediction
 
     References:
 
-    1. [HINet: Half Instance Normalization Network for Image Restoration](https://openaccess.thecvf.com/content/CVPR2021W/NTIRE/papers/Chen_HINet_Half_Instance_Normalization_Network_for_Image_Restoration_CVPRW_2021_paper.pdf)
+    1. [HINet: Half Instance Normalization Network for Image Restoration](https://arxiv.org/abs/2105.06086)
     """
 
     def __init__(self, max_val: float = 1.0, *args, **kwargs):

@@ -8,17 +8,17 @@ class SpatialConsistencyLoss(tf.keras.losses.Loss):
     preserving the difference of neighboring regions between the input image and its enhanced
     version. It is given by
 
-    $$L_{s p a}=\frac{1}{K} \sum_{i=1}^K \sum_{j \in \Omega(i)}\left(\left|\left(Y_i-Y_j\right)\right|-\left|\left(I_i-I_j\right)\right|\right)^2$$
+    $$L_{s p a}=\\frac{1}{K} \\sum_{i=1}^K \\sum_{j \\in \\Omega(i)}\\left(\\left|\\left(Y_i-Y_j\\right)\\right|-\\left|\\left(I_i-I_j\\right)\\right|\\right)^2$$
 
     where...
 
     * K is the number of local regions
-    * $\Omega(i)$ is the four neighboring regions (top, down, left, right) centered at the region i
+    * $\\Omega(i)$ is the four neighboring regions (top, down, left, right) centered at the region i
     * Y and I are denoted as the average intensity value of the local region in the enhanced version and input image respectively
 
     Reference:
 
-    1. [Zero-DCE: Zero-reference Deep Curve Estimation for Low-light Image Enhancement](https://openaccess.thecvf.com/content_CVPR_2020/papers/Guo_Zero-Reference_Deep_Curve_Estimation_for_Low-Light_Image_Enhancement_CVPR_2020_paper.pdf)
+    1. [Zero-DCE: Zero-reference Deep Curve Estimation for Low-light Image Enhancement](https://arxiv.org/abs/2001.06826)
     2. [Zero-Reference Learning for Low-Light Image Enhancement (Supplementary Material)](https://openaccess.thecvf.com/content_CVPR_2020/supplemental/Guo_Zero-Reference_Deep_Curve_CVPR_2020_supplemental.pdf)
     3. [Official PyTorch implementation of Zero-DCE](https://github.com/Li-Chongyi/Zero-DCE/blob/master/Zero-DCE_code/Myloss.py#L29)
     4. [Unofficial PyTorch implementation of Zero-DCE](https://github.com/bsun0802/Zero-DCE/blob/master/code/utils.py#L79-L109)

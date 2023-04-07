@@ -82,6 +82,8 @@ class ResidualContextBlock(tf.keras.layers.Layer):
 
     - $W$ denotes the last convolutional layer with filter size $1 \times 1$.
 
+    ![Residual Context Block](https://i.imgur.com/WM1s4IV.png){ loading=lazy }
+
     Reference:
 
     1. [Learning Enriched Features for Fast Image Restoration and Enhancement](https://www.waqaszamir.com/publication/zamir-2022-mirnetv2/zamir-2022-mirnetv2.pdf)

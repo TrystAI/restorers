@@ -38,6 +38,9 @@ docs=[
     "mkdocs-jupyter"
 ]
 
+[tool.setuptools]
+packages = ["restorers"]
+
 [project.urls]
 homepage = "https://github.com/soumik12345/restorers"
 repository = "https://github.com/soumik12345/restorers"

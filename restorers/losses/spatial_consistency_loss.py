@@ -16,6 +16,10 @@ class SpatialConsistencyLoss(tf.keras.losses.Loss):
     * $\\Omega(i)$ is the four neighboring regions (top, down, left, right) centered at the region i
     * Y and I are denoted as the average intensity value of the local region in the enhanced version and input image respectively
 
+    ??? example "Examples"
+        - [Training an unsupervised low-light enhancement model using Zero-DCE.](../../examples/train_zero_dce).
+        - [Training an unsupervised low-light enhancement model using Fast Zero-DCE.](../../examples/train_fast_zero_dce).
+
     Reference:
 
     1. [Zero-DCE: Zero-reference Deep Curve Estimation for Low-light Image Enhancement](https://arxiv.org/abs/2001.06826)

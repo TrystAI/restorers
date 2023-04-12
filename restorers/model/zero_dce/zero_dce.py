@@ -27,6 +27,9 @@ class ZeroDCE(tf.keras.Model):
 
     ![](https://li-chongyi.github.io/Zero-DCE_files/framework.png){ loading=lazy }
 
+    ??? example "Examples"
+        - [Training an unsupervised low-light enhancement model using Zero-DCE](../../examples/train_zero_dce).
+
     Reference:
 
     1. [Zero-DCE: Zero-reference Deep Curve Estimation for Low-light Image Enhancement](https://openaccess.thecvf.com/content_CVPR_2020/papers/Guo_Zero-Reference_Deep_Curve_Estimation_for_Low-Light_Image_Enhancement_CVPR_2020_paper.pdf)

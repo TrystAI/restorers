@@ -16,6 +16,9 @@ class FastZeroDce(ZeroDCE):
     low-light images without the need for a reference image, making it useful in situations where a
     reference image is not available or impractical to obtain.
 
+    ??? example "Examples"
+        - [Training an unsupervised low-light enhancement model using Fast Zero-DCE](../../examples/train_fast_zero_dce).
+
     Reference:
 
     1. [Learning to Enhance Low-Light Image via Zero-Reference Deep Curve Estimation](https://li-chongyi.github.io/Proj_Zero-DCE++.html)

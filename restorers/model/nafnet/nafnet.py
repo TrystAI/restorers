@@ -24,6 +24,9 @@ class NAFNet(keras.models.Model):
 
     ![](https://i.imgur.com/Ll017JJ.png)
 
+    ??? example "Examples"
+        - [Training a supervised low-light enhancement model using NAFNet](../../examples/train_nafnet).
+
     Reference:
 
     1. [Simple Baselines for Image Restoration](https://arxiv.org/abs/2204.04676)

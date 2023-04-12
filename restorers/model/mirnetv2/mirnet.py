@@ -17,6 +17,9 @@ class MirNetv2(tf.keras.Model):
 
     ![The MirNetv2 Architecture](https://i.imgur.com/oCIo69j.png){ loading=lazy }
 
+    ??? example "Examples"
+        - [Training a supervised low-light enhancement model using MirNetv2](../../examples/train_mirnetv2).
+
     Reference:
 
     1. [Learning Enriched Features for Fast Image Restoration and Enhancement](https://www.waqaszamir.com/publication/zamir-2022-mirnetv2/zamir-2022-mirnetv2.pdf)

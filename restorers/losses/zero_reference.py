@@ -9,13 +9,12 @@ def color_constancy(x: tf.Tensor) -> tf.Tensor:
 
     $$L_{c o l}=\\sum_{\\forall(p, q) \\in \\varepsilon}\\left(J^p-J^q\\right)^2, \\varepsilon=\\{(R, G),(R, B),(G, B)\\}$$
 
-    Reference:
-
-    1. [Zero-DCE: Zero-reference Deep Curve Estimation for Low-light Image Enhancement](https://arxiv.org/abs/2001.06826)
-    2. [Zero-Reference Learning for Low-Light Image Enhancement (Supplementary Material)](https://openaccess.thecvf.com/content_CVPR_2020/supplemental/Guo_Zero-Reference_Deep_Curve_CVPR_2020_supplemental.pdf)
-    3. [Official PyTorch implementation of Zero-DCE](https://github.com/Li-Chongyi/Zero-DCE/blob/master/Zero-DCE_code/Myloss.py#L9)
-    4. [Tensorflow implementation of Zero-DCE](https://github.com/tuvovan/Zero_DCE_TF/blob/master/src/loss.py#L10)
-    5. [Keras tutorial for implementing Zero-DCE](https://keras.io/examples/vision/zero_dce/#color-constancy-loss)
+    ??? info "References"
+        1. [Zero-DCE: Zero-reference Deep Curve Estimation for Low-light Image Enhancement](https://arxiv.org/abs/2001.06826)
+        2. [Zero-Reference Learning for Low-Light Image Enhancement (Supplementary Material)](https://openaccess.thecvf.com/content_CVPR_2020/supplemental/Guo_Zero-Reference_Deep_Curve_CVPR_2020_supplemental.pdf)
+        3. [Official PyTorch implementation of Zero-DCE](https://github.com/Li-Chongyi/Zero-DCE/blob/master/Zero-DCE_code/Myloss.py#L9)
+        4. [Tensorflow implementation of Zero-DCE](https://github.com/tuvovan/Zero_DCE_TF/blob/master/src/loss.py#L10)
+        5. [Keras tutorial for implementing Zero-DCE](https://keras.io/examples/vision/zero_dce/#color-constancy-loss)
 
     Args:
         x (tf.Tensor): image.

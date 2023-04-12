@@ -20,10 +20,9 @@ class MirNetv2(tf.keras.Model):
     ??? example "Examples"
         - [Training a supervised low-light enhancement model using MirNetv2](../../examples/train_mirnetv2).
 
-    Reference:
-
-    1. [Learning Enriched Features for Fast Image Restoration and Enhancement](https://www.waqaszamir.com/publication/zamir-2022-mirnetv2/zamir-2022-mirnetv2.pdf)
-    2. [Official PyTorch implementation of MirNetv2](https://github.com/swz30/MIRNetv2/blob/main/basicsr/models/archs/mirnet_v2_arch.py#L242)
+    !!! info "References"
+        1. [Learning Enriched Features for Fast Image Restoration and Enhancement](https://www.waqaszamir.com/publication/zamir-2022-mirnetv2/zamir-2022-mirnetv2.pdf)
+        2. [Official PyTorch implementation of MirNetv2](https://github.com/swz30/MIRNetv2/blob/main/basicsr/models/archs/mirnet_v2_arch.py#L242)
 
     Args:
         channels (int): number of channels in the feature map.

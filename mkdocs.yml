@@ -49,6 +49,7 @@ nav:
     - 'PSNR Loss': 'losses/psnr_loss.md'
     - 'Spatial Consistency Loss': 'losses/spatial_consistency_loss.md'
     - 'Zero Reference Losses': 'losses/zero_reference.md'
+  - 'Metrics': 'metrics.md'
   - 'Evaluation':
     - 'Base': 'evaluation/base.md'
     - 'LoLEvaluator': 'evaluation/lol_eval.md'

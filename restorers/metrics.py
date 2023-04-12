@@ -4,6 +4,14 @@ from .utils import scale_tensor
 
 
 class PSNRMetric(tf.keras.metrics.Metric):
+    """Stateful Tensorflow metric for caclulating
+    [Peak Signal-to-noise Ratio](https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio).
+
+    Args:
+        max_val (float): The dynamic range of the images
+            (i.e., the difference between the maximum the and minimum allowed values).
+    """
+
     def __init__(self, max_val: float, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.max_val = max_val
@@ -23,6 +31,14 @@ class PSNRMetric(tf.keras.metrics.Metric):
 
 
 class SSIMMetric(tf.keras.metrics.Metric):
+    """Stateful Tensorflow metric for caclulating
+    [Structural Similarity](https://en.wikipedia.org/wiki/Structural_similarity).
+
+    Args:
+        max_val (float): The dynamic range of the images
+            (i.e., the difference between the maximum the and minimum allowed values).
+    """
+
     def __init__(self, max_val: float, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.max_val = max_val

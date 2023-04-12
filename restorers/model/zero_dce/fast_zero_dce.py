@@ -16,10 +16,12 @@ class FastZeroDce(ZeroDCE):
     low-light images without the need for a reference image, making it useful in situations where a
     reference image is not available or impractical to obtain.
 
-    Reference:
+    ??? example "Examples"
+        - [Training an unsupervised low-light enhancement model using Fast Zero-DCE](../../examples/train_fast_zero_dce).
 
-    1. [Learning to Enhance Low-Light Image via Zero-Reference Deep Curve Estimation](https://li-chongyi.github.io/Proj_Zero-DCE++.html)
-    2. [Official PyTorch implementation of Zero-DCE++](https://github.com/Li-Chongyi/Zero-DCE_extension)
+    !!! info "References"
+        1. [Learning to Enhance Low-Light Image via Zero-Reference Deep Curve Estimation](https://li-chongyi.github.io/Proj_Zero-DCE++.html)
+        2. [Official PyTorch implementation of Zero-DCE++](https://github.com/Li-Chongyi/Zero-DCE_extension)
 
     Args:
         num_intermediate_filters (int): number of filters in the intermediate convolutional layers.

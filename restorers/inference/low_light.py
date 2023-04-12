@@ -13,23 +13,35 @@ class LowLightInferer(BaseInferer):
     Usage:
 
     ```py
+    import os
+    import wandb
+    from restorers.inference import LowLightInferer
+
+    # initialize a wandb run for inference
+    wandb.init(project="low-light-enhancement", job_type="inference")
+
     # initialize the inferer
-    inferer = LowLightInferer(resize_factor=1, model_alias="Zero-DCE")
+    inferer = LowLightInferer(
+    resize_factor=1, model_alias="Zero-DCE"
+    )
     # intialize the model from wandb artifacts
-    inferer.initialize_model_from_wandb_artifact("ml-colabs/low-light-enhancement/run_oaa25znm_model:v99")
+    inferer.initialize_model_from_wandb_artifact(
+    # This artifact address corresponds to a Zero-DCE model trained on the LoL dataset
+    "ml-colabs/low-light-enhancement/run_oaa25znm_model:v99"
+    )
     # infer on a directory of images
     # inferer.infer("./dark_images")
     # or infer on a single image
     inferer.infer(sample_image)
     ```
 
-    Refer to this notebook for a detailed example:
-    [![](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/wandb/examples/blob/master/colabs/keras/restorers/Inference_low_light.ipynb)
+    ??? example "Examples"
+        - [Inferece on your own images for low-light enhancement](../../examples/inference_low_light).
 
     Args:
-        model (Optional[tf.keras.Model]): The model that is to be evaluated. Note that passing
-            the model during initializing the evaluator is not compulsory. The model can also
-            be set using the function `initialize_model_from_wandb_artifact`.
+        model (Optional[tf.keras.Model]): The model that is to be perform inference. Note that
+            passing the model during initializing the evaluator is not compulsory. The model can
+            also be set using the function `initialize_model_from_wandb_artifact`.
         resize_factor (Optional[int]): The factor by which the input image should be resized
             for inference.
         model_alias (Optional[str]): The alias of the model that is to be logged to

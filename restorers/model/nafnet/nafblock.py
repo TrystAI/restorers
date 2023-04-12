@@ -13,9 +13,8 @@ class SimpleGate(keras.layers.Layer):
     Simple Gate
     It splits the input of size (b,h,w,c) into tensors of size (b,h,w,c//factor) and returns their Hadamard product
 
-    Reference:
-
-    1. [Simple Baselines for Image Restoration](https://arxiv.org/abs/2204.04676)
+    !!! info "References"
+        1. [Simple Baselines for Image Restoration](https://arxiv.org/abs/2204.04676)
 
     Args:
         factor (Optional[int]): the amount by which the channels are scaled down
@@ -54,9 +53,8 @@ class ChannelAttention(keras.layers.Layer):
     3. Finally, the input is rescaled by a channel-wise multiplication with the
         output of the excitation operation.
 
-    Reference:
-
-    1. [Squeeze-and-Excitation Networks](https://arxiv.org/abs/1709.01507)
+    !!! info "References"
+        1. [Squeeze-and-Excitation Networks](https://arxiv.org/abs/1709.01507)
 
     Args:
         channels: number of channels in input
@@ -99,9 +97,8 @@ class SimplifiedChannelAttention(keras.layers.Layer):
         is not used.
         (Check the paper/doc string of NAFBlock for more details)
 
-    Reference:
-
-    1. [Simple Baselines for Image Restoration](https://arxiv.org/abs/2204.04676)
+    !!! info "References"
+        1. [Simple Baselines for Image Restoration](https://arxiv.org/abs/2204.04676)
 
     Args:
         channels: number of channels in input

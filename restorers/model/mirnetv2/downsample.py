@@ -7,10 +7,9 @@ import tensorflow as tf
 class DownBlock(tf.keras.layers.Layer):
     """Submodule of `DownSampleBlock`.
 
-    Reference:
-
-    1. [Learning Enriched Features for Fast Image Restoration and Enhancement](https://www.waqaszamir.com/publication/zamir-2022-mirnetv2/zamir-2022-mirnetv2.pdf)
-    2. [Official PyTorch implementation of MirNetv2](https://github.com/swz30/MIRNetv2/blob/main/basicsr/models/archs/mirnet_v2_arch.py#L130)
+    !!! info "References"
+        1. [Learning Enriched Features for Fast Image Restoration and Enhancement](https://www.waqaszamir.com/publication/zamir-2022-mirnetv2/zamir-2022-mirnetv2.pdf)
+        2. [Official PyTorch implementation of MirNetv2](https://github.com/swz30/MIRNetv2/blob/main/basicsr/models/archs/mirnet_v2_arch.py#L130)
 
     Args:
         channels (int): number of input channels.
@@ -38,10 +37,9 @@ class DownBlock(tf.keras.layers.Layer):
 class DownSampleBlock(tf.keras.layers.Layer):
     """Layer for downsampling feature map for the Multi-scale Residual Block.
 
-    Reference:
-
-    1. [Learning Enriched Features for Fast Image Restoration and Enhancement](https://www.waqaszamir.com/publication/zamir-2022-mirnetv2/zamir-2022-mirnetv2.pdf)
-    2. [Official PyTorch implementation of MirNetv2](https://github.com/swz30/MIRNetv2/blob/main/basicsr/models/archs/mirnet_v2_arch.py#L142)
+    ??? info "References"
+        1. [Learning Enriched Features for Fast Image Restoration and Enhancement](https://www.waqaszamir.com/publication/zamir-2022-mirnetv2/zamir-2022-mirnetv2.pdf)
+        2. [Official PyTorch implementation of MirNetv2](https://github.com/swz30/MIRNetv2/blob/main/basicsr/models/archs/mirnet_v2_arch.py#L142)
 
     Args:
         channels (int): number of input channels.

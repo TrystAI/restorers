@@ -14,6 +14,9 @@ class CharbonnierLoss(tf.keras.losses.Loss):
     is less sensitive to outliers than the mean squared error and less computationally expensive
     than the mean absolute error.
 
+    ??? example "Examples"
+        - [Training a supervised low-light enhancement model using MirNetv2.](../../examples/train_mirnetv2).
+
     Args:
         epsilon (float): a small positive constant.
     """

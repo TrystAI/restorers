@@ -11,9 +11,8 @@ class PSNRLoss(tf.keras.losses.Loss):
     * $X_i \\in \\mathbb{R}^{N \\times H \\times W \\times C}$ is the input image
     * $X_i \\in \\mathbb{R}^{N \\times H \\times W \\times C}$ is the prediction
 
-    References:
-
-    1. [HINet: Half Instance Normalization Network for Image Restoration](https://arxiv.org/abs/2105.06086)
+    ??? info "References"
+        1. [HINet: Half Instance Normalization Network for Image Restoration](https://arxiv.org/abs/2105.06086)
     """
 
     def __init__(self, max_val: float = 1.0, *args, **kwargs):

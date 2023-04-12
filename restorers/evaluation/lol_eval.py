@@ -13,19 +13,34 @@ from ..utils import fetch_wandb_artifact
 class LoLEvaluator(BaseEvaluator):
     """Evaluator for [LoL Dataset](https://www.kaggle.com/datasets/soumikrakshit/lol-dataset).
 
-    Usage:
+    **Usage:**
+
     ```py
+    import wandb
+    from restorers.evaluation import LoLEvaluator
+    from restorers.metrics import PSNRMetric, SSIMMetric
+
+    # initialize a wandb run for inference
+    wandb.init(project="low-light-enhancement", job_type="evaluation")
+
+    # Define the Evaluator for LoL dataset
     evaluator = LoLEvaluator(
+        # pass the list of Keras metrics to be evaluated for
         metrics=[PSNRMetric(max_val=1.0), SSIMMetric(max_val=1.0)],
+        # pass the wandb artifact for the LoL dataset
         dataset_artifact_address="ml-colabs/dataset/LoL:v0",
         input_size=256,
     )
-    evaluator.initialize_model_from_wandb_artifact("ml-colabs/low-light-enhancement/run_p1m9ovjo_model:v99")
+    # initialize model from wandb artifacts
+    evaluator.initialize_model_from_wandb_artifact(
+        "artifact-address-of-your-model-checkpoint"
+    )
+    # evaluate
     evaluator.evaluate()
     ```
 
-    Refer to this notebook for a detailed example:
-    [![](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/wandb/examples/blob/master/colabs/keras/restorers/Evaluation_low_light.ipynb)
+    ??? example "Examples"
+        - [Evaluating a low-light enhancement model](../../examples/evaluate_low_light).
 
     Args:
         metrics (List[tf.keras.metrics.Metric]): A list of metrics to be evaluated for.

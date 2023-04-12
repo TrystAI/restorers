@@ -18,11 +18,10 @@ class SelectiveKernelFeatureFusion(tf.keras.layers.Layer):
 
     ![Selective Kernel Feature Fusion](https://i.imgur.com/kVn5N8t.png){ loading=lazy }
 
-    Reference:
-
-    1. [Selective Kernel Networks](https://arxiv.org/abs/1903.06586)
-    2. [Learning Enriched Features for Fast Image Restoration and Enhancement](https://www.waqaszamir.com/publication/zamir-2022-mirnetv2/zamir-2022-mirnetv2.pdf)
-    3. [Official PyTorch implementation of MirNetv2](https://github.com/swz30/MIRNetv2/blob/main/basicsr/models/archs/mirnet_v2_arch.py#L17)
+    !!! info "References"
+        1. [Selective Kernel Networks](https://arxiv.org/abs/1903.06586)
+        2. [Learning Enriched Features for Fast Image Restoration and Enhancement](https://www.waqaszamir.com/publication/zamir-2022-mirnetv2/zamir-2022-mirnetv2.pdf)
+        3. [Official PyTorch implementation of MirNetv2](https://github.com/swz30/MIRNetv2/blob/main/basicsr/models/archs/mirnet_v2_arch.py#L17)
 
     Args:
         channels (int): number of channels in the feature map.

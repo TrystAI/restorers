@@ -6,9 +6,8 @@ import tensorflow as tf
 class DepthwiseSeparableConvolution(tf.keras.layers.Layer):
     """Depthwise-separable convolution implemented as a `tf.keras.layers.Layer`.
 
-    Reference:
-
-    1. [Official PyTorch implementation of Zero-DCE++](https://github.com/Li-Chongyi/Zero-DCE_extension/blob/main/Zero-DCE%2B%2B/model.py#L8)
+    !!! info "References"
+        1. [Official PyTorch implementation of Zero-DCE++](https://github.com/Li-Chongyi/Zero-DCE_extension/blob/main/Zero-DCE%2B%2B/model.py#L8)
 
     Args:
         intermediate_channels (int): number of input channels.

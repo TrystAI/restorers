@@ -28,7 +28,7 @@ def _define_lol_dataset_structure(
     train_enhanced_images = enhanced_images[:num_train_images]
     val_input_images = low_light_images[num_train_images:]
     val_enhanced_images = enhanced_images[num_train_images:]
-    return {
+    return num_data_points, {
         "train": [train_input_images, train_enhanced_images],
         "val": [val_input_images, val_enhanced_images],
         "test": [test_input_images, test_enhanced_images],
@@ -99,7 +99,9 @@ class LOLDataLoader(LowLightDatasetFactory):
         )
 
     def define_dataset_structure(self, dataset_path, val_split):
-        data_paths = _define_lol_dataset_structure(dataset_path, val_split)
+        self.num_data_points, data_paths = _define_lol_dataset_structure(
+            dataset_path, val_split
+        )
         self.train_input_images, self.train_enhanced_images = data_paths["train"]
         self.val_input_images, self.val_enhanced_images = data_paths["val"]
         self.test_input_images, self.test_enhanced_images = data_paths["test"]
@@ -169,7 +171,9 @@ class UnsupervisedLOLDataLoader(UnsupervisedLowLightDatasetFactory):
         )
 
     def define_dataset_structure(self, dataset_path: str, val_split: float) -> None:
-        data_paths = _define_lol_dataset_structure(dataset_path, val_split)
+        self.num_data_points, data_paths = _define_lol_dataset_structure(
+            dataset_path, val_split
+        )
         self.train_input_images, self.train_enhanced_images = data_paths["train"]
         self.val_input_images, self.val_enhanced_images = data_paths["val"]
         self.test_input_images, self.test_enhanced_images = data_paths["test"]

@@ -45,6 +45,10 @@ class LOLDataLoader(LowLightDatasetFactory):
     datasets = data_loader.get_datasets(batch_size=2)
     ```
 
+    ??? example "Examples"
+        - [Training a supervised low-light enhancement model using MirNetv2](../../examples/train_mirnetv2).
+        - [Training a supervised low-light enhancement model using NAFNet](../../examples/train_nafnet).
+
     Args:
         image_size (int): The image resolution.
         bit_depth (int): Bit depth of the images for normalization.
@@ -122,6 +126,21 @@ class UnsupervisedLOLDataLoader(LOLDataLoader):
     # training and validation splits
     datasets = data_loader.get_datasets(batch_size=2)
     ```
+
+    ??? example "Examples"
+        - [Training an unsupervised low-light enhancement model using Zero-DCE](../../examples/train_zero_dce).
+        - [Training an unsupervised low-light enhancement model using Fast Zero-DCE](../../examples/train_fast_zero_dce).
+
+    Args:
+        image_size (int): The image resolution.
+        bit_depth (int): Bit depth of the images for normalization.
+        val_split (float): The percentage of validation split.
+        visualize_on_wandb (bool): Flag to visualize the dataset on wandb.
+        dataset_artifact_address (Union[str, None]): The address of the dataset artifact on
+            Weights & Biases.
+        dataset_url (Union[str, None]): The URL of the dataset hosted on the web. This is not necessary
+            in case `dataset_artifact_address` has been specified.
+        train_on_all_images (bool): Use both input and ground-truth images for training or not.
     """
 
     def __init__(

@@ -1,8 +1,8 @@
-name: Run tests
+name: Tests
 on:
   pull_request:
     paths:
-      - .github/**
+      - .github/workflows/tests.yml
       - restorers/**
 
 jobs:
@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: psf/black@stable
 
-  run-tests:
+  dataloader-tests:
     runs-on: ubuntu-latest
     env:
       WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
@@ -22,4 +22,28 @@ jobs:
       - run: |
           pip install -U pip
           pip install .[test]
-          pytest -s
+          pytest -s restorers/tests/dataloader/
+  
+  model-tests:
+    runs-on: ubuntu-latest
+    env:
+      WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
+    container: tensorflow/tensorflow
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          pip install -U pip
+          pip install .[test]
+          pytest -s restorers/tests/model/
+  
+  losses-tests:
+    runs-on: ubuntu-latest
+    env:
+      WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
+    container: tensorflow/tensorflow
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          pip install -U pip
+          pip install .[test]
+          pytest -s restorers/tests/losses/

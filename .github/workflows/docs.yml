@@ -4,6 +4,12 @@ on:
     branches:
       - main
       - saurav/add-auto-docs
+      - deploy/docs
+    paths:
+      - .github/workflows/docs.yml
+      - docs/**
+      - mkdocs.yml
+
 permissions:
   contents: write
   id-token: write

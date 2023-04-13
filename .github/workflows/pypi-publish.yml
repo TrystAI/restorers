@@ -1,0 +1,23 @@
+name: Deploy
+on:
+  push:
+    branches:
+      - main
+      - dataloader/unsupervised
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  pypi-publish:
+    name: Upload release to TestPyPI
+    runs-on: ubuntu-latest
+    container: python
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          python3 -m pip install -U pip
+          python3 -m pip install -U .[build]
+          python3 -m build
+          twine upload -u ${{ secrets.PYPI_USERNAME }} -p ${{ secrets.PYPI_PASSWORD }} -r testpypi dist/*

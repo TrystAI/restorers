@@ -176,3 +176,4 @@ class UnsupervisedLOLDataLoader(UnsupervisedLowLightDatasetFactory):
                 self.train_input_images + self.train_enhanced_images
             )
             self.val_input_images = self.val_input_images + self.val_enhanced_images
+            self.num_data_points *= 2

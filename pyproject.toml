@@ -4,6 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "restorers"
+authors = [
+  { name="Soumik Rakshit", email="19soumik.rakshit96@gmail.com" },
+  { name="Saurav Maheshkar", email="sauravvmaheshkar@gmail.com" },
+  { name="Samarendra Dash", email="samarendra109@gmail.com" },
+  { name="Aritra Roy Gosthipaty", email="aritra.born2fly@gmail.com" },
+]
 dynamic = ["version"]
 description = "Image Restoration toolkit in TensorFlow"
 readme = "README.md"
@@ -24,7 +30,8 @@ dependencies = [
 [project.optional-dependencies]
 dev=[
     "isort>=5.10.1",
-    "black>=22.6.0"
+    "black>=22.6.0",
+    "pre-commit>=3.2.2"
 ]
 test=[
     "pytest==7.1.2"
@@ -37,10 +44,14 @@ docs=[
     "mkdocs-glightbox",
     "mkdocs-jupyter"
 ]
+build=[
+    "build",
+    "twine",
+]
 
 [tool.setuptools]
 packages = ["restorers"]
 
 [project.urls]
-homepage = "https://github.com/soumik12345/restorers"
-repository = "https://github.com/soumik12345/restorers"
+homepage = "https://trystai.github.io/restorers"
+repository = "https://github.com/TrystAI/restorers"

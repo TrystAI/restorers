@@ -6,6 +6,9 @@ build-backend = "setuptools.build_meta"
 name = "restorers"
 authors = [
   { name="Soumik Rakshit", email="19soumik.rakshit96@gmail.com" },
+  { name="Saurav Maheshkar", email="sauravvmaheshkar@gmail.com" },
+  { name="Samarendra Dash", email="samarendra109@gmail.com" },
+  { name="Aritra Roy Gosthipaty", email="aritra.born2fly@gmail.com" },
 ]
 dynamic = ["version"]
 description = "Image Restoration toolkit in TensorFlow"

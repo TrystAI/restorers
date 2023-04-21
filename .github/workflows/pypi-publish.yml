@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-      - dataloader/unsupervised
 
 permissions:
   contents: write
@@ -11,7 +10,7 @@ permissions:
 
 jobs:
   pypi-publish:
-    name: Upload release to TestPyPI
+    name: Upload release to PyPI
     runs-on: ubuntu-latest
     container: python
     steps:
@@ -20,4 +19,4 @@ jobs:
           python3 -m pip install -U pip
           python3 -m pip install -U .[build]
           python3 -m build
-          twine upload -u ${{ secrets.PYPI_USERNAME }} -p ${{ secrets.PYPI_PASSWORD }} -r testpypi dist/*
+          twine upload -u ${{ secrets.PYPI_USERNAME }} -p ${{ secrets.PYPI_PASSWORD }} -r pypi dist/*

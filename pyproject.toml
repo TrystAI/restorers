@@ -51,4 +51,4 @@ packages = ["restorers"]
 
 [project.urls]
 homepage = "https://trystai.github.io/restorers"
-repository = "https://github.com/soumik12345/restorers"
+repository = "https://github.com/TrystAI/restorers"

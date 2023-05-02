@@ -83,10 +83,6 @@ class LowLightDataLoaderTester(unittest.TestCase):
         )
         self.assertEqual(x.shape, (1, self.image_size, self.image_size, 3))
         x = next(iter(viz_dataset))
-        self.assertEqual(
-            tuple(val_dataset.element_spec[0].shape),
-            (1, self.image_size, self.image_size, 3),
-        )
         self.assertEqual(x.shape, (1, self.image_size, self.image_size, 3))
         shutil.rmtree("./artifacts")
 

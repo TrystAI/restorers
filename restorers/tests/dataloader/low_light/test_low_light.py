@@ -25,7 +25,7 @@ class LowLightDataLoaderTester(unittest.TestCase):
             dataset_artifact_address="ml-colabs/mirnet-v2/lol-dataset:v0",
         )
         self.assertEqual(len(data_loader), 485)
-        train_dataset, val_dataset = data_loader.get_datasets(batch_size=1)
+        train_dataset, val_dataset, viz_dataset = data_loader.get_datasets(batch_size=1)
         x, y = next(iter(train_dataset))
         self.assertEqual(
             tuple(train_dataset.element_spec[0].shape),
@@ -48,6 +48,17 @@ class LowLightDataLoaderTester(unittest.TestCase):
         )
         self.assertEqual(x.shape, (1, self.image_size, self.image_size, 3))
         self.assertEqual(y.shape, (1, self.image_size, self.image_size, 3))
+        x, y = next(iter(viz_dataset))
+        self.assertEqual(
+            tuple(val_dataset.element_spec[0].shape),
+            (1, self.image_size, self.image_size, 3),
+        )
+        self.assertEqual(
+            tuple(val_dataset.element_spec[1].shape),
+            (1, self.image_size, self.image_size, 3),
+        )
+        self.assertEqual(x.shape, (1, self.image_size, self.image_size, 3))
+        self.assertEqual(y.shape, (1, self.image_size, self.image_size, 3))
         shutil.rmtree("./artifacts")
 
     def test_unsupervised_lol_dataloader(self) -> None:
@@ -59,7 +70,7 @@ class LowLightDataLoaderTester(unittest.TestCase):
             dataset_artifact_address="ml-colabs/mirnet-v2/lol-dataset:v0",
         )
         self.assertEqual(len(data_loader), 485)
-        train_dataset, val_dataset = data_loader.get_datasets(batch_size=1)
+        train_dataset, val_dataset, viz_dataset = data_loader.get_datasets(batch_size=1)
         x = next(iter(train_dataset))
         self.assertEqual(
             tuple(train_dataset.element_spec.shape),
@@ -72,6 +83,17 @@ class LowLightDataLoaderTester(unittest.TestCase):
             (1, self.image_size, self.image_size, 3),
         )
         self.assertEqual(x.shape, (1, self.image_size, self.image_size, 3))
+        x, y = next(iter(viz_dataset))
+        self.assertEqual(
+            tuple(val_dataset.element_spec[0].shape),
+            (1, self.image_size, self.image_size, 3),
+        )
+        self.assertEqual(
+            tuple(val_dataset.element_spec[1].shape),
+            (1, self.image_size, self.image_size, 3),
+        )
+        self.assertEqual(x.shape, (1, self.image_size, self.image_size, 3))
+        self.assertEqual(y.shape, (1, self.image_size, self.image_size, 3))
         shutil.rmtree("./artifacts")
 
     def test_mit_adobe_5k_dataloader(self) -> None:
@@ -83,7 +105,7 @@ class LowLightDataLoaderTester(unittest.TestCase):
             dataset_artifact_address="ml-colabs/mirnet-v2/mit-adobe-5k:v1",
         )
         self.assertEqual(len(data_loader), 5000)
-        train_dataset, val_dataset = data_loader.get_datasets(batch_size=1)
+        train_dataset, val_dataset, viz_dataset = data_loader.get_datasets(batch_size=1)
         x, y = next(iter(train_dataset))
         self.assertEqual(
             tuple(train_dataset.element_spec[0].shape),
@@ -96,6 +118,17 @@ class LowLightDataLoaderTester(unittest.TestCase):
         self.assertEqual(x.shape, (1, self.image_size, self.image_size, 3))
         self.assertEqual(y.shape, (1, self.image_size, self.image_size, 3))
         x, y = next(iter(val_dataset))
+        self.assertEqual(
+            tuple(val_dataset.element_spec[0].shape),
+            (1, self.image_size, self.image_size, 3),
+        )
+        self.assertEqual(
+            tuple(val_dataset.element_spec[1].shape),
+            (1, self.image_size, self.image_size, 3),
+        )
+        self.assertEqual(x.shape, (1, self.image_size, self.image_size, 3))
+        self.assertEqual(y.shape, (1, self.image_size, self.image_size, 3))
+        x, y = next(iter(viz_dataset))
         self.assertEqual(
             tuple(val_dataset.element_spec[0].shape),
             (1, self.image_size, self.image_size, 3),

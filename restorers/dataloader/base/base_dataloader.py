@@ -206,4 +206,11 @@ class DatasetFactory(ABC):
             apply_crop=False,
             apply_augmentations=False,
         )
-        return train_dataset, val_dataset
+        viz_dataset = self.build_dataset(
+            input_images=self.val_input_images,
+            enhanced_images=self.val_enhanced_images,
+            batch_size=1,
+            apply_crop=False,
+            apply_augmentations=False,
+        )
+        return train_dataset, val_dataset, viz_dataset

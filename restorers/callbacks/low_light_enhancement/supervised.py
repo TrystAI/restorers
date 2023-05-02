@@ -2,12 +2,13 @@ from typing import List
 
 import numpy as np
 import tensorflow as tf
-import wandb
 from tqdm.autonotebook import tqdm
+
+import wandb
 from wandb.keras import WandbEvalCallback
 
 
-class LowLightEvaluationCallback(WandbEvalCallback):
+class SupervisedLowLightEvaluationCallback(WandbEvalCallback):
     def __init__(
         self,
         validation_data: tf.data.Dataset,

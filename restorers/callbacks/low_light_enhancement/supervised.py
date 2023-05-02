@@ -7,7 +7,7 @@ from tqdm.autonotebook import tqdm
 from wandb.keras import WandbEvalCallback
 
 
-class LowLightEvaluationCallback(WandbEvalCallback):
+class SupervisedLowLightEvaluationCallback(WandbEvalCallback):
     def __init__(
         self,
         validation_data: tf.data.Dataset,

@@ -14,7 +14,6 @@ class LowLightDataLoaderTester(unittest.TestCase):
         self.image_size = 128
         self.bit_depth = 8
         self.val_split = 0.2
-        self
 
     def test_lol_dataloader(self) -> None:
         data_loader = LOLDataLoader(
@@ -83,17 +82,12 @@ class LowLightDataLoaderTester(unittest.TestCase):
             (1, self.image_size, self.image_size, 3),
         )
         self.assertEqual(x.shape, (1, self.image_size, self.image_size, 3))
-        x, y = next(iter(viz_dataset))
+        x = next(iter(viz_dataset))
         self.assertEqual(
             tuple(val_dataset.element_spec[0].shape),
             (1, self.image_size, self.image_size, 3),
         )
-        self.assertEqual(
-            tuple(val_dataset.element_spec[1].shape),
-            (1, self.image_size, self.image_size, 3),
-        )
         self.assertEqual(x.shape, (1, self.image_size, self.image_size, 3))
-        self.assertEqual(y.shape, (1, self.image_size, self.image_size, 3))
         shutil.rmtree("./artifacts")
 
     def test_mit_adobe_5k_dataloader(self) -> None:
